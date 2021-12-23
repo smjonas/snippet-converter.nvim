@@ -1,12 +1,15 @@
 local loader = {}
 
-local snippet_file_extensions = {
-  ultisnips = "*/*.snippets",
+local loader_info = {
+  ultisnips = {
+    extension = "*/*.snippets",
+    module_path = "snippet_hub.loaders.ultisnips"
+  },
 }
 
-local function get_matching_snippet_files(source)
+local function get_matching_snippet_paths(source)
   local source_path = source[1]
-  local tail = snippet_file_extensions[source.format]
+  local tail = loader_info[source.format].extension
   local first_slash_pos = source_path and source_path:find("/")
 
   local root_folder
@@ -20,19 +23,22 @@ local function get_matching_snippet_files(source)
   local matching_snippet_files = {}
   local rtp_files = vim.api.nvim_get_runtime_file(tail, true)
 
-  -- Turn glob pattern with potential wildcards into lua pattern
+  -- Turn glob pattern (with potential wildcards) into lua pattern
   local file_pattern = string.format("%s/%s", root_folder, tail)
-  :gsub("([^%w%*])", "%%%1"):gsub("%*", ".-") .. "$"
+    :gsub("([^%w%*])", "%%%1"):gsub("%*", ".-") .. "$"
 
   for _, file in pairs(rtp_files) do
     if file:match(file_pattern) then
       matching_snippet_files[#matching_snippet_files + 1] = file
     end
   end
+  return matching_snippet_files
 end
 
 loader.load = function(source)
-  local snippet_files = get_matching_snippet_files(source)
+  local snippet_paths = get_matching_snippet_paths(source)
+  P(snippet_paths)
+  P(require(loader_info[source.format].module_path).load(snippet_paths))
 end
 
 return loader
