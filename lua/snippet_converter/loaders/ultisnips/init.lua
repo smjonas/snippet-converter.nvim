@@ -1,6 +1,6 @@
 local loader = {}
 
-local parser = require("snippet_hub.loaders.ultisnips.parser")
+local parser = require("snippet_converter.loaders.ultisnips.parser")
 
 loader.load = function(snippet_paths)
   local loaded_snippets = {}

@@ -3,7 +3,7 @@ local loader = {}
 local loader_info = {
   ultisnips = {
     extension = "*/*.snippets",
-    module_path = "snippet_hub.loaders.ultisnips"
+    module_path = "snippet_converter.loaders.ultisnips"
   },
 }
 
