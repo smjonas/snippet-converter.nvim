@@ -1,20 +1,16 @@
 local converter = {}
 
-function converter.create()
-  local self = setmetatable({}, { __index = converter })
-  return self
-end
-
 function converter.convert(snippet)
   local description = ""
   if snippet.description then
     description = " " .. snippet.description
   end
+  local body = vim.fn.join(snippet.body, "\n\t")
   return string.format(
-    "snippet %s%s\n%s\nendsnippet\n\n",
+    "snippet %s%s\n\t%s\n\n",
     snippet.trigger,
     description,
-    snippet.body
+    body
   )
 end
 

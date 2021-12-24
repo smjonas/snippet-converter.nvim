@@ -18,6 +18,10 @@ function parser:parse(file)
       cur_snippet = header
       cur_snippet.body = {}
     elseif cur_snippet ~= nil then
+      if line:match("^\t") then
+        line = line:sub(2)
+      end
+      -- TODO: remove potential trailing \n
       table.insert(cur_snippet.body, line)
     end
   end
