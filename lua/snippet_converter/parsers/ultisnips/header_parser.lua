@@ -39,8 +39,7 @@ parser.handle_non_terminal_symbol = function(production_name, grammar, input, fo
 
     -- TODO: replace with vim.split
     local symbols = iterator_to_table(rule:gmatch("%S+"))
-    -- TODO: replace with vim.tbl_isempty
-    if table_is_empty(symbols) then
+    if vim.tbl_isempty(symbols) then
       symbols = { rule }
     end
 
@@ -81,28 +80,28 @@ parser.handle_non_terminal_symbol = function(production_name, grammar, input, fo
   return nil
 end
 
-parser.parse = function(input, grammar, force_parse_to_end)
+parser._parse = function(input, grammar, force_parse_to_end)
   return parser.handle_non_terminal_symbol(grammar.start_symbol, grammar, input, force_parse_to_end)
 end
 
-parser.parse_snippet_header = function(input)
+parser.parse = function(input)
   local result = {}
   local productions = {
     S = {
       rhs = {
-                                             "tab_trigger",
-                               "description w tab_trigger",
-                     "options w description w tab_trigger",
-        "options w expression w description w tab_trigger",
+                                             "trigger",
+                               "description w trigger",
+                     "options w description w trigger",
+        "options w expression w description w trigger",
       },
       verify_matches = function(rule, matches)
-        local tab_trigger = matches[#matches]
-        if rule == "options w expression w description w tab_trigger" and tab_trigger:match("e") == nil then
+        local trigger = matches[#matches]
+        if rule == "options w expression w description w trigger" and trigger:match("e") == nil then
           return false
         end
         local has_r_options = rule:match("options") ~= nil and matches[1]:match("r") ~= nil
-        if has_r_options or tab_trigger:match("%s") then
-          return remove_surrounding_chars(tab_trigger, matches, #matches)
+        if has_r_options or trigger:match("%s") then
+          return remove_surrounding_chars(trigger, matches, #matches)
         end
         return true
       end,
@@ -114,7 +113,7 @@ parser.parse_snippet_header = function(input)
         end
       end
     },
-    tab_trigger = {
+    trigger = {
       rhs = { '^.+%S*' },
     },
     description = {
@@ -132,7 +131,7 @@ parser.parse_snippet_header = function(input)
   }
   local grammar = { start_symbol = "S", productions = productions }
   -- reverse the string since we need to parse from right to left
-  parser.parse(input:reverse(), grammar, true)
+  parser._parse(input:reverse(), grammar, true)
   return result
 end
 

@@ -1,15 +1,20 @@
 local loader = {}
 
-local loader_info = {
+-- TODO: rename to snippet engine (format)?
+local supported_formats = {
+  "ultisnips", "snipmate"
+}
+
+local parsers = {
   ultisnips = {
     extension = "*/*.snippets",
-    module_path = "snippet_converter.loaders.ultisnips"
+    parser = require("snippet_converter.parsers.ultisnips")
   },
 }
 
 local function get_matching_snippet_paths(source)
   local source_path = source[1]
-  local tail = loader_info[source.format].extension
+  local tail = parsers[source.format].extension
   local first_slash_pos = source_path and source_path:find("/")
 
   local root_folder
@@ -35,10 +40,35 @@ local function get_matching_snippet_paths(source)
   return matching_snippet_files
 end
 
+local function validate_source(source)
+  vim.validate({
+    source = {
+      source, "table"
+    },
+    format = {
+      source.format,
+      function(arg)
+        return vim.tbl_contains(supported_formats, arg)
+      end,
+      "one of " .. vim.fn.join(supported_formats, ", ")
+    },
+    source_path = {
+      source[1],
+      function(arg)
+        return not arg or type(arg) == "string"
+      end,
+      "nil or string"
+    },
+  })
+end
+
 loader.load = function(source)
+  validate_source(source)
   local snippet_paths = get_matching_snippet_paths(source)
-  P(snippet_paths)
-  P(require(loader_info[source.format].module_path).load(snippet_paths))
+  local parser = parsers[source.format].parser
+  for _, path in pairs(snippet_paths) do
+    P(parser:parse(path))
+  end
 end
 
 return loader
