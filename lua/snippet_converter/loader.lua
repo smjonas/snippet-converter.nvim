@@ -2,13 +2,14 @@ local loader = {}
 
 -- TODO: rename to snippet engine (format)?
 local supported_formats = {
-  "ultisnips", "snipmate"
+  "ultisnips",
+  "snipmate",
 }
 
 local parsers = {
   ultisnips = {
     extension = "*/*.snippets",
-    parser = require("snippet_converter.parsers.ultisnips")
+    parser = require("snippet_converter.parsers.ultisnips"),
   },
 }
 
@@ -30,7 +31,8 @@ local function get_matching_snippet_paths(source)
 
   -- Turn glob pattern (with potential wildcards) into lua pattern
   local file_pattern = string.format("%s/%s", root_folder, tail)
-    :gsub("([^%w%*])", "%%%1"):gsub("%*", ".-") .. "$"
+    :gsub("([^%w%*])", "%%%1")
+    :gsub("%*", ".-") .. "$"
 
   for _, file in pairs(rtp_files) do
     if file:match(file_pattern) then
@@ -43,21 +45,22 @@ end
 local function validate_source(source)
   vim.validate({
     source = {
-      source, "table"
+      source,
+      "table",
     },
     format = {
       source.format,
       function(arg)
         return vim.tbl_contains(supported_formats, arg)
       end,
-      "one of " .. vim.fn.join(supported_formats, ", ")
+      "one of " .. vim.fn.join(supported_formats, ", "),
     },
     source_path = {
       source[1],
       function(arg)
         return not arg or type(arg) == "string"
       end,
-      "nil or string"
+      "nil or string",
     },
   })
 end

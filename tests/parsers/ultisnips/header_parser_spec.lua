@@ -5,8 +5,8 @@ describe("parser for grammar", function()
     it("should match second rule if first one failed", function()
       local productions = {
         S = {
-          rhs = { "^%a+", "^%d+"}
-        }
+          rhs = { "^%a+", "^%d+" },
+        },
       }
       local grammar = { start_symbol = "S", productions = productions }
       local result = parser._parse("123 test", grammar, false)
@@ -18,21 +18,21 @@ describe("parser for grammar", function()
     it("should match description regex", function()
       local productions = {
         S = {
-          rhs = { '^"[^"]+"' }
-        }
+          rhs = { [[^"[^"]+"]] },
+        },
       }
       local grammar = { start_symbol = "S", productions = productions }
-      local result = parser._parse('"some description"', grammar, false)
+      local result = parser._parse([["some description"]], grammar, false)
       assert.is_not_nil(result)
-      local expected = { matches = { '"some description"' }, remaining = "" }
+      local expected = { matches = { [["some description"]] }, remaining = "" }
       assert.are_same(expected, result)
     end)
 
     it("should not match", function()
       local productions = {
         S = {
-          rhs = { "^%d+"}
-        }
+          rhs = { "^%d+" },
+        },
       }
       local grammar = { start_symbol = "S", productions = productions }
       assert.is_nil(parser._parse("test 123", grammar))
@@ -45,8 +45,8 @@ describe("parser for grammar", function()
           verify_matches = function(_, matches)
             -- only match when first char is "x"
             return matches[1]:sub(1, 1) == "x"
-          end
-        }
+          end,
+        },
       }
       local grammar = { start_symbol = "S", productions = productions }
       local actual = parser._parse("xyz", grammar)
@@ -69,11 +69,11 @@ describe("parser for grammar", function()
             table.insert(captured_rules, rule)
             table.insert(captured_matches, matches)
             return true
-          end
+          end,
         },
         A = {
-          rhs = { "a" }
-        }
+          rhs = { "a" },
+        },
       }
       local grammar = { start_symbol = "S", productions = productions }
       local actual = parser._parse("Msome str1ngsM arest", grammar, false)
@@ -99,8 +99,8 @@ describe("parser for grammar", function()
               matches[1] = matches[1]:sub(2, -2)
             end
             return valid
-          end
-        }
+          end,
+        },
       }
       local grammar = { start_symbol = "S", productions = productions }
       local actual = parser._parse("!test!", grammar)
@@ -122,17 +122,17 @@ describe("parser for grammar", function()
           on_store_matches = function(symbols, matches)
             table.insert(captured_symbols, symbols)
             table.insert(captured_matches, matches)
-          end
+          end,
         },
         A = {
-          rhs = { "a" }
+          rhs = { "a" },
         },
         B = {
-          rhs = { "a" }
+          rhs = { "a" },
         },
         C = {
-          rhs = { "c" }
-        }
+          rhs = { "c" },
+        },
       }
       local grammar = { start_symbol = "S", productions = productions }
       local actual = parser._parse("ac", grammar)
@@ -153,15 +153,15 @@ describe("parser for grammar", function()
         A = { rhs = { "B C" } },
         B = { rhs = { "^b" } },
         C = { rhs = { "^c" } },
-        D = { rhs = { "^d" } }
+        D = { rhs = { "^d" } },
       }
       local grammar = { start_symbol = "S", productions = productions }
       local expected = {
         matches = {
           { "b", "c" }, -- matched by non-terminal A
-          "d" -- matched by non-terminal D
+          "d", -- matched by non-terminal D
         },
-        remaining = "rest"
+        remaining = "rest",
       }
       local actual = parser._parse("bcdrest", grammar)
       assert.is_not_nil(actual)
@@ -174,7 +174,7 @@ describe("parser for grammar", function()
         A = { rhs = { "B C" } },
         B = { rhs = { "^b" } },
         C = { rhs = { "^c" } },
-        D = { rhs = { "^d" } }
+        D = { rhs = { "^d" } },
       }
       local grammar = { start_symbol = "S", productions = productions }
       assert.is_nil(parser._parse("bc!rest", grammar))
@@ -185,104 +185,102 @@ end)
 describe("parser for", function()
   describe("snippet header", function()
     it("should match trigger including quotes when no r option or multiword trigger", function()
-      local result = parser.parse('"snip"')
+      local result = parser.parse([["snip"]])
       local expected = {
-        trigger = '"snip"'
+        trigger = [["snip"]],
       }
       assert.are_same(expected, result)
     end)
 
-    it('should match multiword tab-trigger surrounded with "!"', function()
-      local result = parser.parse('!"some" trigger! "a description"')
+    it([[should match multiword tab-trigger surrounded with "!"]], function()
+      local result = parser.parse([[!"some" trigger! "a description"]])
       local expected = {
         description = "a description",
-        trigger = '"some" trigger'
+        trigger = [["some" trigger]],
       }
       assert.are_same(expected, result)
     end)
 
     it("should match quoted trigger, description, options", function()
-      local result = parser.parse('"tab - trigger"  "some description"   options')
+      local result = parser.parse([["tab - trigger"  "some description"   options]])
       local expected = {
         options = "options",
         description = "some description",
-        trigger = "tab - trigger"
+        trigger = "tab - trigger",
       }
       assert.are_same(expected, result)
     end)
 
     it("should remove surrounding from trigger when regex option is provided", function()
-      local result = parser.parse('|^(foo|bar)$| "" r')
+      local result = parser.parse([[|^(foo|bar)$| "" r]])
       local expected = {
         options = "r",
         description = "",
-        trigger = "^(foo|bar)$"
+        trigger = "^(foo|bar)$",
       }
       assert.are_same(expected, result)
     end)
 
     it("should not remove surrounding from trigger when regex option is not provided", function()
-      local result = parser.parse('|^(foo|bar)$| "" ba')
+      local result = parser.parse([[|^(foo|bar)$| "" ba]])
       local expected = {
         options = "ba",
         description = "",
         -- keep surrounding "|"
-        trigger = "|^(foo|bar)$|"
+        trigger = "|^(foo|bar)$|",
       }
       assert.are_same(expected, result)
     end)
 
-    it('should match options with "!"', function()
-      local result = parser.parse('test "description" b!')
+    it([[should match options with "!"]], function()
+      local result = parser.parse([[test "description" b!]])
       local expected = {
         options = "b!",
         description = "description",
-        trigger = "test"
+        trigger = "test",
       }
       assert.are_same(expected, result)
     end)
 
     it("should match options with expression", function()
-      local result = parser.parse('trigger "d" "expr" be')
+      local result = parser.parse([[trigger "d" "expr" be]])
       local expected = {
         options = "be",
         expression = "expr",
         description = "d",
-        trigger = "trigger"
+        trigger = "trigger",
       }
       assert.are_same(expected, result)
       -- failure case
-      assert.are_same({}, parser.parse('trigger "d" "expr" br'))
+      assert.are_same({}, parser.parse([[trigger "d" "expr" br]]))
     end)
 
     it("should not match invalid multiword tab-trigger", function()
-      local result = parser.parse('invalid multiword-trigger "description"')
+      local result = parser.parse([[invalid multiword-trigger "description"]])
       assert.are_same({}, result)
     end)
 
     it("should not cause exception for snippet with trailing spaces", function()
-      local result = parser.parse('func "Function Header" ')
+      local result = parser.parse([[func "Function Header" ]])
       assert.are_same({}, result)
     end)
 
     it("should match tab-trigger containing dot", function()
       local result = parser.parse("j.u")
       local expected = {
-        trigger = "j.u"
+        trigger = "j.u",
       }
       assert.are_same(expected, result)
     end)
 
     it("should match trigger with less than 3 chars", function()
-      local result = parser.parse('c "Constructor" b')
+      local result = parser.parse([[c "Constructor" b]])
       local expected = {
         trigger = "c",
         description = "Constructor",
-        options = "b"
+        options = "b",
       }
       assert.are_same(expected, result)
     end)
-
   end)
 end)
-

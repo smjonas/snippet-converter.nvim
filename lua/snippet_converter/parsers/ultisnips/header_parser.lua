@@ -1,9 +1,5 @@
 local parser = {}
 
-local function table_is_empty(table)
-  return next(table) == nil
-end
-
 local function iterator_to_table(iterator)
   local result = {}
   for x in iterator do
@@ -63,11 +59,15 @@ parser.handle_non_terminal_symbol = function(production_name, grammar, input, fo
       end
       -- The rule was successfully applied to the input string.
       if #matches == #symbols then
-        if production_name ~= grammar.start_symbol or (not force_parse_to_end or cur_input == "") then
-        -- Warning: verify function may change the contents of result.matches!
-        -- Always assume that the table contents have changed beyond this point (e.g. when
-        -- logging the current value).
-          if production.verify_matches == nil or production.verify_matches(rule, matches) == true then
+        if
+          production_name ~= grammar.start_symbol or (not force_parse_to_end or cur_input == "")
+        then
+          -- Warning: verify function may change the contents of result.matches!
+          -- Always assume that the table contents have changed beyond this point (e.g. when
+          -- logging the current value).
+          if
+            production.verify_matches == nil or production.verify_matches(rule, matches) == true
+          then
             if production.on_store_matches ~= nil then
               production.on_store_matches(symbols, matches)
             end
@@ -89,9 +89,9 @@ parser.parse = function(input)
   local productions = {
     S = {
       rhs = {
-                                             "trigger",
-                               "description w trigger",
-                     "options w description w trigger",
+        "trigger",
+        "description w trigger",
+        "options w description w trigger",
         "options w expression w description w trigger",
       },
       verify_matches = function(rule, matches)
@@ -111,23 +111,23 @@ parser.parse = function(input)
             result[symbols[i]] = match:reverse()
           end
         end
-      end
+      end,
     },
     trigger = {
-      rhs = { '^.+%S*' },
+      rhs = { [[^.+%S*]] },
     },
     description = {
-      rhs = { '^"([^"]*)"' }
+      rhs = { [[^"([^"]*)"]] },
     },
     options = {
-      rhs = { '^[^"%s]+' }
+      rhs = { [[^[^"%s]+]] },
     },
     expression = {
-      rhs = { '^"(.-)"' }
+      rhs = { [[^"(.-)"]] },
     },
     w = {
-      rhs = { '^%s+' }
-    }
+      rhs = { [[^%s+]] },
+    },
   }
   local grammar = { start_symbol = "S", productions = productions }
   -- reverse the string since we need to parse from right to left
