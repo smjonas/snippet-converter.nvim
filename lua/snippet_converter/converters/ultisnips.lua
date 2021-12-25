@@ -1,10 +1,5 @@
 local converter = {}
 
-function converter.create()
-  local self = setmetatable({}, { __index = converter })
-  return self
-end
-
 function converter.convert(snippet)
   local trigger = snippet.trigger
   -- Literal " in trigger

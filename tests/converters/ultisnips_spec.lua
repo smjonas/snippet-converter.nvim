@@ -2,7 +2,7 @@ local converter = require("snippet_converter.converters.ultisnips")
 
 describe("converter for UltiSnips", function()
   describe("should convert snippet", function()
-    it("(standard)", function()
+    it("(basic)", function()
       local snippet = {
         trigger = "fn",
         description = "function",
