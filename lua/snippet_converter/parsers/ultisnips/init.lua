@@ -1,5 +1,6 @@
 local base_parser = require("snippet_converter.parsers.base")
 local header_parser = require("snippet_converter.parsers.ultisnips.header_parser")
+local capabilities = require("snippet_converter.parsers.engine_capabilities")
 local utils = require("snippet_converter.utils")
 
 local parser = base_parser:new()

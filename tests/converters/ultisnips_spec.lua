@@ -1,6 +1,6 @@
 local converter = require("snippet_converter.converters.ultisnips")
 
-describe("converter for UltiSnips", function()
+describe("UltiSnips converter", function()
   describe("should convert snippet", function()
     it("(basic)", function()
       local snippet = {
@@ -42,6 +42,26 @@ snippet !some "quotes" !
 body
 endsnippet]]
       assert.are_same(expected, actual)
+    end)
+  end)
+
+  describe("cannot convert to other format", function()
+    it("if body contains interpolation code", function()
+      local snippet = {
+        trigger = "indent",
+        body = { [[Indent is: `v! indent(".")`]] }
+      }
+      assert.is_false(converter.can_convert(snippet, "any engine"))
+    end)
+  end)
+
+  describe("can convert to other format", function()
+    it("if body does not contain interpolation code", function()
+      local snippet = {
+        trigger = "test",
+        body = { "`hey" }
+      }
+      assert.is_true(converter.can_convert(snippet, "any engine"))
     end)
   end)
 end)

@@ -2,14 +2,15 @@ local loader = {}
 
 -- TODO: rename to snippet engine (format)?
 local supported_formats = {
-  "ultisnips",
   "snipmate",
+  "ultisnips",
+  "vscode",
 }
 
 local parsers = {
   ultisnips = {
     extension = "*/*.snippets",
-    parser = require("snippet_converter.parsers.ultisnips"),
+    parser = "snippet_converter.parsers.ultisnips",
   },
 }
 
@@ -68,7 +69,7 @@ end
 loader.load = function(source)
   validate_source(source)
   local snippet_paths = get_matching_snippet_paths(source)
-  local parser = parsers[source.format].parser
+  local parser = require(parsers[source.format].parser)
   for _, path in pairs(snippet_paths) do
     P(parser:parse(path))
   end
