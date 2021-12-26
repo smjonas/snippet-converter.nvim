@@ -1,6 +1,14 @@
 local converter = {}
 
-function converter.convert(snippet)
+local function can_convert(snippet, _)
+  -- Must not contain multi-word trigger
+  return not snippet.trigger:match("%s")
+end
+
+function converter.convert(snippet, target_engine)
+  if not can_convert(snippet, target_engine) then
+    return
+  end
   local description = ""
   if snippet.description then
     description = " " .. snippet.description

@@ -1,14 +1,16 @@
 local base_parser = require("snippet_converter.parsers.base")
 local header_parser = require("snippet_converter.parsers.ultisnips.header_parser")
-local capabilities = require("snippet_converter.parsers.engine_capabilities")
 local utils = require("snippet_converter.utils")
 
 local parser = base_parser:new()
 
-function parser:parse(file)
+function parser:get_lines(file)
+  return utils.read_file(file)
+end
+
+function parser:parse(lines)
   local parsed_snippets = {}
   local cur_snippet
-  local lines = utils.read_file(file)
   local found_snippet_header = false
 
   for _, line in ipairs(lines) do
@@ -19,7 +21,7 @@ function parser:parse(file)
         cur_snippet.body = {}
         found_snippet_header = true
       end
-    elseif found_snippet_header and vim.startswith(line, "endsnippet") then
+    elseif vim.startswith(line, "endsnippet") then
       parsed_snippets[#parsed_snippets + 1] = cur_snippet
       found_snippet_header = false
     else
