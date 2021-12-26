@@ -1,7 +1,7 @@
 local M = {}
 
 function M.setup(config)
-  -- require("snippet_converter.loader").load(config.sources[1])
+  require("snippet_converter.loader").load(config)
 end
 
 return M

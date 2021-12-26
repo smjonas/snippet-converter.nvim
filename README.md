@@ -15,14 +15,13 @@ use {
   config = function()
     require("snippet_converter").setup {
       sources = {
-        {
-          "vim-snippets/snippets",
-          format = "snipmate",
-        },
-        {
+        ultisnips = {
           "latex-snippets/tex.snippets",
-          format = "ultisnips",
-        }
+          vim.fn.stdpath("config") .. "/UltiSnips",
+        },
+        snipmate = {
+          "vim-snippets/snippets",
+        },
       },
       output = {
         path = vim.fn.stdpath("data") .. "/vscode_snippets",
