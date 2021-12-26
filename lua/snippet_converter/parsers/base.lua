@@ -7,8 +7,12 @@ base_parser.new = function()
   return self
 end
 
-function base_parser:get_header(line)
-  error("header: Parser must implement this function.")
+function base_parser:get_lines(file)
+  error("get_lines(file): Parser must implement this function.")
+end
+
+function base_parser:parse(lines)
+  error("parse(lines): Parser must implement this function.")
 end
 
 -- Parsed snippet must be a table with the following keys:
