@@ -1,18 +1,17 @@
-local base_parser = require("snippet_converter.parsers.base")
 local utils = require("snippet_converter.utils")
 
-local parser = base_parser:new()
+local parser = {}
 
-function parser:get_lines(file)
-  return utils.read_file(file)
+function parser.get_lines(file)
+  return utils.json_decode(utils.read_file(file))
 end
 
-function parser:parse(lines)
+function parser.parse(lines)
   local parsed_snippets = {}
   local cur_snippet
 
   for _, line in ipairs(lines) do
-    local header = self:get_header(line)
+    local header = parser.get_header(line)
     -- Found possible snippet header
     if header then
       if cur_snippet ~= nil then
@@ -31,7 +30,7 @@ function parser:parse(lines)
   return parsed_snippets
 end
 
-function parser:get_header(line)
+function parser.get_header(line)
   local stripped_header = line:match("^%s*snippet!?!?%s(.*)")
   if stripped_header ~= nil then
     local words = vim.split(stripped_header, "%s", { trim_empty = true })

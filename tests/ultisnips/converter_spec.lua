@@ -1,4 +1,4 @@
-local converter = require("snippet_converter.converters.ultisnips")
+local converter = require("snippet_converter.ultisnips.converter")
 
 describe("UltiSnips converter", function()
   describe("should convert snippet", function()

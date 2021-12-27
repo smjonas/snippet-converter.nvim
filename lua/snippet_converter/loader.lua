@@ -23,7 +23,6 @@ local parsers = {
 }
 
 local function get_matching_snippet_paths(source_format, source_paths)
-  -- local source_path = source[1]
   local matching_snippet_files = {}
   for _, source_path in ipairs(source_paths) do
     local tail = parsers[source_format].extension

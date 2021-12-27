@@ -1,4 +1,4 @@
-local parser = require("snippet_converter.parsers.ultisnips")
+local parser = require("snippet_converter.ultisnips.parser")
 
 describe("UltiSnips parser", function()
   describe("should parse", function()
@@ -30,7 +30,7 @@ endsnippet
           body = { "for ${1:i}=${2:1},${3:10} do", "\t${0:print(i)}", "end" },
         },
       }
-      local actual = parser:parse(lines)
+      local actual = parser.parse(lines)
       assert.are_same(expected, actual)
     end)
   end)

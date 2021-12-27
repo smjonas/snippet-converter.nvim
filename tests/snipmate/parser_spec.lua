@@ -1,4 +1,4 @@
-local parser = require("snippet_converter.parsers.snipmate")
+local parser = require("snippet_converter.snipmate.parser")
 
 describe("SnipMate parser", function()
   describe("should parse", function()
@@ -27,7 +27,7 @@ snippet for
           body = { "for ${1:i}=${2:1},${3:10} do", "\t${0:print(i)}", "end" },
         },
       }
-      local actual = parser:parse(lines)
+      local actual = parser.parse(lines)
       assert.are_same(expected, actual)
     end)
   end)

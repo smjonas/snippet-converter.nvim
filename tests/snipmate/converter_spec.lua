@@ -1,4 +1,4 @@
-local converter = require("snippet_converter.converters.snipmate")
+local converter = require("snippet_converter.snipmate.converter")
 
 describe("SnipMate converter", function()
   describe("should convert snippet", function()
@@ -10,10 +10,10 @@ describe("SnipMate converter", function()
       }
       local actual = converter.convert(snippet, "")
       local expected = [[
-  snippet fn a function
-    function ${1:name}($2)
-      ${3:-- code}
-    end]]
+snippet fn a function
+	function ${1:name}($2)
+		${3:-- code}
+	end]]
       assert.are_same(expected, actual)
     end)
   end)
