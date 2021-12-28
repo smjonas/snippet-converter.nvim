@@ -1,31 +1,10 @@
+local snippet_engines = require("snippet_converter.snippet_engines")
 local utils = require("snippet_converter.utils")
 
 local loader = {}
 
--- TODO: rename to snippet engine (format)?
-local supported_formats = {
-  "snipmate",
-  "ultisnips",
-  "vscode",
-}
-
-local parsers = {
-  snipmate = {
-    extension = "*.snippets",
-    parser = "snippet_converter.snipmate.parser"
-  },
-  ultisnips = {
-    extension = "*.snippets",
-    parser = "snippet_converter.ultisnips.parser",
-  },
-  vscode = {
-    extension = "*.json",
-    parser = "snippet_converter.vscode.parser",
-  },
-}
-
 local function find_matching_snippet_files_in_rtp(matching_snippet_files, source_format, source_path)
-  local tail = parsers[source_format].extension
+  local tail = snippet_engines[source_format].extension
   local first_slash_pos = source_path and source_path:find("/")
 
   local root_folder
@@ -69,9 +48,10 @@ local function validate_config(sources)
       "table",
     },
   })
+  local supported_formats = vim.tbl_keys(snippet_engines)
   for source_format, source_paths in ipairs(sources) do
     vim.validate({
-      format = {
+      ["name of the source"] = {
         source_format,
         function(arg)
           return vim.tbl_contains(supported_formats, arg)
@@ -94,9 +74,9 @@ loader.load = function(config)
   validate_config(config)
   for source_format, source_paths in pairs(config.sources) do
     local snippet_paths = get_matching_snippet_files(source_format, source_paths)
-    local parser = require(parsers[source_format].parser)
+    local parser = require(snippet_engines[source_format].parser)
     for _, path in ipairs(snippet_paths) do
-      parser.parse(parser.get_lines(path))
+      P(parser.parse(parser.get_lines(path)))
       return
     end
   end
