@@ -1,4 +1,4 @@
-local grammar = {}
+local parser = {}
 
 local primitives = require("snippet_converter.base.parser.primitives")
 
@@ -41,17 +41,23 @@ local patterns = {
  "/normcase", "/downcase", "/capitalize", "/camelcase", "/pascalcase"
 }
 
--- Patterns
 local p = {}
 for _, pattern in ipairs(patterns) do
   p[pattern] = primitives.pattern(pattern)
 end
 
-local tabstop = either {
-  all{ p["$"], int, },
-  all{ p["${"], int, p["}"], },
-  all{ p["${"], int, transform, p["}"], }
-}
+local bind = function(capture_identifier, parser_fn)
+  return {
+    capture_identifier = capture_identifier,
+    parser_fn = parser_fn,
+  }
+end
+
+local tabstop = bind("tabstop", either {
+  all{ p["$"], bind("num", int), },
+  all{ p["${"], bind("num", int), p["}"], },
+  all{ p["${"], bind("num", int), bind("transform", transform), p["}"], }
+})
 
 local any
 local placeholder = all {
@@ -91,6 +97,10 @@ local transform = all {
   p["/"], at_least(1, either { format, text }), p["/"], options
 }
 
-local number
+-- input must be a single string
+parser.parse = function(input)
+  return any(input)
+end
 
-return grammar
+
+return parser
