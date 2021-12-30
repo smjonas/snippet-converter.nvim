@@ -9,13 +9,6 @@ primitives.pattern = function(_pattern)
   end
 end
 
-primitives.bind = function(capture_identifier, parser_fn)
-  return {
-    capture_identifier = capture_identifier,
-    parser_fn = parser_fn,
-  }
-end
-
 local parse = function(parser, input)
   if type(parser) == "table" then
     return true, parser.parser_fn(input)
@@ -24,18 +17,63 @@ local parse = function(parser, input)
   end
 end
 
+local parse_and_capture = function(parser, input, captures)
+  local match, remainder
+  if type(parser) == "table" then
+    local sub_captures
+    match, remainder, sub_captures = parser.parser_fn(input)
+    print("IN PA")
+      print(vim.inspect(match))
+      print(vim.inspect(remainder))
+      print(vim.inspect(sub_captures))
+    if match == nil then
+      return nil
+    end
+    if sub_captures ~= nil then
+      if captures == nil then
+        captures = {
+          [parser.capture_identifier] = sub_captures
+        }
+      else
+        captures[parser.capture_identifier] = sub_captures
+      end
+    end
+    print(3)
+    print(vim.inspect(captures))
+    return match, remainder, captures
+  else
+    match, remainder, _ = parser(input)
+    print(34)
+    return match, remainder, captures
+  end
+end
+
+primitives.bind = function(capture_identifier, parser_fn)
+  local parser = {
+    capture_identifier = capture_identifier,
+    parser_fn = parser_fn,
+  }
+  -- Allow calling parser table as a function
+  setmetatable(parser, { __call = function(_, input)
+    local match, remainder, captures = parse_and_capture(parser, input, nil)
+    return match, remainder, {
+      [capture_identifier] = captures
+    }
+  end})
+  return parser
+end
+
 primitives.either = function(parsers)
   return function(input)
-    local match, new_remainder, captures, should_capture, sub_captures
+    local match, remainder, captures
     for _, parser in ipairs(parsers) do
-      should_capture, match, new_remainder, sub_captures = parse(parser, input)
+      match, remainder, captures = parse_and_capture(parser, input, nil)
+      print("IN EITHER")
+      print(vim.inspect(match))
+      print(vim.inspect(remainder))
+      print(vim.inspect(captures))
       if match ~= nil then
-        if should_capture then
-          captures = {
-            [parser.capture_identifier] = sub_captures
-          }
-        end
-        return match, new_remainder, captures
+        return match, remainder, captures
       end
     end
   end
@@ -43,23 +81,21 @@ end
 
 primitives.all = function(parsers)
   return function(input)
-    local match, new_match, new_remainder, captures, should_capture, sub_captures
+    local match, new_match, new_remainder, captures, sub_captures
     local remainder = input
     for _, parser in ipairs(parsers) do
-      should_capture, new_match, new_remainder, sub_captures = parse(parser, remainder)
+      new_match, new_remainder, sub_captures = parse_and_capture(parser, remainder, captures)
       if new_match == nil then
         return nil
-      else
-        if should_capture then
-          if captures == nil then
-            captures = {}
-          end
-          captures[parser.capture_identifier] = sub_captures
-        end
-        match = (match or "") .. new_match
-        remainder = new_remainder
+      end
+      match = (match or "") .. new_match
+      remainder = new_remainder
+      if sub_captures ~= nil then
+        captures = sub_captures
       end
     end
+    print("IN ALL")
+    print(vim.inspect(captures))
     return match, remainder, captures
   end
 end
