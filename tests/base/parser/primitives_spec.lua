@@ -122,15 +122,18 @@ describe("Primitives", function()
       assert.is_nil(captures)
     end)
 
-    it("should work with bind and store result in captures table", function()
+    it("should work with bind and store results in captures table", function()
       local input = "123abc"
-      local match, remainder, captures = at_least(2, bind("int", primitives.pattern("%d")))(input)
+      local match, remainder, captures = at_least(2, bind("ints", primitives.pattern("%d")))(input)
       assert.are_same("123", match)
       assert.are_same("abc", remainder)
       assert.are_same(
-        { ["int"] = "123" }, captures
+        {
+          ["ints"] = { "1", "2", "3" }
+        }, captures
       )
     end)
+
   end)
 end)
 

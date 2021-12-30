@@ -67,18 +67,33 @@ end
 -- TODO: replace vim.join with table.concat everywhere
 primitives.at_least = function(amount, parser)
   return function(input)
-    local should_capture, match, remainder, _ = parse(parser, input)
+    local should_capture, match, remainder, sub_captures = parse(parser, input)
     local new_remainder
     local captures
+    if should_capture then
+      captures = {
+        [parser.capture_identifier] = { sub_captures }
+      }
+    end
 
     local matches = { match }
     local total_matches = #matches
     while match ~= nil and remainder ~= "" do
-      _, match, new_remainder, _ = parse(parser, remainder)
+      _, match, new_remainder, sub_captures = parse(parser, remainder)
       if match ~= nil then
         remainder = new_remainder
         total_matches = total_matches + 1
         matches[total_matches] = match
+        if should_capture then
+          if captures == nil then
+            captures = {
+              [parser.capture_identifier] = { sub_captures }
+            }
+          else
+            local len = #captures[parser.capture_identifier]
+            captures[parser.capture_identifier][len + 1] = sub_captures
+          end
+        end
       end
     end
 
@@ -88,11 +103,6 @@ primitives.at_least = function(amount, parser)
 
     if total_matches >= amount then
       local joined_matches = table.concat(matches)
-      if should_capture then
-        captures = {
-          [parser.capture_identifier] = joined_matches
-        }
-      end
       return joined_matches, remainder, captures
     end
   end
