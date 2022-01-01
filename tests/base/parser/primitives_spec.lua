@@ -1,8 +1,8 @@
-local primitives = require("snippet_converter.base.parser.primitives")
+local primitives = require "snippet_converter.base.parser.primitives"
 
 local pattern = primitives.pattern
-local int = pattern("%d+")
-local letters = pattern("[a-zA-Z]+")
+local int = pattern "%d+"
+local letters = pattern "[a-zA-Z]+"
 
 local bind = primitives.bind
 local either = primitives.either
@@ -16,8 +16,7 @@ describe("Primitives", function()
       local match, remainder, captures = int(input)
       assert.are_same("123", match)
       assert.are_same("test", remainder)
-      -- assert.is_nil(captures)
-      assert.are_same("123", captures)
+      assert.is_nil(captures)
     end)
 
     it("should return nil if pattern does not match", function()
@@ -49,7 +48,8 @@ describe("Primitives", function()
     it("should work with bind and store captured value in match table", function()
       local input = "abc123"
       local match, remainder, captures = either {
-        bind("some identifier", letters), int
+        bind("some identifier", letters),
+        int,
       }(input)
       assert.are_same("abc", match)
       assert.are_same("123", remainder)
@@ -59,7 +59,8 @@ describe("Primitives", function()
     it("#xxx should return nil with bound parser when input is not matched", function()
       local input = "!will not be matched!"
       local match, remainder, captures = either {
-        bind("some identifier", letters), int
+        bind("some identifier", letters),
+        int,
       }(input)
       assert.is_nil(match)
       assert.is_nil(remainder)
@@ -87,14 +88,15 @@ describe("Primitives", function()
     it("should work with bind and store captured value in match table", function()
       local input = "abc123 remainder"
       local match, remainder, captures = all {
-        bind("letters ID", letters), bind("int ID", int)
+        bind("letters ID", letters),
+        bind("int ID", int),
       }(input)
 
       assert.are_same("abc123", match)
       assert.are_same(" remainder", remainder)
       assert.are_same({
         ["letters ID"] = "abc",
-        ["int ID"] = "123"
+        ["int ID"] = "123",
       }, captures)
     end)
   end)
@@ -102,7 +104,7 @@ describe("Primitives", function()
   describe("at_least", function()
     it("should return match, remainder (greedy) if parser matched often enough", function()
       local input = "abababababccc"
-      local match, remainder, captures = at_least(3, pattern("ab"))(input)
+      local match, remainder, captures = at_least(3, pattern "ab")(input)
       assert.are_same("ababababab", match)
       assert.are_same("ccc", remainder)
       assert.is_nil(captures)
@@ -110,7 +112,7 @@ describe("Primitives", function()
 
     it("should return nil if parser did not match often enough", function()
       local input = "aaAA"
-      local match, remainder, captures = at_least(3, pattern("a"))(input)
+      local match, remainder, captures = at_least(3, pattern "a")(input)
       assert.is_nil(match)
       assert.is_nil(remainder)
       assert.is_nil(captures)
@@ -118,7 +120,7 @@ describe("Primitives", function()
 
     it("should not advance for amount = 0 when not matching", function()
       local input = "123"
-      local match, remainder, captures = at_least(0, pattern("a"))(input)
+      local match, remainder, captures = at_least(0, pattern "a")(input)
       assert.are_same("", match)
       assert.are_same("123", remainder)
       assert.is_nil(captures)
@@ -126,11 +128,11 @@ describe("Primitives", function()
 
     it("should work with bind and store results in captures table", function()
       local input = "123abc"
-      local match, remainder, captures = at_least(2, bind("ints", pattern("%d")))(input)
+      local match, remainder, captures = at_least(2, bind("ints", pattern "%d"))(input)
       assert.are_same("123", match)
       assert.are_same("abc", remainder)
       assert.are_same({
-        ints = { "1", "2", "3" }
+        ints = { "1", "2", "3" },
       }, captures)
     end)
   end)
@@ -138,20 +140,27 @@ describe("Primitives", function()
   describe("more complex scenario", function()
     it("(nested binds)", function()
       local input = "{0:test}..."
-      local match, remainder, captures = bind("result", either {
-        all { pattern("%("), bind("int", int), pattern(":"), bind("letters", letters), pattern("%)") },
-        all { pattern("{"), bind("int", int), pattern(":"), bind("letters", letters), pattern("}") }
-      })(input)
+      local match, remainder, captures = bind(
+        "result",
+        either {
+          all {
+            pattern "%(",
+            bind("int", int),
+            pattern ":",
+            bind("letters", letters),
+            pattern "%)",
+          },
+          all { pattern "{", bind("int", int), pattern ":", bind("letters", letters), pattern "}" },
+        }
+      )(input)
       assert.are_same("{0:test}", match)
       assert.are_same("...", remainder)
       assert.are_same({
         result = {
           int = "0",
-          letters = "test"
-        }
+          letters = "test",
+        },
       }, captures)
     end)
   end)
 end)
-
-
