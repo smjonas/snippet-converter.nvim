@@ -35,15 +35,19 @@ local new_inner_node = function(tag, node)
   return node
 end
 
-local expect_chars = function(state, chars)
+local raise_parse_error = function(state, description)
+  error(string.format("%s: %s at input '%s'", state.cur_parser, description, state.input))
+end
+
+local expect = function(state, chars)
   local len = chars:len()
   if state.input == nil or state.input:len() < len then
-    error "skip_chars: no chars to skip"
+    raise_parse_error(state, "no chars to skip")
   end
   state.input = state.input:sub(len + 1)
 end
 
-local peek_chars = function(state, chars)
+local peek = function(state, chars)
   -- print(1)
   -- print(state.input)
   local len = chars:len()
@@ -52,13 +56,9 @@ local peek_chars = function(state, chars)
   local chars_matched = state.input:sub(1, len) == chars
   if chars_matched then
     state.input = state.input:sub(len)
-    expect_chars(state, chars)
+    expect(state, chars)
     return true
   end
-end
-
-local raise_parse_error = function(state, description)
-  error(string.format("%s: %s at input '%s'", state.cur_parser, description, state.input))
 end
 
 local parse_pattern = function(state, pattern)
@@ -70,7 +70,7 @@ local parse_pattern = function(state, pattern)
   if match == nil then
     raise_parse_error(state, string.format("pattern %s not matched", pattern))
   end
-  expect_chars(state, match)
+  expect(state, match)
   return match
 end
 
@@ -82,7 +82,7 @@ end
 
 local parse_var = pattern "[_a-zA-Z][_a-zA-Z0-9]*"
 local parse_int = pattern "[0-9]+"
-local parse_text = pattern "[^%$%}]+"
+local parse_text = pattern "[^%$}]+"
 
 -- TODO
 local parse_regex = parse_text
@@ -99,9 +99,9 @@ local parse_format_modifier = function(state)
 end
 
 local parse_surrounded = function(state, parse_fn)
-  local has_bracket = peek_chars(state, "{")
+  local has_bracket = peek(state, "{")
   local result = parse_fn(state)
-  if not has_bracket or peek_chars "}" then
+  if not has_bracket or peek "}" then
     return true, result
   end
   return false, result
@@ -115,25 +115,25 @@ local parse_format = function(state)
     return new_inner_node("format", { int })
   else
     local format_modifier, _if, _else
-    if peek_chars(state, ":/") then
+    if peek(state, ":/") then
       -- format 3
       format_modifier = parse_format_modifier(state)
     else
-      if peek_chars(state, ":+") then
+      if peek(state, ":+") then
         -- format 4
         _if = parse_if(state)
-      elseif peek_chars(state, ":?") then
+      elseif peek(state, ":?") then
         -- format 5
         _if = parse_if(state)
-        expect_chars(state, ":")
+        expect(state, ":")
         _else = parse_else(state)
-      elseif peek_chars(state, ":") then
+      elseif peek(state, ":") then
         -- format 6 / 7
-        peek_chars(state, "-")
+        peek(state, "-")
         _else = parse_else(state)
       end
     end
-    expect_chars(state, "}")
+    expect(state, "}")
     return new_inner_node("format", {
       int,
       format_modifier = format_modifier,
@@ -144,7 +144,7 @@ local parse_format = function(state)
 end
 
 local parse_format_or_text = function(state)
-  if peek_chars(state, "$") then
+  if peek(state, "$") then
     return parse_format(state)
   else
     return parse_text(state)
@@ -152,11 +152,11 @@ local parse_format_or_text = function(state)
 end
 
 local parse_transform = function(state)
-  expect_chars(state, "/")
+  expect(state, "/")
   local regex = parse_regex(state)
-  expect_chars(state, "/")
+  expect(state, "/")
   local format_or_text = { parse_format_or_text(state) }
-  while not peek_chars "/" do
+  while not peek "/" do
     format_or_text[#format_or_text + 1] = parse_format_or_text(state)
   end
   local options = parse_options(state)
@@ -167,16 +167,48 @@ local parse_any
 local parse_placeholder_any = function(state)
   state.cur_parser = "parse_placeholder_any"
   local any = parse_any(state)
-  expect_chars(state, "}")
+  expect(state, "}")
   return any
 end
 
-local parse_choice_text = function(state)
-  local text = { parse_text(state) }
-  while peek_chars(state, ",") do
-    text[#text + 1] = parse_text(state)
+local parse_escaped_text = function (state, escape_pattern, break_pattern)
+  local input = state.input
+  if input == "" then
+    raise_parse_error "parse_escaped_text: input is nil or empty"
   end
-  expect_chars(state, "|}")
+  local parsed_text = {}
+  local i = 1
+  local cur_char = input:sub(1, 1)
+  local begin_escape
+  while cur_char ~= "" do
+    if not begin_escape then
+      if cur_char:match(break_pattern) then
+        break
+      end
+      parsed_text[#parsed_text + 1] = cur_char
+      begin_escape = cur_char == [[\]]
+    elseif cur_char:match(escape_pattern) then
+      -- Overwrite the backslash
+      parsed_text[#parsed_text] = cur_char
+      begin_escape = false
+    end
+    i = i + 1
+    cur_char = state.input:sub(i, i)
+  end
+  state.input = input:sub(i)
+  return table.concat(parsed_text)
+end
+
+local parse_escaped_choice_text = function(state)
+  return parse_escaped_text(state, "[%$}\\,|]", "[,|]")
+end
+
+local parse_choice_text = function(state)
+  local text = { parse_escaped_choice_text(state) }
+  while peek(state, ",") do
+    text[#text + 1] = parse_escaped_choice_text(state)
+  end
+  expect(state, "|}")
   return text
 end
 
@@ -189,14 +221,14 @@ local parse_variable = function(state)
   if var_only then
     -- variable 1 / 2
     return new_inner_node("variable", { var })
-  elseif peek_chars(state, ":") then
+  elseif peek(state, ":") then
     local any = parse_any(state)
-    expect_chars(state, "}")
+    expect(state, "}")
     -- variable 3
     return new_inner_node("variable", { var, any })
   else
     local transform = parse_transform(state)
-    expect_chars(state, "}")
+    expect(state, "}")
     -- variable 4
     return new_inner_node("variable", { var, transform })
   end
@@ -210,7 +242,7 @@ local parse_tabstop = function(state)
     return new_inner_node("tabstop", { int })
   else
     local transform = parse_transform(state)
-    expect_chars(state, "}")
+    expect(state, "}")
     -- tabstop 3
     return new_inner_node("tabstop", { int, transform })
   end
@@ -218,16 +250,16 @@ end
 
 parse_any = function(state)
   print("BEFO", state.input)
-  if peek_chars(state, "$") then
+  if peek(state, "$") then
     print("here", state.input)
-    if peek_chars(state, "{") then
-      print("here2")
+    if peek(state, "{") then
+      print "here2"
       local int = parse_int(state)
-      if peek_chars(state, ":") then
-        print("here3")
+      if peek(state, ":") then
+        print "here3"
         local any = parse_placeholder_any(state)
         return new_inner_node("placeholder", { int, any })
-      elseif peek_chars(state, "|") then
+      elseif peek(state, "|") then
         local text = parse_choice_text(state)
         return new_inner_node("choice", { int, text })
       end
