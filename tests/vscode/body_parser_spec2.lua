@@ -5,11 +5,30 @@ describe("VSCode body parser", function()
     local input = "local ${1:name} = function($2)"
     local actual = parser.parse(input)
     local expected = {
-      { "local ", tag = "text" },
-      { "1", { "name", tag = "text" }, tag = "placeholder" },
-      { " = function(", tag = "text" },
-      { "2", tag = "tabstop" },
-      { ")", tag = "text" },
+      { text = "local " },
+      { int = "1", any = { text = "name" }, tag = "placeholder" },
+      { text = " = function(" },
+      { int = "2", tag = "tabstop" },
+      { text = ")" },
+    }
+    assert.are_same(expected, actual)
+  end)
+
+  it("should parse variable with transform", function()
+    local input = "${TM_FILENAME/(.*)/${1:/upcase}/}"
+    local actual = parser.parse(input)
+    local expected = {
+      {
+        var = "TM_FILENAME",
+        transform = {
+          regex = "(.*)",
+          format_or_text = {
+            { int = "1", format_modifier = "upcase", tag = "format" },
+          },
+          options = "",
+        },
+        tag = "variable",
+      },
     }
     assert.are_same(expected, actual)
   end)
@@ -17,7 +36,7 @@ describe("VSCode body parser", function()
   it("should parse choice element", function()
     local input = "${0|🠂,⇨|}"
     local expected = {
-      { "0", { "🠂", "⇨" }, tag = "choice" },
+      { int = "0", text = { "🠂", "⇨" }, tag = "choice" },
     }
     assert.are_same(expected, parser.parse(input))
   end)
@@ -25,21 +44,19 @@ describe("VSCode body parser", function()
   it("should handle escaped chars in choice element", function()
     local input = [[${0|\$,\},\\,\,,\||}]]
     local expected = {
-      { "0", { "$", "}", [[\]], ",", "|" }, tag = "choice" },
+      { int = "0", text = { "$", "}", [[\]], ",", "|" }, tag = "choice" },
     }
     assert.are_same(expected, parser.parse(input))
   end)
 
-  -- it("should handle escaped chars", function()
-  --   local input = [[local \${1:name} = function($2)]]
-  --   local expected = {
-  --     { "local ", tag = "text" },
-  --     { "1", { "name", tag = "text" }, tag = "placeholder" },
-  --     { " = function(", tag = "text" },
-  --     { "2", tag = "tabstop" },
-  --     { ")", tag = "text" },
-  --   }
-  --   assert.are_same(expected, parser.parse(input))
-  -- end)
-  -- { { "0", { "🠂", "⇨"} },  tag = "chars" },
+  it("should handle escaped chars in text element", function()
+    local input = [[\\\$\}]]
+    local expected = { { text = [[\$}]] } }
+    assert.are_same(expected, parser.parse(input))
+  end)
+
+  it("should not run into infinite loop but cause error", function()
+    local input = [[${0|\|||}]]
+    assert.has.errors(function() parser.parse(input) end)
+  end)
 end)

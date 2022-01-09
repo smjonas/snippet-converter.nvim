@@ -17,9 +17,15 @@ local variable_tokens = {
   "CURRENT_MONTH_NAME_SHORT",
   "CURRENT_DAY_NAME",
   "CURRENT_HOUR",
+  "CURRENT_MINUTE",
   "CURRENT_SECOND",
+  "CURRENT_SECONDS_UNIX",
+  "RANDOM",
   "RANDOM_HEX",
+  "UUID",
+  "BLOCK_COMMENT_START",
   "BLOCK_COMMENT_END",
+  "LINE_COMMENT",
 }
 
 local format_modifier_tokens = {
@@ -44,20 +50,28 @@ local expect = function(state, chars)
   if state.input == nil or state.input:len() < len then
     raise_parse_error(state, "no chars to skip")
   end
+  if state.input:sub(1, len) ~= chars then
+    raise_parse_error(state, "expected '" .. chars .. "'")
+  end
   state.input = state.input:sub(len + 1)
 end
 
 local peek = function(state, chars)
-  -- print(1)
-  -- print(state.input)
-  local len = chars:len()
-  -- print("'" .. state.input:sub(1, len) .. "'")
-  -- print("'" .. chars .. "'")
-  local chars_matched = state.input:sub(1, len) == chars
-  if chars_matched then
-    state.input = state.input:sub(len)
+  if state.input == nil then
+    return nil
+  end
+  local prefix = state.input:sub(1, chars:len())
+  if prefix == chars then
     expect(state, chars)
-    return true
+    return prefix
+  end
+end
+
+local peek_pattern = function(state, pattern)
+  local chars_matched, _ = state.input:match(pattern)
+  if chars_matched then
+    expect(state, chars_matched)
+    return chars_matched
   end
 end
 
@@ -80,15 +94,54 @@ local pattern = function(pattern_string)
   end
 end
 
-local parse_var = pattern "[_a-zA-Z][_a-zA-Z0-9]*"
+local var_pattern = "[_a-zA-Z][_a-zA-Z0-9]*"
+local options_pattern = "[^}]*"
 local parse_int = pattern "[0-9]+"
-local parse_text = pattern "[^%$}]+"
+
+local parse_escaped_text = function(state, escape_pattern)
+  local input = state.input
+  if input == "" then
+    raise_parse_error "parse_escaped_text: input is nil or empty"
+  end
+  local parsed_text = {}
+  local i = 1
+  local cur_char = input:sub(1, 1)
+  local begin_escape
+  while cur_char ~= "" do
+    if not begin_escape then
+      begin_escape = cur_char == [[\]]
+      if not begin_escape and cur_char:match(escape_pattern) then
+        break
+      end
+      parsed_text[#parsed_text + 1] = cur_char
+    elseif cur_char:match(escape_pattern) then
+      -- Overwrite the backslash
+      parsed_text[#parsed_text] = cur_char
+      begin_escape = false
+    end
+    i = i + 1
+    cur_char = state.input:sub(i, i)
+  end
+  state.input = input:sub(i)
+  return table.concat(parsed_text)
+end
+
+local parse_text = function(state)
+  return parse_escaped_text(state, "[%$}\\]")
+end
 
 -- TODO
-local parse_regex = parse_text
-local parse_options = parse_regex
 local parse_if = parse_text
 local parse_else = parse_text
+
+local parse_escaped_choice_text = function(state)
+  return parse_escaped_text(state, "[%$}\\,|]")
+end
+
+-- Parses a JavaScript regex
+local parse_regex = function(state)
+  return parse_escaped_text(state, "[/]")
+end
 
 local parse_format_modifier = function(state)
   local format_modifier = parse_pattern(state, "[a-z]+")
@@ -98,10 +151,10 @@ local parse_format_modifier = function(state)
   return format_modifier
 end
 
-local parse_surrounded = function(state, parse_fn)
+local parse_bracketed = function(state, parse_fn)
   local has_bracket = peek(state, "{")
   local result = parse_fn(state)
-  if not has_bracket or peek "}" then
+  if not has_bracket or peek(state, "}") then
     return true, result
   end
   return false, result
@@ -109,10 +162,10 @@ end
 
 -- starts at the second char
 local parse_format = function(state)
-  local int_only, int = parse_surrounded(state, parse_int)
+  local int_only, int = parse_bracketed(state, parse_int)
   if int_only then
     -- format 1 / 2
-    return new_inner_node("format", { int })
+    return new_inner_node("format", { int = int })
   else
     local format_modifier, _if, _else
     if peek(state, ":/") then
@@ -135,7 +188,7 @@ local parse_format = function(state)
     end
     expect(state, "}")
     return new_inner_node("format", {
-      int,
+      int = int,
       format_modifier = format_modifier,
       _if = _if,
       _else = _else,
@@ -156,11 +209,11 @@ local parse_transform = function(state)
   local regex = parse_regex(state)
   expect(state, "/")
   local format_or_text = { parse_format_or_text(state) }
-  while not peek "/" do
+  while not peek(state, "/") do
     format_or_text[#format_or_text + 1] = parse_format_or_text(state)
   end
-  local options = parse_options(state)
-  return new_inner_node("transform", { regex, format_or_text, options })
+  local options = parse_pattern(state, options_pattern)
+  return { regex = regex, format_or_text = format_or_text, options = options }
 end
 
 local parse_any
@@ -169,38 +222,6 @@ local parse_placeholder_any = function(state)
   local any = parse_any(state)
   expect(state, "}")
   return any
-end
-
-local parse_escaped_text = function (state, escape_pattern, break_pattern)
-  local input = state.input
-  if input == "" then
-    raise_parse_error "parse_escaped_text: input is nil or empty"
-  end
-  local parsed_text = {}
-  local i = 1
-  local cur_char = input:sub(1, 1)
-  local begin_escape
-  while cur_char ~= "" do
-    if not begin_escape then
-      if cur_char:match(break_pattern) then
-        break
-      end
-      parsed_text[#parsed_text + 1] = cur_char
-      begin_escape = cur_char == [[\]]
-    elseif cur_char:match(escape_pattern) then
-      -- Overwrite the backslash
-      parsed_text[#parsed_text] = cur_char
-      begin_escape = false
-    end
-    i = i + 1
-    cur_char = state.input:sub(i, i)
-  end
-  state.input = input:sub(i)
-  return table.concat(parsed_text)
-end
-
-local parse_escaped_choice_text = function(state)
-  return parse_escaped_text(state, "[%$}\\,|]", "[,|]")
 end
 
 local parse_choice_text = function(state)
@@ -212,64 +233,70 @@ local parse_choice_text = function(state)
   return text
 end
 
--- starts at second char
-local parse_variable = function(state)
-  local var_only, var = parse_surrounded(state, parse_var)
+-- starts at char after '$', or after '{' if got_bracket is true
+local parse_variable = function(state, got_bracket)
+  local var = parse_pattern(state, var_pattern)
   if not vim.tbl_contains(variable_tokens, var) then
     error("parse_variable: invalid token " .. var)
   end
-  if var_only then
+  if not got_bracket or peek(state, "}") then
     -- variable 1 / 2
-    return new_inner_node("variable", { var })
-  elseif peek(state, ":") then
-    local any = parse_any(state)
-    expect(state, "}")
-    -- variable 3
-    return new_inner_node("variable", { var, any })
-  else
-    local transform = parse_transform(state)
-    expect(state, "}")
-    -- variable 4
-    return new_inner_node("variable", { var, transform })
+    return new_inner_node("variable", { var = var })
   end
+  if peek(state, ":") then
+    local any = parse_any(state)
+    -- variable 3
+    return new_inner_node("variable", { var = var, any = any })
+  end
+  local transform = parse_transform(state)
+  expect(state, "}")
+  -- variable 4
+  return new_inner_node("variable", { var = var, transform = transform })
 end
 
--- starts at second char
-local parse_tabstop = function(state)
-  local int_only, int = parse_surrounded(state, parse_int)
-  if int_only then
-    -- tabstop 1 / 2
-    return new_inner_node("tabstop", { int })
-  else
-    local transform = parse_transform(state)
-    expect(state, "}")
-    -- tabstop 3
-    return new_inner_node("tabstop", { int, transform })
+-- starts after the int
+local parse_tabstop_transform = function(state)
+  if peek(state, "}") then
+    -- tabstop 2
+    return nil
   end
+  local transform = parse_transform(state)
+  expect(state, "}")
+  -- tabstop 3
+  return transform
 end
 
 parse_any = function(state)
-  print("BEFO", state.input)
   if peek(state, "$") then
-    print("here", state.input)
-    if peek(state, "{") then
-      print "here2"
-      local int = parse_int(state)
-      if peek(state, ":") then
-        print "here3"
+    local got_bracket = peek(state, "{")
+    local int = peek_pattern(state, "^%d+")
+    if int ~= nil then
+      if not got_bracket then
+        -- tabstop 1
+        return new_inner_node("tabstop", { int = int })
+      elseif peek(state, ":") then
         local any = parse_placeholder_any(state)
-        return new_inner_node("placeholder", { int, any })
+        return new_inner_node("placeholder", { int = int, any = any })
       elseif peek(state, "|") then
         local text = parse_choice_text(state)
-        return new_inner_node("choice", { int, text })
+        return new_inner_node("choice", { int = int, text = text })
+      else
+        local transform = parse_tabstop_transform(state)
+        -- transform may be nil
+        return new_inner_node("tabstop", { int = int, transform = transform })
       end
     else
-      return parse_tabstop(state)
+      return parse_variable(state, got_bracket)
     end
   else
     state.cur_parser = "text"
+    local prev_input = state.input
     local text = parse_text(state)
-    return new_inner_node("text", { text })
+    if state.input == prev_input then
+      state.input = ""
+    else
+      return { text = text }
+    end
   end
 end
 
