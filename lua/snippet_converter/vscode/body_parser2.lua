@@ -1,32 +1,38 @@
-local variable_tokens = {
-  "TM_SELECTED_TEXT",
-  "TM_CURRENT_LINE",
-  "TM_CURRENT_WORD",
-  "TM_LINE_INDEX",
-  "TM_LINE_NUMBER",
-  "TM_FILENAME",
-  "TM_FILENAME_BASE",
-  "TM_DIRECTORY",
-  "TM_FILEPATH",
-  "RELATIVE_FILEPATH",
-  "CLIPBOARD",
-  "WORKSPACE_NAME",
-  "WORKSPACE_FOLDER",
-  "CURRENT_YEAR",
-  "CURRENT_MONTH",
-  "CURRENT_MONTH_NAME_SHORT",
-  "CURRENT_DAY_NAME",
-  "CURRENT_HOUR",
-  "CURRENT_MINUTE",
-  "CURRENT_SECOND",
-  "CURRENT_SECONDS_UNIX",
-  "RANDOM",
-  "RANDOM_HEX",
-  "UUID",
-  "BLOCK_COMMENT_START",
-  "BLOCK_COMMENT_END",
-  "LINE_COMMENT",
+local NodeType = require("snippet_converter.base.node_type")
+
+local Variable = {
+  TM_CURRENT_LINE = "TM_CURRENT_LINE",
+  TM_CURRENT_WORD = "TM_CURRENT_WORD",
+  TM_LINE_INDEX = "TM_LINE_INDEX",
+  TM_LINE_NUMBER = "TM_LINE_NUMBER",
+  TM_FILENAME = "TM_FILENAME",
+  TM_FILENAME_BASE = "TM_FILENAME_BASE",
+  TM_DIRECTORY = "TM_DIRECTORY",
+  TM_FILEPATH = "TM_FILEPATH",
+  RELATIVE_FILEPATH = "RELATIVE_FILEPATH",
+  CLIPBOARD = "CLIPBOARD",
+  WORKSPACE_NAME = "WORKSPACE_NAME",
+  WORKSPACE_FOLDER = "WORKSPACE_FOLDER",
+  CURRENT_YEAR = "CURRENT_YEAR",
+  CURRENT_YEAR_SHORT = "CURRENT_YEAR_SHORT",
+  CURRENT_MONTH = "CURRENT_MONTH",
+  CURRENT_MONTH_NAME = "CURRENT_MONTH_NAME",
+  CURRENT_MONTH_NAME_SHORT = "CURRENT_MONTH_NAME_SHORT",
+  CURRENT_DATE = "CURRENT_DATE",
+  CURRENT_DAY_NAME = "CURRENT_DAY_NAME",
+  CURRENT_DAY_NAME_SHORT = "CURRENT_DAY_NAME_SHORT",
+  CURRENT_HOUR = "CURRENT_HOUR",
+  CURRENT_MINUTE = "CURRENT_MINUTE",
+  CURRENT_SECOND = "CURRENT_SECOND",
+  CURRENT_SECONDS_UNIX = "CURRENT_SECONDS_UNIX",
+  RANDOM = "RANDOM",
+  RANDOM_HEX = "RANDOM_HEX",
+  UUID = "UUID",
+  BLOCK_COMMENT_START = "BLOCK_COMMENT_START",
+  BLOCK_COMMENT_END = "BLOCK_COMMENT_END",
+  LINE_COMMENT = "LINE_COMMENT",
 }
+local variable_tokens = vim.tbl_values(Variable)
 
 local format_modifier_tokens = {
   "upcase",
@@ -36,8 +42,8 @@ local format_modifier_tokens = {
   "pascalcase",
 }
 
-local new_inner_node = function(tag, node)
-  node.tag = tag
+local new_inner_node = function(type, node)
+  node.type = type
   return node
 end
 
@@ -165,7 +171,7 @@ local parse_format = function(state)
   local int_only, int = parse_bracketed(state, parse_int)
   if int_only then
     -- format 1 / 2
-    return new_inner_node("format", { int = int })
+    return new_inner_node(NodeType.FORMAT, { int = int })
   else
     local format_modifier, _if, _else
     if peek(state, ":/") then
@@ -187,7 +193,7 @@ local parse_format = function(state)
       end
     end
     expect(state, "}")
-    return new_inner_node("format", {
+    return new_inner_node(NodeType.FORMAT, {
       int = int,
       format_modifier = format_modifier,
       _if = _if,
@@ -241,17 +247,17 @@ local parse_variable = function(state, got_bracket)
   end
   if not got_bracket or peek(state, "}") then
     -- variable 1 / 2
-    return new_inner_node("variable", { var = var })
+    return new_inner_node(NodeType.VARIABLE, { var = var })
   end
   if peek(state, ":") then
     local any = parse_any(state)
     -- variable 3
-    return new_inner_node("variable", { var = var, any = any })
+    return new_inner_node(NodeType.VARIABLE, { var = var, any = any })
   end
   local transform = parse_transform(state)
   expect(state, "}")
   -- variable 4
-  return new_inner_node("variable", { var = var, transform = transform })
+  return new_inner_node(NodeType.VARIABLE, { var = var, transform = transform })
 end
 
 -- starts after the int
@@ -273,17 +279,17 @@ parse_any = function(state)
     if int ~= nil then
       if not got_bracket then
         -- tabstop 1
-        return new_inner_node("tabstop", { int = int })
+        return new_inner_node(NodeType.TABSTOP, { int = int })
       elseif peek(state, ":") then
         local any = parse_placeholder_any(state)
-        return new_inner_node("placeholder", { int = int, any = any })
+        return new_inner_node(NodeType.PLACEHOLDER, { int = int, any = any })
       elseif peek(state, "|") then
         local text = parse_choice_text(state)
-        return new_inner_node("choice", { int = int, text = text })
+        return new_inner_node(NodeType.CHOICE, { int = int, text = text })
       else
         local transform = parse_tabstop_transform(state)
         -- transform may be nil
-        return new_inner_node("tabstop", { int = int, transform = transform })
+        return new_inner_node(NodeType.TABSTOP, { int = int, transform = transform })
       end
     else
       return parse_variable(state, got_bracket)
@@ -300,7 +306,9 @@ parse_any = function(state)
   end
 end
 
-local parser = {}
+local parser = {
+  Variable = Variable
+}
 
 parser.parse = function(input)
   local state = {

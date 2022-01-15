@@ -4,11 +4,11 @@ local converter = {}
 
 converter.convert_node_recursive = function(node, node_handler)
   local result = {}
-  local is_non_terminal_node = node.tag ~= nil
+  local is_non_terminal_node = node.type ~= nil
   if is_non_terminal_node then
-    result[#result + 1] = node_handler[node.tag](node)
+    result[#result + 1] = node_handler[node.type](node)
   else
-    error("node.tag is nil", node)
+    error("node.type is nil " .. vim.inspect(node))
   end
   return table.concat(result)
 end
@@ -30,7 +30,11 @@ converter.default_node_handler = setmetatable({
     return "$" .. node.int
   end,
   [NodeType.PLACEHOLDER] = function(node)
-    return string.format("${%s:%s}", node.int, node.any)
+    return string.format(
+      "${%s:%s}",
+      node.int,
+      converter.convert_node_recursive(node.any, converter.default_node_handler)
+    )
   end,
   [NodeType.CHOICE] = function(node)
     local text_string = table.concat(node.text, ",")

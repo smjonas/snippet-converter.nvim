@@ -1,4 +1,4 @@
-local node_type = {
+local NodeType = {
   TABSTOP = 1,
   PLACEHOLDER = 2,
   CHOICE = 3,
@@ -8,4 +8,4 @@ local node_type = {
   FORMAT = 7,
 }
 
-return node_type
+return NodeType
