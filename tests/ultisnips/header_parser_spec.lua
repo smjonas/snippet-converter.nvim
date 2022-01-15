@@ -1,4 +1,4 @@
-local parser = require("snippet_converter.ultisnips.header_parser")
+local parser = require "snippet_converter.ultisnips.header_parser"
 
 describe("parser for grammar", function()
   describe("with terminal symbol", function()
@@ -185,7 +185,7 @@ end)
 describe("parser for", function()
   describe("snippet header", function()
     it("should match trigger including quotes when no r option or multiword trigger", function()
-      local result = parser.parse([["snip"]])
+      local result = parser.parse [["snip"]]
       local expected = {
         trigger = [["snip"]],
       }
@@ -193,7 +193,7 @@ describe("parser for", function()
     end)
 
     it([[should match multiword tab-trigger surrounded with "!"]], function()
-      local result = parser.parse([[!"some" trigger! "a description"]])
+      local result = parser.parse [[!"some" trigger! "a description"]]
       local expected = {
         description = "a description",
         trigger = [["some" trigger]],
@@ -202,7 +202,7 @@ describe("parser for", function()
     end)
 
     it("should match quoted trigger, description, options", function()
-      local result = parser.parse([["tab - trigger"  "some description"   options]])
+      local result = parser.parse [["tab - trigger"  "some description"   options]]
       local expected = {
         options = "options",
         description = "some description",
@@ -212,7 +212,7 @@ describe("parser for", function()
     end)
 
     it("should remove surrounding from trigger when regex option is provided", function()
-      local result = parser.parse([[|^(foo|bar)$| "" r]])
+      local result = parser.parse [[|^(foo|bar)$| "" r]]
       local expected = {
         options = "r",
         description = "",
@@ -222,7 +222,7 @@ describe("parser for", function()
     end)
 
     it("should not remove surrounding from trigger when regex option is not provided", function()
-      local result = parser.parse([[|^(foo|bar)$| "" ba]])
+      local result = parser.parse [[|^(foo|bar)$| "" ba]]
       local expected = {
         options = "ba",
         description = "",
@@ -233,7 +233,7 @@ describe("parser for", function()
     end)
 
     it([[should match options with "!"]], function()
-      local result = parser.parse([[test "description" b!]])
+      local result = parser.parse [[test "description" b!]]
       local expected = {
         options = "b!",
         description = "description",
@@ -243,7 +243,7 @@ describe("parser for", function()
     end)
 
     it("should match options with expression", function()
-      local result = parser.parse([[trigger "d" "expr" be]])
+      local result = parser.parse [[trigger "d" "expr" be]]
       local expected = {
         options = "be",
         expression = "expr",
@@ -252,21 +252,21 @@ describe("parser for", function()
       }
       assert.are_same(expected, result)
       -- failure case
-      assert.are_same({}, parser.parse([[trigger "d" "expr" br]]))
+      assert.are_same({}, parser.parse [[trigger "d" "expr" br]])
     end)
 
     it("should not match invalid multiword tab-trigger", function()
-      local result = parser.parse([[invalid multiword-trigger "description"]])
+      local result = parser.parse [[invalid multiword-trigger "description"]]
       assert.are_same({}, result)
     end)
 
     it("should not cause exception for snippet with trailing spaces", function()
-      local result = parser.parse([[func "Function Header" ]])
+      local result = parser.parse [[func "Function Header" ]]
       assert.are_same({}, result)
     end)
 
     it("should match tab-trigger containing dot", function()
-      local result = parser.parse("j.u")
+      local result = parser.parse "j.u"
       local expected = {
         trigger = "j.u",
       }
@@ -274,7 +274,7 @@ describe("parser for", function()
     end)
 
     it("should match trigger with less than 3 chars", function()
-      local result = parser.parse([[c "Constructor" b]])
+      local result = parser.parse [[c "Constructor" b]]
       local expected = {
         trigger = "c",
         description = "Constructor",

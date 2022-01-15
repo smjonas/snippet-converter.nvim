@@ -3,7 +3,11 @@ local utils = require("snippet_converter.utils")
 
 local loader = {}
 
-local function find_matching_snippet_files_in_rtp(matching_snippet_files, source_format, source_path)
+local function find_matching_snippet_files_in_rtp(
+  matching_snippet_files,
+  source_format,
+  source_path
+)
   local tail = snippet_engines[source_format].extension
   local first_slash_pos = source_path and source_path:find("/")
 
@@ -64,7 +68,7 @@ local function validate_config(sources)
         source_path = {
           source_path,
           "string", -- TODO: support * as path to find all files matching extension in rtp
-        }
+        },
       })
     end
   end

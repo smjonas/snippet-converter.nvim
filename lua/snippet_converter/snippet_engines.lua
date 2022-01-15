@@ -14,7 +14,7 @@ snippet_engines.snipmate = {
   parser = "snippet_converter.snipmate.parser",
   capabilities = {
     capabilities.VIMSCRIPT_INTERPOLATION,
-  }
+  },
 }
 
 snippet_engines.ultisnips = {

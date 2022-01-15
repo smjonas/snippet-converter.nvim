@@ -6,13 +6,14 @@ describe("VSCode body parser", function()
     local actual = parser.parse(input)
     local expected = {
       { text = "local " },
-      { int = "1", any = { text = "name" }, tag = "placeholder" },
+      { int = "1", any = { text = "name" }, type = "placeholder" },
       { text = " = function(" },
-      { int = "2", tag = "tabstop" },
+      { int = "2", type = "tabstop" },
       { text = ")" },
     }
     assert.are_same(expected, actual)
   end)
+
 
   it("should parse variable with transform", function()
     local input = "${TM_FILENAME/(.*)/${1:/upcase}/}"
@@ -23,11 +24,11 @@ describe("VSCode body parser", function()
         transform = {
           regex = "(.*)",
           format_or_text = {
-            { int = "1", format_modifier = "upcase", tag = "format" },
+            { int = "1", format_modifier = "upcase", type = "format" },
           },
           options = "",
         },
-        tag = "variable",
+        type = "variable",
       },
     }
     assert.are_same(expected, actual)
@@ -36,7 +37,7 @@ describe("VSCode body parser", function()
   it("should parse choice element", function()
     local input = "${0|🠂,⇨|}"
     local expected = {
-      { int = "0", text = { "🠂", "⇨" }, tag = "choice" },
+      { int = "0", text = { "🠂", "⇨" }, type = "choice" },
     }
     assert.are_same(expected, parser.parse(input))
   end)
@@ -44,7 +45,7 @@ describe("VSCode body parser", function()
   it("should handle escaped chars in choice element", function()
     local input = [[${0|\$,\},\\,\,,\||}]]
     local expected = {
-      { int = "0", text = { "$", "}", [[\]], ",", "|" }, tag = "choice" },
+      { int = "0", text = { "$", "}", [[\]], ",", "|" }, type = "choice" },
     }
     assert.are_same(expected, parser.parse(input))
   end)
@@ -57,6 +58,8 @@ describe("VSCode body parser", function()
 
   it("should not run into infinite loop but cause error", function()
     local input = [[${0|\|||}]]
-    assert.has.errors(function() parser.parse(input) end)
+    assert.has.errors(function()
+      parser.parse(input)
+    end)
   end)
 end)

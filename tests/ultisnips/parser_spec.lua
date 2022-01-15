@@ -1,9 +1,10 @@
-local parser = require("snippet_converter.ultisnips.parser")
+local parser = require "snippet_converter.ultisnips.parser"
 
 describe("UltiSnips parser", function()
   describe("should parse", function()
     it("multiple snippets", function()
-      local lines = vim.split([[
+      local lines = vim.split(
+        [[
 snippet fn "function" bA
 function ${1:name}($2)
 	${3:-- code}
@@ -17,7 +18,9 @@ for ${1:i}=${2:1},${3:10} do
 end
 endsnippet
 
-      ]], "\n")
+      ]],
+        "\n"
+      )
       local expected = {
         {
           trigger = "fn",

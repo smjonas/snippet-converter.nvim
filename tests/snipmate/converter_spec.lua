@@ -1,4 +1,4 @@
-local converter = require("snippet_converter.snipmate.converter")
+local converter = require "snippet_converter.snipmate.converter"
 
 describe("SnipMate converter", function()
   describe("should convert snippet", function()
@@ -22,7 +22,7 @@ snippet fn a function
     it("if trigger contains multiple words", function()
       local snippet = {
         trigger = [["hello world"]],
-        body = { "body" }
+        body = { "body" },
       }
       assert.is_nil(converter.convert(snippet, ""))
     end)

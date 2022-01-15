@@ -1,9 +1,10 @@
-local parser = require("snippet_converter.snipmate.parser")
+local parser = require "snippet_converter.snipmate.parser"
 
 describe("SnipMate parser", function()
   describe("should parse", function()
     it("multiple snippets", function()
-      local lines = vim.split([[
+      local lines = vim.split(
+        [[
 snippet fn function
 	function ${1:name}($2)
 		${3:-- code}
@@ -15,7 +16,9 @@ snippet for
 		${0:print(i)}
 	end
 
-      ]], "\n")
+      ]],
+        "\n"
+      )
       local expected = {
         {
           trigger = "fn",

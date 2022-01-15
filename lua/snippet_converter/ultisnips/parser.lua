@@ -14,7 +14,7 @@ function parser.parse(lines)
 
   for _, line in ipairs(lines) do
     if not found_snippet_header then
-      local header = parser.get_header(line)
+      local header = parser.parse_header(line)
       if header then
         cur_snippet = header
         cur_snippet.body = {}
@@ -30,7 +30,7 @@ function parser.parse(lines)
   return parsed_snippets
 end
 
-function parser.get_header(line)
+function parser.parse_header(line)
   local stripped_header = line:match("^%s*snippet%s+(.-)%s*$")
   if stripped_header ~= nil then
     local header = header_parser.parse(stripped_header)

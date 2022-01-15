@@ -1,6 +1,6 @@
-local NodeType = require "snippet_converter.base.node_type"
+local NodeType = require("snippet_converter.base.node_type")
 local Variable = require("lua.snippet_converter.vscode.body_parser2").Variable
-local base_converter = require "snippet_converter.base.converter"
+local base_converter = require("snippet_converter.base.converter")
 
 local converter = {}
 
@@ -9,7 +9,7 @@ local converter = {}
 function converter.can_convert(snippet, target_engine)
   local body = vim.fn.join(snippet.body, "")
   -- Must not contain interpolation code
-  return not body:match "`[^`]*`"
+  return not body:match("`[^`]*`")
 end
 
 local vimscript_variable_handler = setmetatable({
@@ -38,17 +38,16 @@ local vimscript_variable_handler = setmetatable({
 })
 
 local wrap_in_vimscript = function(val)
-  return "`!v" .. val .. "`"
+  return "`!v " .. val .. "`"
 end
 
 converter.node_handler = setmetatable({
   [NodeType.VARIABLE] = function(node)
     if node.transform then
-      error "Cannot convert variable with transform"
+      error("Cannot convert variable with transform")
     end
     local var = wrap_in_vimscript(vimscript_variable_handler[node.var])
     if node.any then
-      print(vim.inspect(node.any))
       local any = base_converter.convert_node_recursive(
         node.any,
         base_converter.default_node_handler
@@ -64,10 +63,10 @@ converter.node_handler = setmetatable({
 function converter.convert(snippet)
   local trigger = snippet.trigger
   -- Literal " in trigger
-  if trigger:match [["]] then
+  if trigger:match([["]]) then
     trigger = string.format("!%s!", trigger)
     -- Multi-word trigger
-  elseif trigger:match "%s" then
+  elseif trigger:match("%s") then
     trigger = string.format([["%s"]], trigger)
   end
   local description = ""

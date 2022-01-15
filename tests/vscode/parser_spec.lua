@@ -1,4 +1,4 @@
-local parser = require("snippet_converter.vscode.parser")
+local parser = require "snippet_converter.vscode.parser"
 
 describe("VSCode parser", function()
   describe("should parse", function()
@@ -7,12 +7,12 @@ describe("VSCode parser", function()
         ["a function"] = {
           prefix = "fn",
           description = "function",
-          body = "function ${1:name}($2)\n\t${3:-- code}\nend"
+          body = "function ${1:name}($2)\n\t${3:-- code}\nend",
         },
         ["for"] = {
           prefix = "for",
           body = "for ${1:i}=${2:1},${3:10} do\n\t${0:print(i)}\nend",
-        }
+        },
       }
       local expected = {
         {
@@ -42,8 +42,8 @@ describe("VSCode parser", function()
     it("when prefix is missing", function()
       local data = {
         ["fn"] = {
-          body = "function ${1:name}($2)\n\t${3:-- code}\nend"
-        }
+          body = "function ${1:name}($2)\n\t${3:-- code}\nend",
+        },
       }
       local actual = parser.parse(data)
       assert.are_same({}, actual)
@@ -53,8 +53,8 @@ describe("VSCode parser", function()
       local data = {
         ["fn"] = {
           prefix = "fn",
-          body = { "for ${1:i}=${2:1},${3:10} do", "\t${0:print(i)}", "end" }
-        }
+          body = { "for ${1:i}=${2:1},${3:10} do", "\t${0:print(i)}", "end" },
+        },
       }
       local actual = parser.parse(data)
       assert.are_same({}, actual)

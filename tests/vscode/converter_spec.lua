@@ -1,4 +1,4 @@
-local converter = require("snippet_converter.vscode.converter")
+local converter = require "snippet_converter.vscode.converter"
 
 describe("VSCode converter", function()
   describe("should convert snippet", function()
@@ -28,7 +28,7 @@ describe("VSCode converter", function()
     local expected = {
       name = "some trigger",
       prefix = { "some trigger" },
-      body = { "body" }
+      body = { "body" },
     }
     assert.are_same(expected, actual)
   end)

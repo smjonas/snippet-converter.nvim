@@ -1,3 +1,4 @@
+local body_parser = require("body_parser2")
 local utils = require("snippet_converter.utils")
 
 local parser = {}
@@ -19,7 +20,7 @@ function parser.parse(snippet_data)
         name = snippet_name,
         trigger = trigger,
         description = description,
-        body = vim.split(body, "\n"),
+        body = vim.split(body_parser.parse_body(body), "\n"),
       }
     end
   end

@@ -1,4 +1,4 @@
-local NodeType = require "snippet_converter.base.node_type"
+local NodeType = require("snippet_converter.base.node_type")
 
 local converter = {}
 
