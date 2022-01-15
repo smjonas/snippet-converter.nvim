@@ -1,6 +1,7 @@
 local NodeType = require("snippet_converter.base.node_type")
 local Variable = require("lua.snippet_converter.vscode.body_parser2").Variable
 local base_converter = require("snippet_converter.base.converter")
+local utils = require("snippet_converter.utils")
 
 local converter = {}
 
@@ -13,40 +14,36 @@ function converter.can_convert(snippet, target_engine)
 end
 
 local vimscript_variable_handler = setmetatable({
-  [Variable.TM_FILENAME] = [[expand('%:t')]],
-  [Variable.TM_FILENAME_BASE] = [[expand('%:t:r')]],
-  [Variable.TM_DIRECTORY] = [[expand('%:p:r')]],
-  [Variable.TM_FILEPATH] = [[expand('%:p')]],
-  [Variable.RELATIVE_FILEPATH] = [[expand('%:p:.')]],
-  [Variable.CLIPBOARD] = [[getreg(v:register)]],
-  [Variable.CURRENT_YEAR] = [[strftime('%Y')]],
-  [Variable.CURRENT_YEAR_SHORT] = [[strftime('%y')]],
-  [Variable.CURRENT_MONTH] = [[strftime('%m')]],
-  [Variable.CURRENT_MONTH_NAME] = [[strftime('%B')]],
-  [Variable.CURRENT_MONTH_NAME_SHORT] = [[strftime('%b')]],
-  [Variable.CURRENT_DATE] = [[strftime('%b')]],
-  [Variable.CURRENT_DAY_NAME] = [[strftime('%A')]],
-  [Variable.CURRENT_DAY_NAME_SHORT] = [[strftime('%a')]],
-  [Variable.CURRENT_HOUR] = [[strftime('%H')]],
-  [Variable.CURRENT_MINUTE] = [[strftime('%M')]],
-  [Variable.CURRENT_SECOND] = [[strftime('%S')]],
-  [Variable.CURRENT_SECONDS_UNIX] = [[localtime()]],
+  [Variable.TM_FILENAME] = [[``!v expand('%:t')``]],
+  [Variable.TM_FILENAME_BASE] = [[`!v expand('%:t:r')`]],
+  [Variable.TM_DIRECTORY] = [[`!v expand('%:p:r')`]],
+  [Variable.TM_FILEPATH] = [[`!v expand('%:p')`]],
+  [Variable.RELATIVE_FILEPATH] = [[`!v expand('%:p:.')`]],
+  [Variable.CLIPBOARD] = [[`!v getreg(v:register)`]],
+  [Variable.CURRENT_YEAR] = [[`!v !v strftime('%Y')`]],
+  [Variable.CURRENT_YEAR_SHORT] = [[`!v strftime('%y')`]],
+  [Variable.CURRENT_MONTH] = [[`!v strftime('%m')`]],
+  [Variable.CURRENT_MONTH_NAME] = [[`!v strftime('%B')`]],
+  [Variable.CURRENT_MONTH_NAME_SHORT] = [[`!v strftime('%b')`]],
+  [Variable.CURRENT_DATE] = [[`!v strftime('%b')`]],
+  [Variable.CURRENT_DAY_NAME] = [[`!v strftime('%A')`]],
+  [Variable.CURRENT_DAY_NAME_SHORT] = [[`!v strftime('%a')`]],
+  [Variable.CURRENT_HOUR] = [[`!v strftime('%H')`]],
+  [Variable.CURRENT_MINUTE] = [[`!v strftime('%M')`]],
+  [Variable.CURRENT_SECOND] = [[`!v strftime('%S')`]],
+  [Variable.CURRENT_SECONDS_UNIX] = [[`!v localtime()`]],
 }, {
   __index = function(_, key)
-    error("[UltiSnips converter] no vimscript handler for variable " .. key)
+    error("no vimscript handler for variable " .. key)
   end,
 })
-
-local wrap_in_vimscript = function(val)
-  return "`!v " .. val .. "`"
-end
 
 converter.node_handler = setmetatable({
   [NodeType.VARIABLE] = function(node)
     if node.transform then
       error("Cannot convert variable with transform")
     end
-    local var = wrap_in_vimscript(vimscript_variable_handler[node.var])
+    local var = vimscript_variable_handler[node.var]
     if node.any then
       local any = base_converter.convert_node_recursive(
         node.any,
@@ -76,6 +73,13 @@ function converter.convert(snippet)
   end
   local body = base_converter.convert_tree(snippet.body, converter.node_handler)
   return string.format("snippet %s%s\n%s\nendsnippet", trigger, description, body)
+end
+
+-- Takes a list of converted snippets, separates them by empty lines and exports them to a file.
+-- @param converted_snippets string[] @A list of strings where each item is a snippet string to be exported
+-- @param output_path string @The absolute path of the file to write the snippets to
+converter.export = function(converted_snippets, output_path)
+  utils.write_file(table.concat(converted_snippets, "\n\n"), output_path)
 end
 
 return converter

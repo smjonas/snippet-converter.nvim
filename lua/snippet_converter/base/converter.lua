@@ -13,7 +13,7 @@ converter.convert_node_recursive = function(node, node_handler)
   return table.concat(result)
 end
 
-converter.convert_tree = function(ast, node_handler)
+converter.convert_ast = function(ast, node_handler)
   local result = {}
   print(vim.inspect(ast))
   for _, node in ipairs(ast) do

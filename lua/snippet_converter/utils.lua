@@ -1,12 +1,16 @@
 local utils = {}
 
 utils.file_exists = function(path)
-  return vim.fn.filereadable(vim.fn.expand(path))
+  return vim.fn.filereadable(vim.fn.expand(path)) == 1
 end
 
 utils.read_file = function(path)
   -- Maybe replace this with an async implementation?
   return vim.fn.readfile(path)
+end
+
+utils.write_file = function(object, path)
+  vim.fn.writefile(object, path)
 end
 
 local _json_decode
@@ -18,7 +22,7 @@ else
 end
 
 utils.json_decode = function(path)
-  local lines = vim.fn.join(utils.read_file(path), "\n")
+  local lines = table.concat(utils.read_file(path), "\n")
   return _json_decode(lines)
 end
 

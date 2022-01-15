@@ -45,8 +45,7 @@ use {
         },
       },
       output = {
-        path = vim.fn.stdpath("data") .. "/vscode_snippets",
-        format = "vscode",
+        vscode = vim.fn.stdpath("data") .. "/vscode_snippets",
       },
     }
   end
