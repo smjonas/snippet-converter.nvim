@@ -8,28 +8,12 @@ local function find_matching_snippet_files_in_rtp(
   source_format,
   source_path
 )
-  local tail = snippet_engines[source_format].extension
-  local first_slash_pos = source_path and source_path:find("/")
+  -- Turn glob pattern (with potential wildcards) into lua pattern;
+  -- escape all non-alphanumeric characters just to be safe
+  local file_pattern = source_path:gsub("([^%w%*])", "%%%1"):gsub("%*", ".-")
 
-  print(source_path)
-
-  local root_folder
-  if first_slash_pos then
-    root_folder = source_path:sub(1, first_slash_pos - 1)
-    -- TODO: handle case when source_path does not end with "/"!
-    tail = source_path:sub(first_slash_pos + 1) .. tail
-  else
-    root_folder = source_path
-  end
-
-  print(root_folder)
-  print(tail .. " a ")
-  local rtp_files = vim.api.nvim_get_runtime_file(tail, true)
-  print(vim.inspect(rtp_files))
-  -- Turn glob pattern (with potential wildcards) into lua pattern
-  local file_pattern = string.format("%s/%s", root_folder, tail)
-    :gsub("([^%w%*])", [[%%1]])
-    :gsub("%*", ".-") .. "$"
+  local extension = snippet_engines[source_format].extension
+  local rtp_files = vim.api.nvim_get_runtime_file("*/*" .. extension, true)
 
   for _, file in pairs(rtp_files) do
     if file:match(file_pattern) then
@@ -37,9 +21,11 @@ local function find_matching_snippet_files_in_rtp(
     end
   end
   print(vim.inspect(matching_snippet_files))
+  return matching_snippet_files
 end
 
-loader.get_matching_snippet_files = function(source_format, source_paths)
+-- @return list<string> a list containing the absolute paths to the matching snippet files
+loader.get_matching_snippet_paths = function(source_format, source_paths)
   local matching_snippet_files = {}
   for _, source_path in pairs(source_paths) do
     if utils.file_exists(source_path) then

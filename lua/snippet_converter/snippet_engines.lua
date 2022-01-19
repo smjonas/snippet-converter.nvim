@@ -10,7 +10,7 @@ local capabilities = {
 snippet_engines.capabilities = capabilities
 
 snippet_engines.snipmate = {
-  extension = "*.snippets",
+  extension = "snippets",
   parser = "snippet_converter.snipmate.parser",
   capabilities = {
     capabilities.VIMSCRIPT_INTERPOLATION,
@@ -18,13 +18,13 @@ snippet_engines.snipmate = {
 }
 
 snippet_engines.ultisnips = {
-  extension = "*.snippets",
+  extension = "snippets",
   parser = "snippet_converter.ultisnips.parser",
   converter = "snippet_converter.ultisnips.converter",
 }
 
 snippet_engines.vscode = {
-  extension = "*.json",
+  extension = "json",
   parser = "snippet_converter.vscode.parser",
   converter = "snippet_converter.vscode.converter",
 }

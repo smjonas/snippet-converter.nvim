@@ -37,35 +37,67 @@ M.setup = function(user_config)
   config = user_config
 end
 
+-- Partitions the snippet paths into a table of <filetype, [snippet_paths]>
+-- (e.g. filetype of an input file "lua.snippets" is "lua").
+
+-- @return <string, string> a table where each key is a filetype
+-- and each value is a list of snippet paths that correspond to that filetype
+local partition_snippet_paths = function(snippet_paths)
+  local partitioned_snippet_paths = {}
+  for _, snippet_path in ipairs(snippet_paths) do
+    local filetype = vim.fn.fnamemodify(snippet_path, ":t:r")
+    local snippet_paths_for_ft = partitioned_snippet_paths[filetype]
+    if snippet_paths_for_ft == nil then
+      snippet_paths_for_ft = {}
+    end
+    snippet_paths_for_ft[#snippet_paths_for_ft + 1] = snippet_path
+    partitioned_snippet_paths[filetype] = snippet_paths_for_ft
+  end
+  return partitioned_snippet_paths
+end
+
 M.convert_snippets = function()
   if config == nil then
     error(
-      "[snippet_converter.nvim] setup function must be called with valid config before converting snippets"
+      "setup function must be called with valid config before converting snippets"
     )
     return
   end
-  local snippets_for_format = {}
+  local snippet_paths = {}
   for source_format, source_paths in pairs(config.sources) do
-    local snippet_paths = loader.get_matching_snippet_files(source_format, source_paths)
-    local parser = require(snippet_engines[source_format].parser)
-    local snippets = {}
-    -- Collect the snippet definitions from all input files into a single table
-    for _, path in ipairs(snippet_paths) do
-      snippets[#snippets + 1] = parser.parse(parser.get_lines(path))
-    end
-    vim.fn.flatten(snippets, 1)
-    snippets_for_format[source_format] = snippets
+    local _snippet_paths = loader.get_matching_snippet_paths(source_format, source_paths)
+    snippet_paths[source_format] = partition_snippet_paths(_snippet_paths)
   end
 
-  -- Convert every snippet to all of the specified output formats
-  for target_format, output_path in ipairs(config.output) do
-    local converter = require(snippet_engines[target_format].converter)
-    local converted_snippets = {}
-    for _, snippet in ipairs(snippets_for_format) do
-      converted_snippets[#converted_snippets + 1] = converter.convert(snippet)
+  local snippets = {}
+  for source_format, _ in pairs(config.sources) do
+    local parser = require(snippet_engines[source_format].parser)
+    for filetype, paths in pairs(snippet_paths[source_format]) do
+      -- Collect the snippet definitions from all input files
+      if snippets[filetype] == nil then
+        snippets[filetype] = {}
+      end
+      for _, path in ipairs(paths) do
+        snippets[filetype][#snippets[filetype] + 1] = parser.parse(parser.get_lines(path))
+      end
     end
-    converter.export(converted_snippets, output_path)
   end
+  print(vim.inspect(snippets))
+
+--     vim.fn.flatten(snippets, 1)
+--     snippets_for_format[source_format] = partition_snippets(snippets)
+--   end
+--   print(vim.inspect(snippets_for_format["ultisnips"]))
+
+--   -- Convert every snippet to all of the specified output formats
+--   for target_format, output_path in ipairs(config.output) do
+--     local converter = require(snippet_engines[target_format].converter)
+--     local converted_snippets = {}
+--     for _, snippet in ipairs(snippets_for_format) do
+--       converted_snippets[#converted_snippets + 1] = converter.convert(snippet)
+--     end
+--     converter.export(converted_snippets, output_path)
+--   end
 end
 
 return M
