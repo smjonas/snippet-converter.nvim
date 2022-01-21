@@ -63,41 +63,42 @@ M.convert_snippets = function()
     )
     return
   end
+
+  -- Load snippets
   local snippet_paths = {}
   for source_format, source_paths in pairs(config.sources) do
     local _snippet_paths = loader.get_matching_snippet_paths(source_format, source_paths)
     snippet_paths[source_format] = partition_snippet_paths(_snippet_paths)
   end
 
+  -- Parse snipppets
   local snippets = {}
   for source_format, _ in pairs(config.sources) do
     local parser = require(snippet_engines[source_format].parser)
     for filetype, paths in pairs(snippet_paths[source_format]) do
-      -- Collect the snippet definitions from all input files
       if snippets[filetype] == nil then
         snippets[filetype] = {}
       end
       for _, path in ipairs(paths) do
-        snippets[filetype][#snippets[filetype] + 1] = parser.parse(parser.get_lines(path))
+        parser.parse(snippets[filetype], parser.get_lines(path))
       end
     end
   end
-  print(vim.inspect(snippets))
 
---     vim.fn.flatten(snippets, 1)
---     snippets_for_format[source_format] = partition_snippets(snippets)
---   end
---   print(vim.inspect(snippets_for_format["ultisnips"]))
-
---   -- Convert every snippet to all of the specified output formats
---   for target_format, output_path in ipairs(config.output) do
---     local converter = require(snippet_engines[target_format].converter)
---     local converted_snippets = {}
---     for _, snippet in ipairs(snippets_for_format) do
---       converted_snippets[#converted_snippets + 1] = converter.convert(snippet)
---     end
---     converter.export(converted_snippets, output_path)
---   end
+  -- Convert and export snippets
+  for target_format, output_path in pairs(config.output) do
+    local converter = require(snippet_engines[target_format].converter)
+    for filetype, _snippets in pairs(snippets) do
+      print("1")
+      local converted_snippets = {}
+      for _, snippet in ipairs(_snippets) do
+        print(vim.inspect(snippet))
+        converted_snippets[#converted_snippets + 1] = converter.convert(snippet)
+      end
+      print(vim.inspect(converter))
+      converter.export(converted_snippets, filetype, output_path)
+    end
+  end
 end
 
 return M

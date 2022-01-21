@@ -7,10 +7,10 @@ function parser.get_lines(file)
   return utils.read_file(file)
 end
 
-function parser.parse(lines)
-  local parsed_snippets = {}
+function parser.parse(parsed_snippets_ptr, lines)
   local cur_snippet
   local found_snippet_header = false
+  local idx = #parsed_snippets_ptr + 1
 
   for _, line in ipairs(lines) do
     if not found_snippet_header then
@@ -21,13 +21,13 @@ function parser.parse(lines)
         found_snippet_header = true
       end
     elseif vim.startswith(line, "endsnippet") then
-      parsed_snippets[#parsed_snippets + 1] = cur_snippet
+      parsed_snippets_ptr[idx] = cur_snippet
       found_snippet_header = false
+      idx = idx + 1
     else
       table.insert(cur_snippet.body, line)
     end
   end
-  return parsed_snippets
 end
 
 function parser.parse_header(line)

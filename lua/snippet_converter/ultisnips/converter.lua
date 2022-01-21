@@ -1,5 +1,5 @@
 local NodeType = require("snippet_converter.base.node_type")
-local Variable = require("lua.snippet_converter.vscode.body_parser2").Variable
+local Variable = require("snippet_converter.vscode.body_parser").Variable
 local base_converter = require("snippet_converter.base.converter")
 local utils = require("snippet_converter.utils")
 
@@ -58,6 +58,7 @@ converter.node_handler = setmetatable({
 })
 
 function converter.convert(snippet)
+  -- print(vim.inspect(snippet))
   local trigger = snippet.trigger
   -- Literal " in trigger
   if trigger:match([["]]) then
@@ -71,15 +72,19 @@ function converter.convert(snippet)
   if snippet.description then
     description = string.format([[ "%s"]], snippet.description)
   end
-  local body = base_converter.convert_tree(snippet.body, converter.node_handler)
+  local body = base_converter.convert_ast(snippet.body, converter.node_handler)
   return string.format("snippet %s%s\n%s\nendsnippet", trigger, description, body)
 end
 
--- Takes a list of converted snippets, separates them by empty lines and exports them to a file.
+-- Takes a list of converted snippets for a particular filetype,
+-- separates them by empty lines and exports them to a file.
 -- @param converted_snippets string[] @A list of strings where each item is a snippet string to be exported
--- @param output_path string @The absolute path of the file to write the snippets to
-converter.export = function(converted_snippets, output_path)
+-- @param filetype string @The filetype of the snippets
+-- @param output_dir string @The absolute path to the directory to write the snippets to
+converter.export = function(converted_snippets, filetype, output_dir)
+  local output_path = string.format("%s/%s.snippets", output_dir, filetype)
   utils.write_file(table.concat(converted_snippets, "\n\n"), output_path)
+  print(output_path)
 end
 
 return converter

@@ -1,55 +1,37 @@
 local p = require("snippet_converter.base.parser_utils")
 local NodeType = require("snippet_converter.base.node_type")
 
-local Variable = {
-  TM_CURRENT_LINE = "TM_CURRENT_LINE",
-  TM_CURRENT_WORD = "TM_CURRENT_WORD",
-  TM_LINE_INDEX = "TM_LINE_INDEX",
-  TM_LINE_NUMBER = "TM_LINE_NUMBER",
-  TM_FILENAME = "TM_FILENAME",
-  TM_FILENAME_BASE = "TM_FILENAME_BASE",
-  TM_DIRECTORY = "TM_DIRECTORY",
-  TM_FILEPATH = "TM_FILEPATH",
-  RELATIVE_FILEPATH = "RELATIVE_FILEPATH",
-  CLIPBOARD = "CLIPBOARD",
-  WORKSPACE_NAME = "WORKSPACE_NAME",
-  WORKSPACE_FOLDER = "WORKSPACE_FOLDER",
-  CURRENT_YEAR = "CURRENT_YEAR",
-  CURRENT_YEAR_SHORT = "CURRENT_YEAR_SHORT",
-  CURRENT_MONTH = "CURRENT_MONTH",
-  CURRENT_MONTH_NAME = "CURRENT_MONTH_NAME",
-  CURRENT_MONTH_NAME_SHORT = "CURRENT_MONTH_NAME_SHORT",
-  CURRENT_DATE = "CURRENT_DATE",
-  CURRENT_DAY_NAME = "CURRENT_DAY_NAME",
-  CURRENT_DAY_NAME_SHORT = "CURRENT_DAY_NAME_SHORT",
-  CURRENT_HOUR = "CURRENT_HOUR",
-  CURRENT_MINUTE = "CURRENT_MINUTE",
-  CURRENT_SECOND = "CURRENT_SECOND",
-  CURRENT_SECONDS_UNIX = "CURRENT_SECONDS_UNIX",
-  RANDOM = "RANDOM",
-  RANDOM_HEX = "RANDOM_HEX",
-  UUID = "UUID",
-  BLOCK_COMMENT_START = "BLOCK_COMMENT_START",
-  BLOCK_COMMENT_END = "BLOCK_COMMENT_END",
-  LINE_COMMENT = "LINE_COMMENT",
-}
-local variable_tokens = vim.tbl_values(Variable)
+-- TODO: visual_tabstop
 
-local format_modifier_tokens = {
-  "upcase",
-  "downcase",
-  "capitalize",
-  "camelcase",
-  "pascalcase",
-}
+-- Grammar in EBNF:
+-- any         ::= tabstop | placeholder | choice | code | text
+-- tabstop     ::= '$' int
+--                 | '${' int '}'
+--                 [[ | '${' int  transform '}' ]]
+-- placeholder ::= '${' int ':' any '}'
+-- choice      ::= '${' int '|' text (',' text)* '|}'
+-- code        ::= '`' text '`'
+--                 | '`!p ' text '`'
+--                 | '`!v `' text '`'
+-- transform   ::= '/' regex '/' (format | text)+ '/' options
+-- format      ::= '$' int | '${' int '}'
+--                 | '${' int ':' '/upcase' | '/downcase' | '/capitalize' | '/camelcase' | '/pascalcase' '}'
+--                 | '${' int ':+' if '}'
+--                 | '${' int ':?' if ':' else '}'
+--                 | '${' int ':-' else '}' | '${' int ':' else '}'
+-- regex       ::= JavaScript Regular Expression value (ctor-string)
+-- options     ::= JavaScript Regular Expression option (ctor-options)
+-- var         ::= [_a-zA-Z] [_a-zA-Z0-9]*
+-- int         ::= [0-9]+
+-- text        ::= .*
 
 local var_pattern = "[_a-zA-Z][_a-zA-Z0-9]*"
 local options_pattern = "[^}]*"
 local parse_int = p.pattern("[0-9]+")
 
 local parse_text = function(state)
-  -- '%', '$' and '\' must be escaped; '}' signals the end of the text
-  return p.parse_escaped_text(state, "[%$}\\]")
+  -- '`', '{', '$' and '\' must be escaped; '}' signals the end of the text
+  return p.parse_escaped_text(state, "[`{%$\\}]")
 end
 
 -- TODO
@@ -60,20 +42,7 @@ local parse_escaped_choice_text = function(state)
   return p.parse_escaped_text(state, "[%$}\\,|]")
 end
 
--- Parses a JavaScript regex
-local parse_regex = function(state)
-  return p.parse_escaped_text(state, "[/]")
-end
-
-local parse_format_modifier = function(state)
-  local format_modifier = p.parse_pattern(state, "[a-z]+")
-  if not vim.tbl_contains(format_modifier_tokens, format_modifier) then
-    error("parse_format_modifier: invalid modifier " .. format_modifier)
-  end
-  return format_modifier
-end
-
--- starts at the second char
+-- Starts at the second char
 local parse_format = function(state)
   local int_only, int = p.parse_bracketed(state, parse_int)
   if int_only then
@@ -83,7 +52,7 @@ local parse_format = function(state)
     local format_modifier, _if, _else
     if p.peek(state, ":/") then
       -- format 3
-      format_modifier = parse_format_modifier(state)
+      format_modifier = p.parse_format_modifier(state)
     else
       if p.peek(state, ":+") then
         -- format 4
@@ -146,28 +115,21 @@ local parse_choice_text = function(state)
   return text
 end
 
--- starts at char after '$', or after '{' if got_bracket is true
-local parse_variable = function(state, got_bracket)
-  local var = p.parse_pattern(state, var_pattern)
-  if not vim.tbl_contains(variable_tokens, var) then
-    error("parse_variable: invalid token " .. var)
+local parse_code = function(state)
+  local node_type
+  if p.peek(state, "!p ") then
+    node_type = NodeType.PYTHON_CODE
+  elseif p.peek(state, "!v ") then
+    node_type = NodeType.VIMSCRIPT_CODE
+  elseif p.peek(state, "`") then
+    node_type = NodeType.SHELL_CODE
   end
-  if not got_bracket or p.peek(state, "}") then
-    -- variable 1 / 2
-    return p.new_inner_node(NodeType.VARIABLE, { var = var })
-  end
-  if p.peek(state, ":") then
-    local any = parse_any(state)
-    -- variable 3
-    return p.new_inner_node(NodeType.VARIABLE, { var = var, any = any })
-  end
-  local transform = parse_transform(state)
-  p.expect(state, "}")
-  -- variable 4
-  return p.new_inner_node(NodeType.VARIABLE, { var = var, transform = transform })
+  local code = p.parse_escaped_text(state, "[`]")
+  p.expect(state, "`")
+  return p.new_inner_node(node_type, { code = code })
 end
 
--- starts after the int
+-- Starts after the int
 local parse_tabstop_transform = function(state)
   if p.peek(state, "}") then
     -- tabstop 2
@@ -199,8 +161,10 @@ parse_any = function(state)
         return p.new_inner_node(NodeType.TABSTOP, { int = int, transform = transform })
       end
     else
-      return parse_variable(state, got_bracket)
+      return p.parse_variable(state, got_bracket)
     end
+  elseif p.peek(state, "`") then
+    return parse_code(state)
   else
     state.cur_parser = "text"
     local prev_input = state.input
@@ -213,9 +177,7 @@ parse_any = function(state)
   end
 end
 
-local parser = {
-  Variable = Variable,
-}
+local parser = {}
 
 parser.parse = function(input)
   local state = {
