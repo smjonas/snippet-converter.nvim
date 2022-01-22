@@ -15,21 +15,50 @@ SnippetConverter currently supports the following snippet formats:
 Support for the following snippet engines will be added next:
 - [neosnippet.vim](https://github.com/Shougo/neosnippet.vim)
 
-Is there any snippet engine that I missed? Please let me know by creating an issue!
+Is there any other snippet engine or custom format that you think should be supported? Let me know by creating an issue!
 
-| Conversion between snippet formats | UltiSnips | VSCode | SnipMate |
-|------------------------------------|-----------|--------|----------|
-| UltiSnips                          | -         |        |          |
-| VSCode                             | &check;   | -      | &check;  |
-| SnipMate                           |           |        | -        |
+<table>
+	<tbody>
+		<tr>
+			<td colspan="2" rowspan="2">Conversion between snippet formats</td>
+			<td colspan="4"><i>Target format</i></td>
+		</tr>
+		<tr>
+			<td>UltiSnips</td>
+			<td>VSCode</td>
+			<td>SnipMate</td>
+		</tr>
+		<tr>
+			<td rowspan="3"><i>Source</br>format</i></td>
+			<td>UltiSnips</td>
+			<td>–</td>
+			<td>(&uarr;)<sup>1</sup></td>
+			<td>&uarr;</td>
+		</tr>
+		<tr>
+			<td>VSCode</td>
+			<td>&uarr;</td>
+			<td>–</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td>SnipMate</td>
+			<td>&uarr;</td>
+			<td>&uarr;</td>
+			<td>–</td>
+		</tr>
+	</tbody>
+</table>
 
-<sup>&check;: snippets can be converted without any loss of information</sup>
+<sup>&uarr;: All snippets can be converted - no exceptions.</sup>\
+<sup>(&uarr;)<sup>1</sup>: Except snippets with Python / VimScript / shell code.</sup>
 
 ## Getting started
 
-[Not all snippets will be convertible]
+[This shows the planned API]
 
-Planned API:
+Here's an example using [packer.nvim](https://github.com/wbthomason/packer.nvim):
+
 ```lua
 use {
   "smjonas/snippet-converter.nvim",
@@ -37,7 +66,10 @@ use {
     require("snippet_converter").setup {
       sources = {
         ultisnips = {
+          -- Add snippets from folders or individual files on your runtimepath...
+          "vim-snippets/UltiSnips"
           "latex-snippets/tex.snippets",
+          -- ...or use absolute paths on your system.
           vim.fn.stdpath("config") .. "/UltiSnips",
         },
         snipmate = {
@@ -51,3 +83,6 @@ use {
   end
 }
 ```
+Then simply run the command `:ConvertSnippets` to convert all snippets to your specified
+output locations and formats.
+
