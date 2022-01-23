@@ -4,15 +4,14 @@ local NodeType = require("snippet_converter.base.node_type")
 describe("UltiSnips body parser", function()
   it("should parse tabstop and placeholder", function()
     local input = "local ${1:name} = function($2)"
-    local actual = parser.parse(input)
     local expected = {
-      { text = "local " },
-      { int = "1", any = { text = "name" }, type = NodeType.PLACEHOLDER },
-      { text = " = function(" },
+      { text = "local ", type = NodeType.TEXT },
+      { int = "1", any = { { text = "name", type = NodeType.TEXT } }, type = NodeType.PLACEHOLDER },
+      { text = " = function(", type = NodeType.TEXT },
       { int = "2", type = NodeType.TABSTOP },
-      { text = ")" },
+      { text = ")", type = NodeType.TEXT },
     }
-    assert.are_same(expected, actual)
+    assert.are_same(expected, parser.parse(input))
   end)
 
   it("should parse choice element", function()
@@ -25,7 +24,7 @@ describe("UltiSnips body parser", function()
 
   it("should handle escaped chars in text element", function()
     local input = [[\`\{\$\\]]
-    local expected = { { text = [[`{$\]] } }
+    local expected = { { text = [[`{$\]], type = NodeType.TEXT } }
     assert.are_same(expected, parser.parse(input))
   end)
 
@@ -35,4 +34,46 @@ describe("UltiSnips body parser", function()
     assert.are_same(expected, parser.parse(input))
   end)
 
+  it("should parse transformation", function()
+    local input = [[${1/\w+\s*/\u$0/}]]
+    local expected = {
+      {
+        int = "1",
+        transform = {
+          regex = [[\w+\s*]],
+          replacement = [[\u$0]],
+          options = "",
+          type = NodeType.TRANSFORM,
+        },
+        type = NodeType.TABSTOP,
+      },
+    }
+    assert.are_same(expected, parser.parse(input))
+  end)
+
+  it("should parse placeholder with multiple nested nodes", function()
+    local input = [[${3:else success(${4:ok, err})} end)]]
+    local expected = {
+      {
+        int = "3",
+        any = {
+          { text = "else success(", type = NodeType.TEXT },
+          {
+            int = "4",
+            any = { { text = "ok, err", type = NodeType.TEXT } },
+            type = NodeType.PLACEHOLDER,
+          },
+          { text = ")", type = NodeType.TEXT },
+        },
+        type = NodeType.PLACEHOLDER,
+      },
+      {
+        text = " end)",
+        type = NodeType.TEXT,
+      },
+    }
+    assert.are_same(expected, parser.parse(input))
+  end)
+
+  -- TODO: how are unescaped chars handled?
 end)

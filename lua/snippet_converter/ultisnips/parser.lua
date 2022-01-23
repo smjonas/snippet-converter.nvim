@@ -1,4 +1,5 @@
 local header_parser = require("snippet_converter.ultisnips.header_parser")
+local body_parser = require("snippet_converter.ultisnips.body_parser")
 local utils = require("snippet_converter.utils")
 
 local parser = {}
@@ -21,6 +22,7 @@ function parser.parse(parsed_snippets_ptr, lines)
         found_snippet_header = true
       end
     elseif vim.startswith(line, "endsnippet") then
+      cur_snippet.body = body_parser.parse(table.concat(cur_snippet.body, "\n"))
       parsed_snippets_ptr[idx] = cur_snippet
       found_snippet_header = false
       idx = idx + 1

@@ -6,13 +6,13 @@ M.new_inner_node = function(type, node)
 end
 
 M.raise_parse_error = function(state, description)
-  error(string.format("%s: %s at input '%s'", state.cur_parser, description, state.input))
+  error(string.format("%s at '%s' (source '%s')", description, state.input, state.source))
 end
 
 M.expect = function(state, chars)
   local len = chars:len()
   if not state.input or state.input:len() < len then
-    M.raise_parse_error(state, "no chars to skip")
+    M.raise_parse_error(state, "no chars to skip, expected '" .. chars .. "'")
   end
   if state.input:sub(1, len) ~= chars then
     M.raise_parse_error(state, "expected '" .. chars .. "'")
@@ -83,9 +83,13 @@ M.parse_escaped_text = function(state, escape_pattern)
         break
       end
       parsed_text[#parsed_text + 1] = cur_char
-    elseif cur_char:match(escape_pattern) then
-      -- Overwrite the backslash
-      parsed_text[#parsed_text] = cur_char
+    else
+      if cur_char:match(escape_pattern) then
+        -- Overwrite the backslash
+        parsed_text[#parsed_text] = cur_char
+      else
+        parsed_text[#parsed_text + 1] = cur_char
+      end
       begin_escape = false
     end
     i = i + 1

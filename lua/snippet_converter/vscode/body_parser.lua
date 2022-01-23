@@ -126,13 +126,20 @@ local parse_transform = function(state)
     format_or_text[#format_or_text + 1] = parse_format_or_text(state)
   end
   local options = p.parse_pattern(state, options_pattern)
-  return { regex = regex, format_or_text = format_or_text, options = options }
+  return p.new_inner_node(
+    NodeType.TRANSFORM,
+    { regex = regex, format_or_text = format_or_text, options = options }
+  )
 end
 
 local parse_any
 local parse_placeholder_any = function(state)
-  state.cur_parser = "parse_placeholder_any"
-  local any = parse_any(state)
+  local any = { parse_any(state) }
+  local pos = 2
+  while state.input:sub(1, 1) ~= "}" do
+    any[pos] = parse_any(state)
+    pos = pos + 1
+  end
   p.expect(state, "}")
   return any
 end
@@ -201,6 +208,7 @@ parse_any = function(state)
     else
       return parse_variable(state, got_bracket)
     end
+    p.raise_parse_error(state, "[any node]: expected int after '${' characters")
   else
     state.cur_parser = "text"
     local prev_input = state.input
@@ -220,6 +228,7 @@ local parser = {
 parser.parse = function(input)
   local state = {
     input = input,
+    source = input,
   }
   local ast = {}
   while state.input ~= nil and state.input ~= "" do

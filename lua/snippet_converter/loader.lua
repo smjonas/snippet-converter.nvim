@@ -9,7 +9,7 @@ local function find_matching_snippet_files_in_rtp(
   source_path
 )
   -- Turn glob pattern (with potential wildcards) into lua pattern;
-  -- escape all non-alphanumeric characters just to be safe
+  -- escape all non-alphanumeric characters to be safe
   local file_pattern = source_path:gsub("([^%w%*])", "%%%1"):gsub("%*", ".-")
 
   local extension = snippet_engines[source_format].extension
@@ -21,9 +21,15 @@ local function find_matching_snippet_files_in_rtp(
     end
   end
   print(vim.inspect(matching_snippet_files))
-  return matching_snippet_files
 end
 
+-- Searches for a set of snippet files on the user's system for a specific snippet engine
+-- that match the given paths.
+--
+-- @param source_format string a valid source format that will be used to determine the
+-- extension of the snippet files (e.g. "ultisnips")
+-- @param source_paths list<string> a list of paths to search for in the runtimepath as
+-- well as the system (e.g. "vim-snippets/snippets"); may contain wildcards ("*")
 -- @return list<string> a list containing the absolute paths to the matching snippet files
 loader.get_matching_snippet_paths = function(source_format, source_paths)
   local matching_snippet_files = {}

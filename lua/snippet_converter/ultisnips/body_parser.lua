@@ -7,20 +7,16 @@ local NodeType = require("snippet_converter.base.node_type")
 -- any         ::= tabstop | placeholder | choice | code | text
 -- tabstop     ::= '$' int
 --                 | '${' int '}'
---                 [[ | '${' int  transform '}' ]]
+--                 | '${' int  transform '}'
 -- placeholder ::= '${' int ':' any '}'
 -- choice      ::= '${' int '|' text (',' text)* '|}'
 -- code        ::= '`' text '`'
 --                 | '`!p ' text '`'
 --                 | '`!v `' text '`'
--- transform   ::= '/' regex '/' (format | text)+ '/' options
--- format      ::= '$' int | '${' int '}'
---                 | '${' int ':' '/upcase' | '/downcase' | '/capitalize' | '/camelcase' | '/pascalcase' '}'
---                 | '${' int ':+' if '}'
---                 | '${' int ':?' if ':' else '}'
---                 | '${' int ':-' else '}' | '${' int ':' else '}'
+-- transform   ::= '/' regex '/' replacement '/' options
 -- regex       ::= JavaScript Regular Expression value (ctor-string)
--- options     ::= JavaScript Regular Expression option (ctor-options)
+-- replacement ::= text
+-- options     ::= text
 -- var         ::= [_a-zA-Z] [_a-zA-Z0-9]*
 -- int         ::= [0-9]+
 -- text        ::= .*
@@ -42,66 +38,35 @@ local parse_escaped_choice_text = function(state)
   return p.parse_escaped_text(state, "[%$}\\,|]")
 end
 
--- Starts at the second char
-local parse_format = function(state)
-  local int_only, int = p.parse_bracketed(state, parse_int)
-  if int_only then
-    -- format 1 / 2
-    return p.new_inner_node(NodeType.FORMAT, { int = int })
-  else
-    local format_modifier, _if, _else
-    if p.peek(state, ":/") then
-      -- format 3
-      format_modifier = p.parse_format_modifier(state)
-    else
-      if p.peek(state, ":+") then
-        -- format 4
-        _if = parse_if(state)
-      elseif p.peek(state, ":?") then
-        -- format 5
-        _if = parse_if(state)
-        p.expect(state, ":")
-        _else = parse_else(state)
-      elseif p.peek(state, ":") then
-        -- format 6 / 7
-        p.peek(state, "-")
-        _else = parse_else(state)
-      end
-    end
-    p.expect(state, "}")
-    return p.new_inner_node(NodeType.FORMAT, {
-      int = int,
-      format_modifier = format_modifier,
-      _if = _if,
-      _else = _else,
-    })
-  end
+local parse_regex = function(state)
+  return p.parse_escaped_text(state, "[/]")
 end
 
-local parse_format_or_text = function(state)
-  if p.peek(state, "$") then
-    return parse_format(state)
-  else
-    return parse_text(state)
-  end
+local parse_replacement = function(state)
+  return p.parse_escaped_text(state, "[/]")
 end
 
 local parse_transform = function(state)
   p.expect(state, "/")
   local regex = parse_regex(state)
   p.expect(state, "/")
-  local format_or_text = { parse_format_or_text(state) }
-  while not p.peek(state, "/") do
-    format_or_text[#format_or_text + 1] = parse_format_or_text(state)
-  end
+  local replacement = parse_replacement(state)
+  p.expect(state, "/")
   local options = p.parse_pattern(state, options_pattern)
-  return { regex = regex, format_or_text = format_or_text, options = options }
+  return p.new_inner_node(
+    NodeType.TRANSFORM,
+    { regex = regex, replacement = replacement, options = options }
+  )
 end
 
 local parse_any
 local parse_placeholder_any = function(state)
-  state.cur_parser = "parse_placeholder_any"
-  local any = parse_any(state)
+  local any = { parse_any(state) }
+  local pos = 2
+  while state.input:sub(1, 1) ~= "}" do
+    any[pos] = parse_any(state)
+    pos = pos + 1
+  end
   p.expect(state, "}")
   return any
 end
@@ -115,13 +80,15 @@ local parse_choice_text = function(state)
   return text
 end
 
+-- Starts after "`"
 local parse_code = function(state)
+  print(state.input, 111)
   local node_type
   if p.peek(state, "!p ") then
     node_type = NodeType.PYTHON_CODE
   elseif p.peek(state, "!v ") then
     node_type = NodeType.VIMSCRIPT_CODE
-  elseif p.peek(state, "`") then
+  else
     node_type = NodeType.SHELL_CODE
   end
   local code = p.parse_escaped_text(state, "[`]")
@@ -160,28 +127,28 @@ parse_any = function(state)
         -- transform may be nil
         return p.new_inner_node(NodeType.TABSTOP, { int = int, transform = transform })
       end
-    else
-      return p.parse_variable(state, got_bracket)
     end
+    p.raise_parse_error(state, "[any node]: expected int after '${' characters")
   elseif p.peek(state, "`") then
     return parse_code(state)
   else
-    state.cur_parser = "text"
     local prev_input = state.input
     local text = parse_text(state)
     if state.input == prev_input then
       state.input = ""
     else
-      return { text = text }
+      return p.new_inner_node(NodeType.TEXT, { text = text })
     end
   end
 end
 
 local parser = {}
 
+-- TODO: extract common code
 parser.parse = function(input)
   local state = {
     input = input,
+    source = input,
   }
   local ast = {}
   while state.input ~= nil and state.input ~= "" do
