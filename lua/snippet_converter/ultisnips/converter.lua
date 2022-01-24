@@ -13,7 +13,7 @@ function converter.can_convert(snippet, target_engine)
   return not body:match("`[^`]*`")
 end
 
-local vimscript_variable_handler = setmetatable({
+local convert_variable = setmetatable({
   [Variable.TM_FILENAME] = [[``!v expand('%:t')``]],
   [Variable.TM_FILENAME_BASE] = [[`!v expand('%:t:r')`]],
   [Variable.TM_DIRECTORY] = [[`!v expand('%:p:r')`]],
@@ -34,7 +34,7 @@ local vimscript_variable_handler = setmetatable({
   [Variable.CURRENT_SECONDS_UNIX] = [[`!v localtime()`]],
 }, {
   __index = function(_, key)
-    error("no vimscript handler for variable " .. key)
+    error("failed to convert unknown variable " .. key)
   end,
 })
 
@@ -43,22 +43,18 @@ converter.node_handler = setmetatable({
     if node.transform then
       error("Cannot convert variable with transform")
     end
-    local var = vimscript_variable_handler[node.var]
+    local var = convert_variable[node.var]
     if node.any then
-      local any = base_converter.convert_node_recursive(
-        node.any,
-        base_converter.default_node_handler
-      )
+      local any = base_converter.convert_node_recursive(node.any, converter.node_handler)
       return string.format("${%s:%s}", var, any)
     end
     return var
   end,
 }, {
-  __index = base_converter.default_node_handler,
+  __index = base_converter.default_node_handler(converter.node_handler),
 })
 
 function converter.convert(snippet)
-  -- print(vim.inspect(snippet))
   local trigger = snippet.trigger
   -- Literal " in trigger
   if trigger:match([["]]) then
@@ -77,13 +73,15 @@ function converter.convert(snippet)
 end
 
 -- Takes a list of converted snippets for a particular filetype,
--- separates them by empty lines and exports them to a file.
+-- separates them by newlines and exports them to a file.
 -- @param converted_snippets string[] @A list of strings where each item is a snippet string to be exported
 -- @param filetype string @The filetype of the snippets
 -- @param output_dir string @The absolute path to the directory to write the snippets to
 converter.export = function(converted_snippets, filetype, output_dir)
+  print(vim.inspect(output_dir))
   local output_path = string.format("%s/%s.snippets", output_dir, filetype)
-  utils.write_file(table.concat(converted_snippets, "\n\n"), output_path)
+  print(vim.inspect(output_path))
+  utils.write_file(converted_snippets, output_path)
   print(output_path)
 end
 

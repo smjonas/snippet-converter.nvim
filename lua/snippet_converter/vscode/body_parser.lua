@@ -73,7 +73,7 @@ local parse_format_modifier = function(state)
   return format_modifier
 end
 
--- starts at the second char
+-- Starts at the second char
 local parse_format = function(state)
   local int_only, int = p.parse_bracketed(state, parse_int)
   if int_only then
@@ -153,7 +153,7 @@ local parse_choice_text = function(state)
   return text
 end
 
--- starts at char after '$', or after '{' if got_bracket is true
+-- Starts at char after '$', or after '{' if got_bracket is true
 local parse_variable = function(state, got_bracket)
   local var = p.parse_pattern(state, var_pattern)
   if not vim.tbl_contains(variable_tokens, var) then
@@ -174,7 +174,7 @@ local parse_variable = function(state, got_bracket)
   return p.new_inner_node(NodeType.VARIABLE, { var = var, transform = transform })
 end
 
--- starts after the int
+-- Starts after int
 local parse_tabstop_transform = function(state)
   if p.peek(state, "}") then
     -- tabstop 2

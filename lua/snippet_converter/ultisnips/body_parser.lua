@@ -82,7 +82,6 @@ end
 
 -- Starts after "`"
 local parse_code = function(state)
-  print(state.input, 111)
   local node_type
   if p.peek(state, "!p ") then
     node_type = NodeType.PYTHON_CODE

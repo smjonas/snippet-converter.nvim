@@ -4,7 +4,7 @@
 
 Are you switching to a new snippet engine but don't want to lose your hand-crafted snippets?
 Did you discover an awesome snippet collection but couldn't use it because your snippet engine
-only supports some custom format? SnippetConverter is here to help you out!
+only supports some custom format? Check out SnippetConverter!
 
 ### Supported snippet engines
 SnippetConverter currently supports the following snippet formats:

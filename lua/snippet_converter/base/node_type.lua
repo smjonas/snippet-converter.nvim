@@ -15,4 +15,21 @@ local NodeType = {
   VIMSCRIPT_CODE = 10,
 }
 
+local _to_string = {
+  "TABSTOP",
+  "PLACEHOLDER",
+  "CHOICE",
+  "TEXT",
+  "TRANSFORM",
+  "FORMAT",
+  "VARIABLE",
+  "PYTHON_CODE",
+  "SHELL_CODE",
+  "VIMSCRIPT_CODE",
+}
+
+NodeType.to_string = function(type)
+  return _to_string[type]
+end
+
 return NodeType

@@ -20,7 +20,6 @@ local function find_matching_snippet_files_in_rtp(
       matching_snippet_files[#matching_snippet_files + 1] = file
     end
   end
-  print(vim.inspect(matching_snippet_files))
 end
 
 -- Searches for a set of snippet files on the user's system for a specific snippet engine

@@ -1,6 +1,7 @@
-local M = {}
 local snippet_engines = require("snippet_converter.snippet_engines")
 local loader = require("snippet_converter.loader")
+
+local M = {}
 
 local function validate_sources(sources)
   vim.validate({
@@ -56,24 +57,18 @@ local partition_snippet_paths = function(snippet_paths)
   return partitioned_snippet_paths
 end
 
-M.convert_snippets = function()
-  if config == nil then
-    error(
-      "setup function must be called with valid config before converting snippets"
-    )
-    return
-  end
-
-  -- Load snippets
+local load_snippets = function(sources)
   local snippet_paths = {}
-  for source_format, source_paths in pairs(config.sources) do
+  for source_format, source_paths in pairs(sources) do
     local _snippet_paths = loader.get_matching_snippet_paths(source_format, source_paths)
     snippet_paths[source_format] = partition_snippet_paths(_snippet_paths)
   end
+  return snippet_paths
+end
 
-  -- Parse snipppets
+local parse_snippets = function(snippet_paths, sources)
   local snippets = {}
-  for source_format, _ in pairs(config.sources) do
+  for source_format, _ in pairs(sources) do
     local parser = require(snippet_engines[source_format].parser)
     for filetype, paths in pairs(snippet_paths[source_format]) do
       if snippets[filetype] == nil then
@@ -84,21 +79,47 @@ M.convert_snippets = function()
       end
     end
   end
+  return snippets
+end
 
-  -- Convert and export snippets
-  for target_format, output_path in pairs(config.output) do
+local convert_snippets = function(snippets, output)
+  local failures = {}
+  for target_format, output_paths in pairs(output) do
     local converter = require(snippet_engines[target_format].converter)
     for filetype, _snippets in pairs(snippets) do
-      print("1")
       local converted_snippets = {}
+      local pos = 1
       for _, snippet in ipairs(_snippets) do
-        print(vim.inspect(snippet))
-        converted_snippets[#converted_snippets + 1] = converter.convert(snippet)
+        local ok, converted_snippet = pcall(converter.convert, snippet)
+        if ok then
+          converted_snippets[pos] = converted_snippet
+          pos = pos + 1
+        else
+          failures[#failures + 1] = {
+            msg = converted_snippet,
+            -- snippet = converted_snippet,
+          }
+        end
       end
-      print(vim.inspect(converter))
-      converter.export(converted_snippets, filetype, output_path)
+      print(vim.inspect(converted_snippets))
+      for _, output_path in ipairs(output_paths) do
+        converter.export(converted_snippets, filetype, output_path)
+      end
     end
   end
+  return failures
+end
+
+M.convert_snippets = function()
+  if config == nil then
+    error("setup function must be called with valid config before converting snippets")
+    return
+  end
+
+  local snippet_paths = load_snippets(config.sources)
+  local snippets = parse_snippets(snippet_paths, config.sources)
+  local failures = convert_snippets(snippets, config.output)
+  print(vim.inspect(failures))
 end
 
 return M
