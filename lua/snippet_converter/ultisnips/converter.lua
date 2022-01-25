@@ -2,12 +2,13 @@ local NodeType = require("snippet_converter.base.node_type")
 local Variable = require("snippet_converter.vscode.body_parser").Variable
 local base_converter = require("snippet_converter.base.converter")
 local utils = require("snippet_converter.utils")
+local export_utils = require("snippet_converter.base.export_utils")
 
 local converter = {}
 
 -- Determines whether the provided snippet can be converted from UltiSnips
 -- to other formats (e.g. python interpolation is an UltiSnips-only feature).
-function converter.can_convert(snippet, target_engine)
+converter.can_convert = function(snippet, target_engine)
   local body = vim.fn.join(snippet.body, "")
   -- Must not contain interpolation code
   return not body:match("`[^`]*`")
@@ -54,7 +55,7 @@ converter.node_handler = setmetatable({
   __index = base_converter.default_node_handler(converter.node_handler),
 })
 
-function converter.convert(snippet)
+converter.convert = function(snippet)
   local trigger = snippet.trigger
   -- Literal " in trigger
   if trigger:match([["]]) then
@@ -78,11 +79,9 @@ end
 -- @param filetype string @The filetype of the snippets
 -- @param output_dir string @The absolute path to the directory to write the snippets to
 converter.export = function(converted_snippets, filetype, output_dir)
-  print(vim.inspect(output_dir))
+  local snippet_lines = export_utils.snippet_strings_to_lines(converted_snippets, "# ")
   local output_path = string.format("%s/%s.snippets", output_dir, filetype)
-  print(vim.inspect(output_path))
-  utils.write_file(converted_snippets, output_path)
-  print(output_path)
+  utils.write_file(snippet_lines, output_path)
 end
 
 return converter
