@@ -21,9 +21,18 @@ else
   _json_decode = vim.fn.json_decode
 end
 
-utils.json_decode = function(path)
+utils.read_json = function(path)
   local lines = table.concat(utils.read_file(path), "\n")
   return _json_decode(lines)
 end
+
+local _json_encode
+if vim.json then
+  _json_encode = vim.json.encode
+else
+  _json_encode = vim.fn.json_encode
+end
+
+utils.json_encode = _json_encode
 
 return utils

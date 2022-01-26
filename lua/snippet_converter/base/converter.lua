@@ -22,7 +22,8 @@ converter.convert_ast = function(ast, node_handler)
 end
 
 converter.default_node_handler = function(custom_node_handler)
-  return setmetatable({
+  local default
+  default = setmetatable({
     [NodeType.TABSTOP] = function(node)
       if node.transform then
         return string.format("${%s%s}", node.int, node.transform)
@@ -34,7 +35,7 @@ converter.default_node_handler = function(custom_node_handler)
         "${%s:%s}",
         node.int,
         -- The 'any' node consists of a variable number of subnodes
-        converter.convert_ast(node.any, custom_node_handler)
+        converter.convert_ast(node.any, custom_node_handler or default)
       )
     end,
     [NodeType.CHOICE] = function(node)
@@ -49,6 +50,7 @@ converter.default_node_handler = function(custom_node_handler)
       error("[snippet_converter]: no handler found for node " .. NodeType.to_string(key))
     end,
   })
+  return default
 end
 
 return converter

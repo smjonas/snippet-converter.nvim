@@ -101,7 +101,6 @@ local convert_snippets = function(snippets, output)
           }
         end
       end
-      print(vim.inspect(converted_snippets))
       for _, output_path in ipairs(output_paths) do
         converter.export(converted_snippets, filetype, output_path)
       end
