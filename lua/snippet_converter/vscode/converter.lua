@@ -29,11 +29,28 @@ M.ultisnips_node_handler = setmetatable({
   __index = base_converter.default_node_handler(M.ultisnips_node_handler),
 })
 
+local list_to_json_string = function(list)
+  local lines = vim.split(list, "\n", true)
+  local list_items = vim.tbl_map(function(x)
+    -- Escape whitespace characters and leave the rest as is
+    return ('"%s"'):format(x:gsub("[\t\r\a\b]", {
+      ["\t"] = "\\t",
+      ["\r"] = "\\r",
+      ["\a"] = "\\a",
+      ["\b"] = "\\b",
+    }))
+  end, lines)
+  -- Single list item => output a string
+  if not list_items[2] then
+    return ([["%s"]]):format(list_items[1])
+  end
+  return ("[%s]"):format(table.concat(list_items, ", "))
+end
+
 M.convert = function(snippet, source_format)
   local body
   if source_format == "ultisnips" then
-    body = base_converter.convert_ast(snippet.body, M.ultisnips_node_handler)
-    body = utils.json_encode({"\\w+abc\t"})
+    body = list_to_json_string(base_converter.convert_ast(snippet.body, M.ultisnips_node_handler))
   else
     body = base_converter.convert_ast(snippet.body, base_converter.default_node_handler(nil))
     body = utils.json_encode(vim.fn.split(body, "\n", true))
