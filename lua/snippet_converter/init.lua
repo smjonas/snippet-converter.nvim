@@ -41,6 +41,7 @@ end
 -- Partitions the snippet paths into a table of <filetype, [snippet_paths]>
 -- (e.g. filetype of an input file "lua.snippets" is "lua").
 
+-- @param snippet_paths table<string> a list of snippet paths
 -- @return <string, string> a table where each key is a filetype
 -- and each value is a list of snippet paths that correspond to that filetype
 local partition_snippet_paths = function(snippet_paths)
@@ -69,13 +70,14 @@ end
 local parse_snippets = function(snippet_paths, sources)
   local snippets = {}
   for source_format, _ in pairs(sources) do
+    snippets[source_format] = {}
     local parser = require(snippet_engines[source_format].parser)
     for filetype, paths in pairs(snippet_paths[source_format]) do
-      if snippets[filetype] == nil then
-        snippets[filetype] = {}
+      if snippets[source_format][filetype] == nil then
+        snippets[source_format][filetype] = {}
       end
       for _, path in ipairs(paths) do
-        parser.parse(snippets[filetype], parser.get_lines(path))
+        parser.parse(snippets[source_format][filetype], parser.get_lines(path))
       end
     end
   end
@@ -86,23 +88,25 @@ local convert_snippets = function(snippets, output)
   local failures = {}
   for target_format, output_paths in pairs(output) do
     local converter = require(snippet_engines[target_format].converter)
-    for filetype, _snippets in pairs(snippets) do
-      local converted_snippets = {}
-      local pos = 1
-      for _, snippet in ipairs(_snippets) do
-        local ok, converted_snippet = pcall(converter.convert, snippet)
-        if ok then
-          converted_snippets[pos] = converted_snippet
-          pos = pos + 1
-        else
-          failures[#failures + 1] = {
-            msg = converted_snippet,
-            -- snippet = converted_snippet,
-          }
+    local converted_snippets = {}
+    local pos = 1
+    for source_format, snippets_for_format in pairs(snippets) do
+      for filetype, _snippets in pairs(snippets_for_format) do
+        for _, snippet in ipairs(_snippets) do
+          local ok, converted_snippet = pcall(converter.convert, snippet, source_format)
+          if ok then
+            converted_snippets[pos] = converted_snippet
+            pos = pos + 1
+          else
+            failures[#failures + 1] = {
+              msg = converted_snippet,
+              -- snippet = converted_snippet,
+            }
+          end
         end
-      end
-      for _, output_path in ipairs(output_paths) do
-        converter.export(converted_snippets, filetype, output_path)
+        for _, output_path in ipairs(output_paths) do
+          converter.export(converted_snippets, filetype, output_path)
+        end
       end
     end
   end
