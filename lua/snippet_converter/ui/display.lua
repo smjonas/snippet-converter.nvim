@@ -1,3 +1,5 @@
+local Node = require("snippet_converter.ui.node")
+
 local M = {}
 
 local global_keymaps = {}
@@ -36,6 +38,35 @@ local create_popup_window_opts = function()
   popup_window.row = math.floor((win_height - popup_window.height) / 2)
   return popup_window
 end
+
+local apply_style = function(window, text, style)
+  print(style)
+  if style == Node.Style.CENTERED then
+    local padding = math.floor((window.width - #text) / 2)
+    return (" "):rep(math.max(0, padding)) .. text
+  end
+end
+
+-- TODO: redraw
+local render_node
+render_node = {
+  [Node.Type.HL_TEXT_NODE] = function(window, node, out)
+    local line
+    if node.style then
+      line = apply_style(window, node.text, node.style)
+    else
+      line = node.text
+    end
+    out.lines[#out.lines + 1] = line
+    -- TODO
+    out.highlights[#out.highlights + 1] = node.hl_group
+  end,
+  [Node.Type.NESTED_NODE] = function(window, node, out)
+    for _, child_node in ipairs(node.child_nodes) do
+      return render_node[child_node.type](window, child_node, out)
+    end
+  end,
+}
 
 M.new_window = function()
   -- local namespace = vim.api.nvim_create_namespace("snippet_converter")
@@ -85,7 +116,7 @@ M.new_window = function()
     ]]):format(resize_autocmd, autoclose_autocmd))
   end
 
-  local draw = function(context)
+  local draw = function(node)
     local win_valid = win_id ~= nil and vim.api.nvim_win_is_valid(win_id)
     local buf_valid = bufnr ~= nil and vim.api.nvim_buf_is_valid(bufnr)
     if not win_valid or not buf_valid then
@@ -94,9 +125,17 @@ M.new_window = function()
     end
 
     -- Set line contents
-    local lines, highlights = context.lines, context.highlights
+    local window = {
+      width = vim.api.nvim_win_get_width(win_id),
+    }
+    local render_output = {
+      lines = {},
+      highlights = {},
+    }
+    render_node[node.type](window, node, render_output)
+    print(vim.inspect(render_output.lines))
     vim.api.nvim_buf_set_option(bufnr, "modifiable", true)
-    vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, lines)
+    vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, render_output.lines)
     vim.api.nvim_buf_set_option(bufnr, "modifiable", false)
 
     -- Register keymaps
@@ -130,6 +169,7 @@ end
 M.redraw_window = function(win_id)
   if vim.api.nvim_win_is_valid(win_id) then
     vim.api.nvim_win_set_config(win_id, create_popup_window_opts())
+
   end
 end
 

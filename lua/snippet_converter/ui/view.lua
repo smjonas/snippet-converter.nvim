@@ -1,4 +1,5 @@
 local display = require("snippet_converter.ui.display")
+local Node = require("snippet_converter.ui.node")
 
 local View = {}
 
@@ -27,9 +28,17 @@ function View:destroy()
   self._window = nil
 end
 
+-- HlTextNode
+-- EmptyLine
+
 function View:draw(model)
   print("Draw")
   print(vim.inspect(model))
+
+  local header = Node.HlTextNode("Some text", "Title", Node.Style.CENTERED)
+  print(vim.inspect(header))
+  local nodes = Node.NestedNode({ header })
+
   local lines = {}
   local pos = 1
   for _, task in ipairs(model.tasks) do
@@ -38,9 +47,7 @@ function View:draw(model)
     pos = pos + 2
   end
   print(vim.inspect(lines))
-  self._window.draw({
-    lines = lines,
-  })
+  self._window.draw(nodes)
 end
 
 return View
