@@ -11,7 +11,8 @@ end
 function parser.parse(parsed_snippets_ptr, lines)
   local cur_snippet
   local found_snippet_header = false
-  local idx = #parsed_snippets_ptr + 1
+  local prev_count = #parsed_snippets_ptr
+  local pos = prev_count + 1
 
   for _, line in ipairs(lines) do
     if not found_snippet_header then
@@ -23,13 +24,15 @@ function parser.parse(parsed_snippets_ptr, lines)
       end
     elseif vim.startswith(line, "endsnippet") then
       cur_snippet.body = body_parser.parse(table.concat(cur_snippet.body, "\n"))
-      parsed_snippets_ptr[idx] = cur_snippet
+      parsed_snippets_ptr[pos] = cur_snippet
       found_snippet_header = false
-      idx = idx + 1
+      pos = pos + 1
     else
       table.insert(cur_snippet.body, line)
     end
   end
+  -- Return the number of snippets that have been parsed
+  return (pos - 1) - prev_count
 end
 
 function parser.parse_header(line)

@@ -63,34 +63,44 @@ local load_snippets = function(sources)
   for source_format, source_paths in pairs(sources) do
     local _snippet_paths = loader.get_matching_snippet_paths(source_format, source_paths)
     snippet_paths[source_format] = partition_snippet_paths(_snippet_paths)
+    print(vim.inspect(snippet_paths[source_format]))
   end
   return snippet_paths
 end
 
-local parse_snippets = function(snippet_paths, sources)
+local parse_snippets = function(controller, snippet_paths, sources)
   local snippets = {}
   for source_format, _ in pairs(sources) do
     snippets[source_format] = {}
+    local num_snippets = 0
+    local num_files = 0
+
     local parser = require(snippet_engines[source_format].parser)
     for filetype, paths in pairs(snippet_paths[source_format]) do
       if snippets[source_format][filetype] == nil then
         snippets[source_format][filetype] = {}
       end
       for _, path in ipairs(paths) do
-        parser.parse(snippets[source_format][filetype], parser.get_lines(path))
+        local num_new_snippets = parser.parse(
+          snippets[source_format][filetype],
+          parser.get_lines(path)
+        )
+        num_snippets = num_snippets + num_new_snippets
       end
+      num_files = num_files + #paths
     end
+    controller:add_task(source_format, num_snippets, num_files)
   end
   return snippets
 end
 
 local convert_snippets = function(snippets, output)
   local failures = {}
-  for target_format, output_paths in pairs(output) do
-    local converter = require(snippet_engines[target_format].converter)
-    local converted_snippets = {}
-    local pos = 1
-    for source_format, snippets_for_format in pairs(snippets) do
+  for source_format, snippets_for_format in pairs(snippets) do
+    for target_format, output_paths in pairs(output) do
+      local converter = require(snippet_engines[target_format].converter)
+      local converted_snippets = {}
+      local pos = 1
       for filetype, _snippets in pairs(snippets_for_format) do
         for _, snippet in ipairs(_snippets) do
           local ok, converted_snippet = pcall(converter.convert, snippet, source_format)
@@ -113,14 +123,17 @@ local convert_snippets = function(snippets, output)
   return failures
 end
 
+local controller = require("snippet_converter.ui.controller"):new()
+
 M.convert_snippets = function()
   if config == nil then
     error("setup function must be called with valid config before converting snippets")
     return
   end
 
+  controller:create_view({})
   local snippet_paths = load_snippets(config.sources)
-  local snippets = parse_snippets(snippet_paths, config.sources)
+  local snippets = parse_snippets(controller, snippet_paths, config.sources)
   local failures = convert_snippets(snippets, config.output)
   print(vim.inspect(failures))
 end

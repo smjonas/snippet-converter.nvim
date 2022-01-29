@@ -17,11 +17,10 @@ M.ultisnips_node_handler = setmetatable({
     end
     -- Only g, i and m options are valid - ignore the rest
     local converted_options = options:gsub("[^gim]", "")
-    return string.format(
-      "${%s/%s/%s/%s}",
+    return ("${%s/%s/%s/%s}"):format(
       node.int,
       node.transform.regex,
-      node.transform.format_or_text,
+      node.transform.replacement,
       converted_options
     )
   end,
@@ -32,7 +31,7 @@ M.ultisnips_node_handler = setmetatable({
 local list_to_json_string = function(list)
   local lines = vim.split(list, "\n", true)
   local list_items = vim.tbl_map(function(x)
-    -- Escape whitespace characters and leave the rest as is
+    -- Surround with quotes and escape whitespace characters
     return ('"%s"'):format(x:gsub("[\t\r\a\b]", {
       ["\t"] = "\\t",
       ["\r"] = "\\r",
@@ -42,7 +41,7 @@ local list_to_json_string = function(list)
   end, lines)
   -- Single list item => output a string
   if not list_items[2] then
-    return ([["%s"]]):format(list_items[1])
+    return ("%s"):format(list_items[1])
   end
   return ("[%s]"):format(table.concat(list_items, ", "))
 end
@@ -74,9 +73,7 @@ end
 -- @param output_dir string @The absolute path to the directory to write the snippets to
 M.export = function(converted_snippets, filetype, output_dir)
   local snippet_lines = export_utils.snippet_strings_to_lines(converted_snippets, ",", "{", "}")
-  print(vim.inspect(snippet_lines))
   local output_path = string.format("%s/%s.json", output_dir, filetype)
-  print(output_path)
   utils.write_file(snippet_lines, output_path)
 end
 

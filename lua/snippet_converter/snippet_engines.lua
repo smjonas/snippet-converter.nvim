@@ -10,6 +10,7 @@ local capabilities = {
 snippet_engines.capabilities = capabilities
 
 snippet_engines.snipmate = {
+  label = "SnipMate",
   extension = "snippets",
   parser = "snippet_converter.snipmate.parser",
   capabilities = {
@@ -18,12 +19,14 @@ snippet_engines.snipmate = {
 }
 
 snippet_engines.ultisnips = {
+  label = "UltiSnips",
   extension = "snippets",
   parser = "snippet_converter.ultisnips.parser",
   converter = "snippet_converter.ultisnips.converter",
 }
 
 snippet_engines.vscode = {
+  label = "VSCode",
   extension = "json",
   parser = "snippet_converter.vscode.parser",
   converter = "snippet_converter.vscode.converter",
