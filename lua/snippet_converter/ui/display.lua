@@ -2,7 +2,8 @@ local Node = require("snippet_converter.ui.node")
 
 local M = {}
 
-local global_keymaps = {}
+local global_keymaps, line_keymaps
+
 M.register_global_keymaps = function(keymaps)
   global_keymaps = keymaps
 end
@@ -24,6 +25,14 @@ M.handle_keymap = function(hex_lhs)
   global_keymaps[lhs]()
 end
 
+M.handle_line_keymap = function(win_id, line, hex_lhs)
+  local cursor_pos = vim.api.nvim_win_get_cursor(win_id)
+  if cursor_pos[1] == line then
+    local lhs = from_hex(hex_lhs)
+    line_keymaps[line][lhs]()
+  end
+end
+
 local create_popup_window_opts = function()
   local win_width = vim.o.columns
   local win_height = vim.o.lines - vim.o.cmdheight - 2 -- Add margin for status and buffer lines
@@ -40,16 +49,22 @@ local create_popup_window_opts = function()
 end
 
 local apply_style = function(window, text, style)
-  print(style)
   if style == Node.Style.CENTERED then
     local padding = math.floor((window.width - #text) / 2)
     return (" "):rep(math.max(0, padding)) .. text
+  elseif style == Node.Style.LEFT_PADDING then
+    return " " .. text
   end
 end
 
 -- TODO: redraw
 local render_node
 render_node = {
+  [Node.Type.ROOT_NODE] = function(window, node, out)
+    for _, child_node in ipairs(node.child_nodes) do
+      render_node[child_node.type](window, child_node, out)
+    end
+  end,
   [Node.Type.HL_TEXT_NODE] = function(window, node, out)
     local line
     if node.style then
@@ -57,20 +72,52 @@ render_node = {
     else
       line = node.text
     end
+    local line_idx = #out.lines
     out.lines[#out.lines + 1] = line
-    -- TODO
-    out.highlights[#out.highlights + 1] = node.hl_group
+    out.highlights[#out.highlights + 1] = {
+      hl_group = node.hl_group,
+      line = line_idx,
+      col_start = 0,
+      col_end = #line,
+    }
   end,
-  [Node.Type.NESTED_NODE] = function(window, node, out)
-    for _, child_node in ipairs(node.child_nodes) do
-      return render_node[child_node.type](window, child_node, out)
+  [Node.Type.MULTI_HL_TEXT_NODE] = function(window, node, out)
+    local merged_line = table.concat(node.texts)
+    if node.style then
+      merged_line = apply_style(window, merged_line, node.style)
     end
+    out.lines[#out.lines + 1] = merged_line
+  end,
+  [Node.Type.EXPANDABLE_NODE] = function(window, node, out)
+    render_node[node.parent_node.type](window, node.parent_node, out)
+    if node.is_expanded then
+      render_node[node.child_node.type](window, node.child_node, out)
+    end
+  end,
+  [Node.Type.KEYMAP_NODE] = function(window, node, out)
+    render_node[node.node.type](window, node.node, out)
+    local cur_line = #out.lines
+    out.line_keymaps[cur_line] = node.keymap
+  end,
+  [Node.Type.NEW_LINE] = function(_, _, out)
+    out.lines[#out.lines + 1] = ""
   end,
 }
 
-M.new_window = function()
-  -- local namespace = vim.api.nvim_create_namespace("snippet_converter")
+local function set_keymap(bufnr, lhs, cmd_string)
+  vim.api.nvim_buf_set_keymap(
+    bufnr,
+    "n",
+    lhs,
+    -- Convert to hex value to avoid issues with the lhs of the keymap being
+    -- interpreted literally by Neovim.
+    cmd_string:format(to_hex(lhs)),
+    { nowait = true, silent = true, noremap = true }
+  )
+end
 
+M.new_window = function()
+  local namespace_id = vim.api.nvim_create_namespace("snippet_converter")
   local win_id, bufnr
   local function open()
     bufnr = vim.api.nvim_create_buf(false, true)
@@ -131,27 +178,47 @@ M.new_window = function()
     local render_output = {
       lines = {},
       highlights = {},
+      line_keymaps = {},
     }
     render_node[node.type](window, node, render_output)
-    print(vim.inspect(render_output.lines))
+
+    vim.api.nvim_buf_clear_namespace(bufnr, namespace_id, 0, -1)
     vim.api.nvim_buf_set_option(bufnr, "modifiable", true)
     vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, render_output.lines)
     vim.api.nvim_buf_set_option(bufnr, "modifiable", false)
 
-    -- Register keymaps
-    for lhs, _ in pairs(global_keymaps) do
-      vim.api.nvim_buf_set_keymap(
+    -- Set highlights
+    for _, highlight in ipairs(render_output.highlights) do
+      vim.api.nvim_buf_add_highlight(
         bufnr,
-        "n",
-        lhs,
-        string.format(
-          "<cmd>lua require('snippet_converter.ui.display').handle_keymap(%q)<cr>",
-          -- Convert to hex value to avoid issues with the lhs of the keymap being
-          -- interpreted literally by Neovim.
-          to_hex(lhs)
-        ),
-        { nowait = true, silent = true, noremap = true }
+        namespace_id,
+        highlight.hl_group,
+        highlight.line,
+        highlight.col_start,
+        highlight.col_end
       )
+    end
+
+    -- Set global keymaps
+    for lhs, _ in pairs(global_keymaps) do
+      set_keymap(
+        bufnr,
+        lhs,
+        "<cmd>lua require('snippet_converter.ui.display').handle_keymap(%q)<cr>"
+      )
+    end
+
+    -- Set line keymaps
+    line_keymaps = {}
+    for line = 1, #render_output.lines do
+      local keymap = render_output.line_keymaps[line]
+      if keymap then
+        line_keymaps[line] = { [keymap.lhs] = keymap.callback }
+        local cmd_string = (
+          "<cmd>lua require('snippet_converter.ui.display').handle_line_keymap(%d,%d"
+        ):format(win_id, line)
+        set_keymap(bufnr, keymap.lhs, cmd_string .. ",%q)<cr>")
+      end
     end
   end
 
@@ -169,7 +236,6 @@ end
 M.redraw_window = function(win_id)
   if vim.api.nvim_win_is_valid(win_id) then
     vim.api.nvim_win_set_config(win_id, create_popup_window_opts())
-
   end
 end
 

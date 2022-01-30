@@ -2,7 +2,7 @@
 
 # snippet-converter.nvim
 
-Neovim plugin to parse, convert, transform and sort snippets. Supports a variety of formats and snippet engines.
+Neovim plugin to parse, transform and convert snippets. Supports a variety of formats and snippet engines.
 
 [![Neovim](https://img.shields.io/badge/Neovim%200.5+-2357A143.svg?style=for-the-badge&logo=neovim)](https://neovim.io)
 

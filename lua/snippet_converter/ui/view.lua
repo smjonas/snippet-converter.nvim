@@ -1,5 +1,6 @@
 local display = require("snippet_converter.ui.display")
 local Node = require("snippet_converter.ui.node")
+local TaskState = require("snippet_converter.ui.task_state")
 
 local View = {}
 
@@ -8,12 +9,8 @@ View.new = function()
     _window = display.new_window(),
   }
   local global_keymaps = {
-    ["q"] = function()
-      self._window.close()
-    end,
-    ["<Esc>"] = function()
-      self._window.close()
-    end,
+    ["q"] = self._window.close,
+    ["<Esc>"] = self._window.close,
   }
   display.register_global_keymaps(global_keymaps)
   return setmetatable(self, { __index = View })
@@ -26,28 +23,50 @@ end
 function View:destroy()
   self._window.close()
   self._window = nil
+  self.state = nil
 end
 
--- HlTextNode
--- EmptyLine
+local create_node_for_task = {
+  [TaskState.STARTED] = function(view, model, task)
+    local task_node = view.state.task_nodes[task.source_format]
+    -- Create new task only if it has not been persisted across redraws
+    if not task_node then
+      local texts = {
+        "> " .. task.source_format,
+        (": successfully converted %s / %s snippets"):format(task.num_snippets, task.num_files),
+      }
+      task_node = Node.ExpandableNode(
+        Node.MultiHlTextNode(texts, { "Comment", "Comment" }, Node.Style.LEFT_PADDING),
+        Node.HlTextNode("test", "Comment")
+      )
+      view.state.task_nodes[task.source_format] = task_node
+    end
 
-function View:draw(model)
-  print("Draw")
-  print(vim.inspect(model))
+    return Node.KeymapNode(task_node, "<cr>", function()
+      task_node.is_expanded = not task_node.is_expanded
+      -- Redraw view as the has layout changed
+      view:draw(model, true)
+    end)
+  end,
+}
 
-  local header = Node.HlTextNode("Some text", "Title", Node.Style.CENTERED)
-  print(vim.inspect(header))
-  local nodes = Node.NestedNode({ header })
-
-  local lines = {}
-  local pos = 1
-  for _, task in ipairs(model.tasks) do
-    lines[pos] = task.source_format
-    lines[pos + 1] = ("Found %s snippets in %s files."):format(task.num_snippets, task.num_files)
-    pos = pos + 2
+function View:draw(model, persist_view_state)
+  if not persist_view_state then
+    self.state = {
+      task_nodes = {},
+    }
   end
-  print(vim.inspect(lines))
-  self._window.draw(nodes)
+  local header_title = Node.HlTextNode("snippet-converter.nvim", "Title", Node.Style.CENTERED)
+  local header_url = Node.HlTextNode(
+    "https://github.com/smjonas/snippet-converter.nvim",
+    "Comment",
+    Node.Style.CENTERED
+  )
+  local nodes = { header_title, header_url, Node.NewLine() }
+  for _, task in ipairs(model.tasks) do
+    nodes[#nodes + 1] = create_node_for_task[task.state](self, model, task)
+  end
+  self._window.draw(Node.RootNode(nodes))
 end
 
 return View

@@ -1,3 +1,4 @@
+local TaskState = require("snippet_converter.ui.task_state")
 local view = require("snippet_converter.ui.view")
 local snippet_engines = require("snippet_converter.snippet_engines")
 
@@ -15,10 +16,6 @@ function Controller:create_view(model)
   self.view = view:new()
   self.view:open()
 end
-
-local TaskState = {
-  STARTED = 1,
-}
 
 function Controller:add_task(source_format, num_snippets, num_files)
   local tasks = self.model.tasks or {}
