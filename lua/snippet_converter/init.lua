@@ -63,7 +63,6 @@ local load_snippets = function(sources)
   for source_format, source_paths in pairs(sources) do
     local _snippet_paths = loader.get_matching_snippet_paths(source_format, source_paths)
     snippet_paths[source_format] = partition_snippet_paths(_snippet_paths)
-    print(vim.inspect(snippet_paths[source_format]))
   end
   return snippet_paths
 end

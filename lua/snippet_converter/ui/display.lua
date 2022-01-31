@@ -52,20 +52,18 @@ local apply_style = function(window, text, style)
   if style == Node.Style.CENTERED then
     local padding = math.floor((window.width - #text) / 2)
     return (" "):rep(math.max(0, padding)) .. text
-  elseif style == Node.Style.LEFT_PADDING then
-    return " " .. text
   end
 end
 
 -- TODO: redraw
 local render_node
 render_node = {
-  [Node.Type.ROOT_NODE] = function(window, node, out)
+  [Node.Type.ROOT] = function(window, node, out)
     for _, child_node in ipairs(node.child_nodes) do
       render_node[child_node.type](window, child_node, out)
     end
   end,
-  [Node.Type.HL_TEXT_NODE] = function(window, node, out)
+  [Node.Type.HL_TEXT] = function(window, node, out)
     local line
     if node.style then
       line = apply_style(window, node.text, node.style)
@@ -81,20 +79,40 @@ render_node = {
       col_end = #line,
     }
   end,
-  [Node.Type.MULTI_HL_TEXT_NODE] = function(window, node, out)
+  [Node.Type.MULTI_HL_TEXT] = function(window, node, out)
     local merged_line = table.concat(node.texts)
+    local col_offset = 0
     if node.style then
-      merged_line = apply_style(window, merged_line, node.style)
+      local merged_line_styled = apply_style(window, merged_line, node.style)
+      -- Assumes that apply_style only adds text from the left of the line
+      col_offset = #merged_line_styled - #merged_line
+      merged_line = merged_line_styled
     end
-    out.lines[#out.lines + 1] = merged_line
+    local line_idx = #out.lines
+    out.lines[line_idx + 1] = merged_line
+    for i, hl_group in ipairs(node.hl_groups) do
+      local text_len = #node.texts[i]
+      -- Ignore empty highlight groups
+      if hl_group ~= "" then
+        print(node.texts[i])
+        out.highlights[#out.highlights + 1] = {
+          hl_group = hl_group,
+          line = line_idx,
+          col_start = col_offset,
+          col_end = col_offset + text_len,
+        }
+        print("COL", col_offset, "END", col_offset + text_len)
+      end
+      col_offset = col_offset + text_len
+    end
   end,
-  [Node.Type.EXPANDABLE_NODE] = function(window, node, out)
+  [Node.Type.EXPANDABLE] = function(window, node, out)
     render_node[node.parent_node.type](window, node.parent_node, out)
     if node.is_expanded then
       render_node[node.child_node.type](window, node.child_node, out)
     end
   end,
-  [Node.Type.KEYMAP_NODE] = function(window, node, out)
+  [Node.Type.KEYMAP] = function(window, node, out)
     local parent_line = #out.lines + 1
     render_node[node.node.type](window, node.node, out)
     out.line_keymaps[parent_line] = node.keymap

@@ -26,27 +26,50 @@ function View:destroy()
   self.state = nil
 end
 
-local create_node_for_task = function(view, model, task)
-  local task_node = view.state.task_nodes[task.source_format]
-  -- Create new task only if it has not been persisted across redraws
-  if not task_node then
+local create_task_node = {
+  [TaskState.CONVERSION_STARTED] = function(task, source_format, _, _)
     local texts = {
-      "> " .. task.source_format,
-      (": successfully converted %s / %s snippets"):format(task.num_snippets, task.num_files),
+      source_format,
+      ": converting snippets... (found ",
+      tostring(task.num_snippets),
+      " snippets in",
+      tostring(task.num_input_files),
+      " input files)",
     }
-    task_node = Node.ExpandableNode(
-      Node.MultiHlTextNode(texts, { "Comment", "Comment" }, Node.Style.LEFT_PADDING),
+    return Node.MultiHlTextNode(texts, { "Statement", "", "Special", "", "Special", "" })
+  end,
+  [TaskState.CONVERSION_COMPLETED] = function(task, source_format, view, model)
+    local node_icons = {
+      [false] = "  ",
+      [true] = "  ",
+    }
+    local texts = {
+      node_icons[false],
+      source_format,
+      ": successfully converted ",
+      tostring(task.num_snippets - #task.failures),
+      " / ",
+      tostring(task.num_snippets),
+      " snippets",
+      " (",
+      tostring(task.num_input_files),
+      " input files)",
+    }
+    local task_node = Node.ExpandableNode(
+      Node.MultiHlTextNode(
+        texts,
+        { "", "Statement", "", "Special", "", "Special", "", "Comment", "Comment", "Comment" }
+      ),
       Node.HlTextNode("test", "Comment")
     )
-    view.state.task_nodes[task.source_format] = task_node
-  end
-
-  return Node.KeymapNode(task_node, "<cr>", function()
-    task_node.is_expanded = not task_node.is_expanded
-    -- Redraw view as the has layout changed
-    view:draw(model, true)
-  end)
-end
+    return Node.KeymapNode(task_node, "<cr>", function()
+      task_node.is_expanded = not task_node.is_expanded
+      texts[1] = node_icons[task_node.is_expanded]
+      -- Redraw view as the has layout changed
+      view:draw(model, true)
+    end)
+  end,
+}
 
 function View:draw(model, persist_view_state)
   if not persist_view_state then
@@ -61,8 +84,14 @@ function View:draw(model, persist_view_state)
     Node.Style.CENTERED
   )
   local nodes = { header_title, header_url, Node.NewLine() }
-  for _, task in ipairs(model.tasks) do
-    nodes[#nodes + 1] = create_node_for_task(self, model, task)
+  for source_format, task in pairs(model.tasks) do
+    local task_node = self.state.task_nodes[source_format]
+    -- Create new task only if it has not been persisted across redraws
+    if not task_node then
+      task_node = create_task_node[task.state](task, source_format, self, model)
+      self.state.task_nodes[source_format] = task_node
+    end
+    nodes[#nodes + 1] = task_node
   end
   self._window.draw(Node.RootNode(nodes))
 end
