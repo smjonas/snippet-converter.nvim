@@ -1,4 +1,4 @@
-local parser = require "snippet_converter.ultisnips.parser"
+local parser = require("snippet_converter.ultisnips.parser")
 
 describe("UltiSnips parser", function()
   describe("should parse", function()

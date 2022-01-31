@@ -24,7 +24,7 @@ function Controller:notify_conversion_started(source_format, num_snippets, num_f
     state = TaskState.STARTED,
     num_snippets = num_snippets,
     num_files = num_files,
-    failures = {}
+    failures = {},
   }
   self.model.tasks = tasks
   -- self.view:draw(self.model)

@@ -1,4 +1,4 @@
-local parser = require "snippet_converter.vscode.parser"
+local parser = require("snippet_converter.vscode.parser")
 
 describe("VSCode parser", function()
   describe("should parse", function()

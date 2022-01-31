@@ -6,7 +6,11 @@ describe("UltiSnips body parser", function()
     local input = "local ${1:name} = function($2)"
     local expected = {
       { text = "local ", type = NodeType.TEXT },
-      { int = "1", any = { { text = "name", type = NodeType.TEXT } }, type = NodeType.PLACEHOLDER },
+      {
+        int = "1",
+        any = { { text = "name", type = NodeType.TEXT } },
+        type = NodeType.PLACEHOLDER,
+      },
       { text = " = function(", type = NodeType.TEXT },
       { int = "2", type = NodeType.TABSTOP },
       { text = ")", type = NodeType.TEXT },

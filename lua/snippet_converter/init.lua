@@ -4,15 +4,15 @@ local loader = require("snippet_converter.loader")
 local M = {}
 
 local function validate_sources(sources)
-  vim.validate({
+  vim.validate {
     sources = {
       sources,
       "table",
     },
-  })
+  }
   local supported_formats = vim.tbl_keys(snippet_engines)
   for source_format, source_paths in ipairs(sources) do
-    vim.validate({
+    vim.validate {
       ["name of the source"] = {
         source_format,
         function(arg)
@@ -20,14 +20,14 @@ local function validate_sources(sources)
         end,
         "one of " .. vim.fn.join(supported_formats, ", "),
       },
-    })
+    }
     for _, source_path in ipairs(source_paths) do
-      vim.validate({
+      vim.validate {
         source_path = {
           source_path,
           "string", -- TODO: support * as path to find all files matching extension in rtp
         },
-      })
+      }
     end
   end
 end
@@ -131,7 +131,7 @@ M.convert_snippets = function()
     return
   end
 
-  controller:create_view({})
+  controller:create_view {}
   local snippet_paths = load_snippets(config.sources)
   local snippets = parse_snippets(controller, snippet_paths, config.sources)
   convert_snippets(controller, snippets, config.output)

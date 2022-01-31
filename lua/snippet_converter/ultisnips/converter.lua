@@ -82,7 +82,12 @@ local HEADER_STRING =
 -- @param filetype string @The filetype of the snippets
 -- @param output_dir string @The absolute path to the directory to write the snippets to
 M.export = function(converted_snippets, filetype, output_dir)
-  local snippet_lines = export_utils.snippet_strings_to_lines(converted_snippets, "\n", HEADER_STRING, nil)
+  local snippet_lines = export_utils.snippet_strings_to_lines(
+    converted_snippets,
+    "\n",
+    HEADER_STRING,
+    nil
+  )
   local output_path = string.format("%s/%s.snippets", output_dir, filetype)
   utils.write_file(snippet_lines, output_path)
 end

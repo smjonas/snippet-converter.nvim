@@ -1,4 +1,4 @@
-local parser = require "snippet_converter.snipmate.parser"
+local parser = require("snippet_converter.snipmate.parser")
 
 describe("SnipMate parser", function()
   describe("should parse", function()

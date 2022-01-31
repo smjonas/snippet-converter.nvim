@@ -11,8 +11,10 @@ view.register_keymap("<Esc>", function()
   window.close()
 end)
 
-window.draw({
+window.draw {
   lines = {
-    "a", "b", "c"
-  }
-})
+    "a",
+    "b",
+    "c",
+  },
+}

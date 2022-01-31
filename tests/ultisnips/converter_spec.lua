@@ -1,5 +1,5 @@
-local NodeType = require "snippet_converter.base.node_type"
-local converter = require "snippet_converter.ultisnips.converter"
+local NodeType = require("snippet_converter.base.node_type")
+local converter = require("snippet_converter.ultisnips.converter")
 
 describe("UltiSnips converter", function()
   describe("should convert snippet", function()
@@ -10,11 +10,19 @@ describe("UltiSnips converter", function()
         -- AST of snippet body
         body = {
           { type = NodeType.TEXT, text = "function " },
-          { type = NodeType.PLACEHOLDER, int = "1", any = { type = NodeType.TEXT, text = "name" } },
+          {
+            type = NodeType.PLACEHOLDER,
+            int = "1",
+            any = { type = NodeType.TEXT, text = "name" },
+          },
           { type = NodeType.TEXT, text = "(" },
           { type = NodeType.TABSTOP, int = "2" },
           { type = NodeType.TEXT, text = ")\n\t" },
-          { type = NodeType.PLACEHOLDER, int = "3", any = { type = NodeType.TEXT, text = "-- code" } },
+          {
+            type = NodeType.PLACEHOLDER,
+            int = "3",
+            any = { type = NodeType.TEXT, text = "-- code" },
+          },
           { type = NodeType.TEXT, text = "\nend" },
         },
       }
