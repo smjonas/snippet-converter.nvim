@@ -26,29 +26,27 @@ function View:destroy()
   self.state = nil
 end
 
-local create_node_for_task = {
-  [TaskState.STARTED] = function(view, model, task)
-    local task_node = view.state.task_nodes[task.source_format]
-    -- Create new task only if it has not been persisted across redraws
-    if not task_node then
-      local texts = {
-        "> " .. task.source_format,
-        (": successfully converted %s / %s snippets"):format(task.num_snippets, task.num_files),
-      }
-      task_node = Node.ExpandableNode(
-        Node.MultiHlTextNode(texts, { "Comment", "Comment" }, Node.Style.LEFT_PADDING),
-        Node.HlTextNode("test", "Comment")
-      )
-      view.state.task_nodes[task.source_format] = task_node
-    end
+local create_node_for_task = function(view, model, task)
+  local task_node = view.state.task_nodes[task.source_format]
+  -- Create new task only if it has not been persisted across redraws
+  if not task_node then
+    local texts = {
+      "> " .. task.source_format,
+      (": successfully converted %s / %s snippets"):format(task.num_snippets, task.num_files),
+    }
+    task_node = Node.ExpandableNode(
+      Node.MultiHlTextNode(texts, { "Comment", "Comment" }, Node.Style.LEFT_PADDING),
+      Node.HlTextNode("test", "Comment")
+    )
+    view.state.task_nodes[task.source_format] = task_node
+  end
 
-    return Node.KeymapNode(task_node, "<cr>", function()
-      task_node.is_expanded = not task_node.is_expanded
-      -- Redraw view as the has layout changed
-      view:draw(model, true)
-    end)
-  end,
-}
+  return Node.KeymapNode(task_node, "<cr>", function()
+    task_node.is_expanded = not task_node.is_expanded
+    -- Redraw view as the has layout changed
+    view:draw(model, true)
+  end)
+end
 
 function View:draw(model, persist_view_state)
   if not persist_view_state then
@@ -64,7 +62,7 @@ function View:draw(model, persist_view_state)
   )
   local nodes = { header_title, header_url, Node.NewLine() }
   for _, task in ipairs(model.tasks) do
-    nodes[#nodes + 1] = create_node_for_task[task.state](self, model, task)
+    nodes[#nodes + 1] = create_node_for_task(self, model, task)
   end
   self._window.draw(Node.RootNode(nodes))
 end

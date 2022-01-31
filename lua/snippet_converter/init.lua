@@ -89,14 +89,14 @@ local parse_snippets = function(controller, snippet_paths, sources)
       end
       num_files = num_files + #paths
     end
-    controller:add_task(source_format, num_snippets, num_files)
+    controller:notify_conversion_started(source_format, num_snippets, num_files)
   end
   return snippets
 end
 
-local convert_snippets = function(snippets, output)
-  local failures = {}
+local convert_snippets = function(controller, snippets, output)
   for source_format, snippets_for_format in pairs(snippets) do
+    local failures = {}
     for target_format, output_paths in pairs(output) do
       local converter = require(snippet_engines[target_format].converter)
       local converted_snippets = {}
@@ -110,7 +110,7 @@ local convert_snippets = function(snippets, output)
           else
             failures[#failures + 1] = {
               msg = converted_snippet,
-              -- snippet = converted_snippet,
+              snippet = converted_snippet,
             }
           end
         end
@@ -118,9 +118,9 @@ local convert_snippets = function(snippets, output)
           converter.export(converted_snippets, filetype, output_path)
         end
       end
+      controller:notify_conversion_completed(source_format, target_format, failures)
     end
   end
-  return failures
 end
 
 local controller = require("snippet_converter.ui.controller"):new()
@@ -134,8 +134,8 @@ M.convert_snippets = function()
   controller:create_view({})
   local snippet_paths = load_snippets(config.sources)
   local snippets = parse_snippets(controller, snippet_paths, config.sources)
-  local failures = convert_snippets(snippets, config.output)
-  print(vim.inspect(failures))
+  convert_snippets(controller, snippets, config.output)
+  -- print(vim.inspect(failures))
 end
 
 return M

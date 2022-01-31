@@ -73,7 +73,7 @@ render_node = {
       line = node.text
     end
     local line_idx = #out.lines
-    out.lines[#out.lines + 1] = line
+    out.lines[line_idx + 1] = line
     out.highlights[#out.highlights + 1] = {
       hl_group = node.hl_group,
       line = line_idx,
@@ -95,9 +95,9 @@ render_node = {
     end
   end,
   [Node.Type.KEYMAP_NODE] = function(window, node, out)
+    local parent_line = #out.lines + 1
     render_node[node.node.type](window, node.node, out)
-    local cur_line = #out.lines
-    out.line_keymaps[cur_line] = node.keymap
+    out.line_keymaps[parent_line] = node.keymap
   end,
   [Node.Type.NEW_LINE] = function(_, _, out)
     out.lines[#out.lines + 1] = ""

@@ -17,14 +17,23 @@ function Controller:create_view(model)
   self.view:open()
 end
 
-function Controller:add_task(source_format, num_snippets, num_files)
+function Controller:notify_conversion_started(source_format, num_snippets, num_files)
+  print(1)
   local tasks = self.model.tasks or {}
-  tasks[#tasks + 1] = {
+  tasks[source_format] = {
     state = TaskState.STARTED,
-    source_format = snippet_engines[source_format].label,
     num_snippets = num_snippets,
     num_files = num_files,
+    failures = {}
   }
+  self.model.tasks = tasks
+  -- self.view:draw(self.model)
+end
+
+function Controller:notify_conversion_completed(source_format, target_format, failures)
+  print(2)
+  local tasks = self.model.tasks or {}
+  tasks[source_format].failures[target_format] = failures
   self.model.tasks = tasks
   self.view:draw(self.model)
 end
