@@ -42,21 +42,26 @@ Node.MultiHlTextNode = function(texts, hl_groups, style)
   }
 end
 
-Node.ExpandableNode = function(parent_node, child_node)
+Node.KeymapNode = function(node, lhs, callback)
   return {
-    type = Type.EXPANDABLE,
-    parent_node = parent_node,
-    child_node = child_node,
-    is_expanded = false,
+    type = Type.KEYMAP,
+    node = node,
+    keymap = { lhs = lhs, callback = callback },
   }
 end
 
-Node.KeymapNode = function(_node, lhs, callback)
-  return {
-    type = Type.KEYMAP,
-    node = _node,
-    keymap = { lhs = lhs, callback = callback },
+Node.ExpandableNode = function(parent_node, child_node, on_toggle_callback, initial_state)
+  local node = {
+    type = Type.EXPANDABLE,
+    parent_node = parent_node,
+    child_node = child_node,
+    is_expanded = initial_state or false,
   }
+
+  return Node.KeymapNode(node, "<cr>", function()
+    node.is_expanded = not node.is_expanded
+    on_toggle_callback(node.is_expanded)
+  end)
 end
 
 Node.NewLine = function()

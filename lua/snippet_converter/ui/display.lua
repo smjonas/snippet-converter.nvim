@@ -25,9 +25,9 @@ M.handle_keymap = function(hex_lhs)
   global_keymaps[lhs]()
 end
 
-M.handle_line_keymap = function(win_id, line, hex_lhs)
-  local cursor_pos = vim.api.nvim_win_get_cursor(win_id)
-  if cursor_pos[1] == line then
+M.handle_line_keymap = function(win_id, hex_lhs)
+  local line = vim.api.nvim_win_get_cursor(win_id)[1]
+  if line_keymaps[line] then
     local lhs = from_hex(hex_lhs)
     line_keymaps[line][lhs]()
   end
@@ -235,8 +235,8 @@ M.new_window = function()
       if keymap then
         line_keymaps[line] = { [keymap.lhs] = keymap.callback }
         local cmd_string = (
-          "<cmd>lua require('snippet_converter.ui.display').handle_line_keymap(%d,%d"
-        ):format(win_id, line)
+          "<cmd>lua require('snippet_converter.ui.display').handle_line_keymap(%d"
+        ):format(win_id)
         set_keymap(bufnr, keymap.lhs, cmd_string .. ",%q)<cr>")
       end
     end

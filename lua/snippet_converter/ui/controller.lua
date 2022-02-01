@@ -42,7 +42,7 @@ function Controller:notify_conversion_completed(
   local target_label = snippet_engines[target_format].label
 
   tasks[source_label].state = TaskState.CONVERSION_COMPLETED
-  tasks[source_label].failures[source_label] = failures
+  tasks[source_label].failures[target_label] = failures
   tasks[source_label].num_output_files[target_label] = num_output_files
   self.model.tasks = tasks
 

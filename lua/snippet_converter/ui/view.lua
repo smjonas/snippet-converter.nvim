@@ -26,61 +26,101 @@ function View:destroy()
   self.state = nil
 end
 
+local amount_to_files_string = function(amount)
+  if amount == 1 then
+    return "file"
+  else
+    return "files"
+  end
+end
+
+local create_failure_node = function(failures, num_failures, view)
+  local node_icons = {
+    [false] = "  ",
+    [true] = "  ",
+  }
+  local texts = {
+    node_icons[false],
+    tostring(num_failures) .. " snippets could not be converted. ",
+    "Press enter to view details",
+  }
+  local failure_nodes = { Node.NewLine() }
+  for i, failure in ipairs(failures) do
+    print(vim.inspect(failure.msg))
+    failure_nodes[i + 1] = Node.HlTextNode(failure.msg, "", Node.Style.Padding(5))
+  end
+  return Node.ExpandableNode(
+    Node.MultiHlTextNode(texts, { "", "", "Comment" }, Node.Style.Padding(5)),
+    Node.RootNode(failure_nodes),
+    function(is_expanded)
+      texts[1] = node_icons[is_expanded]
+      -- Redraw view as the has layout changed
+      view:draw(view.model, true)
+    end
+  )
+end
+
 local create_task_node = {
-  [TaskState.CONVERSION_STARTED] = function(task, source_format, _, _)
+  [TaskState.CONVERSION_STARTED] = function(task, source_format, _)
     local texts = {
       source_format,
       ": converting snippets... (found ",
       tostring(task.num_snippets),
       " snippets in",
-      tostring(task.num_input_files) .. " input files)",
+      ("%d input %s)"):format(task.num_input_files, amount_to_files_string(task.num_input_files)),
     }
     return Node.MultiHlTextNode(texts, { "Statement", "", "Special", "", "Comment" })
   end,
-  [TaskState.CONVERSION_COMPLETED] = function(task, source_format, view, model)
+  [TaskState.CONVERSION_COMPLETED] = function(task, source_format, view)
     local node_icons = {
       [false] = "  ",
       [true] = "  ",
     }
     local texts = {
-      node_icons[false],
+      node_icons[true],
       source_format,
       ": successfully converted ",
-      tostring(task.num_snippets - model.max_num_failures),
+      tostring(task.num_snippets - view.model.max_num_failures),
       " / ",
       tostring(task.num_snippets),
       " snippets ",
       "(" .. tostring(task.num_input_files) .. " input files)",
     }
-    local child_nodes = { Node.NewLine() }
+    local child_nodes = {}
     for target_format, failures in pairs(task.failures) do
-      local child_texts = {
+      local num_failures = #failures
+      local num_output_files = task.num_output_files[target_format]
+      local success_texts = {
+        "- ",
         source_format,
         " -> ",
         target_format,
-        ": converted ",
-        tostring(task.num_snippets - #failures),
-        " / ",
-        tostring(task.num_snippets),
-        " snippets. ",
-        "(" .. tostring(task.num_output_files) .. " output files)",
+        (" (%d output %s)"):format(num_output_files, amount_to_files_string(num_output_files)),
       }
-      child_nodes[#child_nodes + 1] = Node.MultiHlTextNode(
-        child_texts,
-        { "Statement", "", "Statement", "", "Special", "", "Special", "", "Comment" },
-        Node.Style.Padding(3)
-      )
+      local failure_node
+      if num_failures > 0 then
+        print(vim.inspect(failures))
+        failure_node = create_failure_node(failures, num_failures, view)
+      end
+      child_nodes[#child_nodes + 1] = Node.RootNode {
+        Node.MultiHlTextNode(
+          success_texts,
+          { "", "Statement", "", "Statement", "Comment" },
+          Node.Style.Padding(3)
+        ),
+        failure_node,
+      }
     end
-    local task_node = Node.ExpandableNode(
+    return Node.ExpandableNode(
       Node.MultiHlTextNode(texts, { "", "Statement", "", "Special", "", "Special", "", "Comment" }),
-      Node.RootNode(child_nodes)
+      Node.RootNode(child_nodes),
+      function(is_expanded)
+        texts[1] = node_icons[is_expanded]
+        -- Redraw view as the has layout changed
+        view:draw(view.model, true)
+      end,
+      true
     )
-    return Node.KeymapNode(task_node, "<cr>", function()
-      task_node.is_expanded = not task_node.is_expanded
-      texts[1] = node_icons[task_node.is_expanded]
-      -- Redraw view as the has layout changed
-      view:draw(model, true)
-    end)
   end,
 }
 
@@ -90,6 +130,7 @@ function View:draw(model, persist_view_state)
       task_nodes = {},
     }
   end
+  self.model = model
   local header_title = Node.HlTextNode("snippet-converter.nvim", "Title", Node.Style.Centered())
   local header_url = Node.HlTextNode(
     "https://github.com/smjonas/snippet-converter.nvim",
@@ -101,7 +142,7 @@ function View:draw(model, persist_view_state)
     local task_node = self.state.task_nodes[source_format]
     -- Create new task only if it has not been persisted across redraws
     if not task_node then
-      task_node = create_task_node[task.state](task, source_format, self, model)
+      task_node = create_task_node[task.state](task, source_format, self)
       self.state.task_nodes[source_format] = task_node
     end
     nodes[#nodes + 1] = task_node
