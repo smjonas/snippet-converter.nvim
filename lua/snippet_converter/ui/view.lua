@@ -4,8 +4,9 @@ local TaskState = require("snippet_converter.ui.task_state")
 
 local View = {}
 
-View.new = function()
+View.new = function(settings)
   local self = {
+    settings = settings,
     _window = display.new_window(),
   }
   local global_keymaps = {
@@ -26,6 +27,22 @@ function View:destroy()
   self.state = nil
 end
 
+function View:get_node_icons(is_expanded)
+  if self.settings.use_nerdfont_icons then
+    if is_expanded then
+      return "  "
+    else
+      return "  "
+    end
+  else
+    if is_expanded then
+      return " \\ "
+    else
+      return " > "
+    end
+  end
+end
+
 local amount_to_files_string = function(amount)
   if amount == 1 then
     return "file"
@@ -35,25 +52,20 @@ local amount_to_files_string = function(amount)
 end
 
 local create_failure_node = function(failures, num_failures, view)
-  local node_icons = {
-    [false] = "  ",
-    [true] = "  ",
-  }
   local texts = {
-    node_icons[false],
+    view:get_node_icons(false),
     tostring(num_failures) .. " snippets could not be converted. ",
     "Press enter to view details",
   }
   local failure_nodes = { Node.NewLine() }
   for i, failure in ipairs(failures) do
-    print(vim.inspect(failure.msg))
     failure_nodes[i + 1] = Node.HlTextNode(failure.msg, "", Node.Style.Padding(5))
   end
   return Node.ExpandableNode(
-    Node.MultiHlTextNode(texts, { "", "", "Comment" }, Node.Style.Padding(5)),
+    Node.MultiHlTextNode(texts, { "", "", "Comment" }, Node.Style.Padding(4)),
     Node.RootNode(failure_nodes),
     function(is_expanded)
-      texts[1] = node_icons[is_expanded]
+      texts[1] = view:get_node_icons(is_expanded)
       -- Redraw view as the has layout changed
       view:draw(view.model, true)
     end
@@ -72,12 +84,8 @@ local create_task_node = {
     return Node.MultiHlTextNode(texts, { "Statement", "", "Special", "", "Comment" })
   end,
   [TaskState.CONVERSION_COMPLETED] = function(task, source_format, view)
-    local node_icons = {
-      [false] = "  ",
-      [true] = "  ",
-    }
     local texts = {
-      node_icons[true],
+      view:get_node_icons(true),
       source_format,
       ": successfully converted ",
       tostring(task.num_snippets - view.model.max_num_failures),
@@ -99,7 +107,6 @@ local create_task_node = {
       }
       local failure_node
       if num_failures > 0 then
-        print(vim.inspect(failures))
         failure_node = create_failure_node(failures, num_failures, view)
       end
       child_nodes[#child_nodes + 1] = Node.RootNode {
@@ -115,7 +122,7 @@ local create_task_node = {
       Node.MultiHlTextNode(texts, { "", "Statement", "", "Special", "", "Special", "", "Comment" }),
       Node.RootNode(child_nodes),
       function(is_expanded)
-        texts[1] = node_icons[is_expanded]
+        texts[1] = view:get_node_icons(is_expanded)
         -- Redraw view as the has layout changed
         view:draw(view.model, true)
       end,

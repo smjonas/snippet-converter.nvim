@@ -8,12 +8,12 @@ Controller.new = function()
   return setmetatable({}, { __index = Controller })
 end
 
-function Controller:create_view(model)
+function Controller:create_view(model, settings)
   if self.view ~= nil then
     self.view:destroy()
   end
   self.model = model
-  self.view = view:new()
+  self.view = view.new(settings)
   self.view:open()
 end
 

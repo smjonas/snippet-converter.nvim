@@ -1,41 +1,19 @@
 local snippet_engines = require("snippet_converter.snippet_engines")
+local config = require("snippet_converter.config")
 local loader = require("snippet_converter.loader")
 
 local M = {}
 
-local function validate_sources(sources)
-  vim.validate {
-    sources = {
-      sources,
-      "table",
-    },
-  }
-  local supported_formats = vim.tbl_keys(snippet_engines)
-  for source_format, source_paths in ipairs(sources) do
-    vim.validate {
-      ["name of the source"] = {
-        source_format,
-        function(arg)
-          return vim.tbl_contains(supported_formats, arg)
-        end,
-        "one of " .. vim.fn.join(supported_formats, ", "),
-      },
-    }
-    for _, source_path in ipairs(source_paths) do
-      vim.validate {
-        source_path = {
-          source_path,
-          "string", -- TODO: support * as path to find all files matching extension in rtp
-        },
-      }
-    end
-  end
+local settings
+M.setup = function(user_settings)
+  settings = config.merge_settings(user_settings)
+  config.validate_settings(settings)
 end
 
-local config
-M.setup = function(user_config)
-  validate_sources(user_config.sources)
-  config = user_config
+local cur_pipeline
+M.set_pipeline = function(pipeline)
+  config.validate_sources(pipeline.sources, snippet_engines)
+  cur_pipeline = pipeline
 end
 
 -- Partitions the snippet paths into a table of <filetype, [snippet_paths]>
@@ -130,11 +108,10 @@ M.convert_snippets = function()
     return
   end
 
-  controller:create_view {}
-  local snippet_paths = load_snippets(config.sources)
-  local snippets = parse_snippets(controller, snippet_paths, config.sources)
-  convert_snippets(controller, snippets, config.output)
-  -- print(vim.inspect(failures))
+  controller:create_view({}, settings)
+  local snippet_paths = load_snippets(cur_pipeline.sources)
+  local snippets = parse_snippets(controller, snippet_paths, cur_pipeline.sources)
+  convert_snippets(controller, snippets, cur_pipeline.output)
 end
 
 return M
