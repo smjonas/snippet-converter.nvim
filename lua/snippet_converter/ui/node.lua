@@ -1,5 +1,3 @@
-local Node = {}
-
 local Type = {
   ROOT = 1,
   HL_TEXT = 2,
@@ -11,6 +9,12 @@ local Type = {
 
 local Style = {
   CENTERED = 1,
+  PADDING = 2,
+}
+
+local Node = {
+  Type = Type,
+  Style = Style,
 }
 
 Node.RootNode = function(child_nodes)
@@ -47,10 +51,10 @@ Node.ExpandableNode = function(parent_node, child_node)
   }
 end
 
-Node.KeymapNode = function(node, lhs, callback)
+Node.KeymapNode = function(_node, lhs, callback)
   return {
     type = Type.KEYMAP,
-    node = node,
+    node = _node,
     keymap = { lhs = lhs, callback = callback },
   }
 end
@@ -61,6 +65,17 @@ Node.NewLine = function()
   }
 end
 
-Node.Type = Type
-Node.Style = Style
+Style.Centered = function()
+  return {
+    type = Style.CENTERED,
+  }
+end
+
+Style.Padding = function(amount)
+  return {
+    type = Style.PADDING,
+    pad_amount = amount,
+  }
+end
+
 return Node

@@ -117,7 +117,7 @@ local convert_snippets = function(controller, snippets, output)
           converter.export(converted_snippets, filetype, output_path)
         end
       end
-      controller:notify_conversion_completed(source_format, target_format, failures)
+      controller:notify_conversion_completed(source_format, target_format, #output_paths, failures)
     end
   end
 end

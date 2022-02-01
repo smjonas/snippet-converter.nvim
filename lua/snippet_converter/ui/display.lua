@@ -49,10 +49,14 @@ local create_popup_window_opts = function()
 end
 
 local apply_style = function(window, text, style)
-  if style == Node.Style.CENTERED then
+  if style.type == Node.Style.CENTERED then
     local padding = math.floor((window.width - #text) / 2)
     return (" "):rep(math.max(0, padding)) .. text
+  elseif style.type == Node.Style.PADDING then
+    local padding = (" "):rep(style.pad_amount)
+    return padding .. text
   end
+
 end
 
 -- TODO: redraw
@@ -94,14 +98,12 @@ render_node = {
       local text_len = #node.texts[i]
       -- Ignore empty highlight groups
       if hl_group ~= "" then
-        print(node.texts[i])
         out.highlights[#out.highlights + 1] = {
           hl_group = hl_group,
           line = line_idx,
           col_start = col_offset,
           col_end = col_offset + text_len,
         }
-        print("COL", col_offset, "END", col_offset + text_len)
       end
       col_offset = col_offset + text_len
     end

@@ -33,10 +33,9 @@ local create_task_node = {
       ": converting snippets... (found ",
       tostring(task.num_snippets),
       " snippets in",
-      tostring(task.num_input_files),
-      " input files)",
+      tostring(task.num_input_files) .. " input files)",
     }
-    return Node.MultiHlTextNode(texts, { "Statement", "", "Special", "", "Special", "" })
+    return Node.MultiHlTextNode(texts, { "Statement", "", "Special", "", "Comment" })
   end,
   [TaskState.CONVERSION_COMPLETED] = function(task, source_format, view, model)
     local node_icons = {
@@ -47,20 +46,34 @@ local create_task_node = {
       node_icons[false],
       source_format,
       ": successfully converted ",
-      tostring(task.num_snippets - #task.failures),
+      tostring(task.num_snippets - model.max_num_failures),
       " / ",
       tostring(task.num_snippets),
-      " snippets",
-      " (",
-      tostring(task.num_input_files),
-      " input files)",
+      " snippets ",
+      "(" .. tostring(task.num_input_files) .. " input files)",
     }
+    local child_nodes = { Node.NewLine() }
+    for target_format, failures in pairs(task.failures) do
+      local child_texts = {
+        source_format,
+        " -> ",
+        target_format,
+        ": converted ",
+        tostring(task.num_snippets - #failures),
+        " / ",
+        tostring(task.num_snippets),
+        " snippets. ",
+        "(" .. tostring(task.num_output_files) .. " output files)",
+      }
+      child_nodes[#child_nodes + 1] = Node.MultiHlTextNode(
+        child_texts,
+        { "Statement", "", "Statement", "", "Special", "", "Special", "", "Comment" },
+        Node.Style.Padding(3)
+      )
+    end
     local task_node = Node.ExpandableNode(
-      Node.MultiHlTextNode(
-        texts,
-        { "", "Statement", "", "Special", "", "Special", "", "Comment", "Comment", "Comment" }
-      ),
-      Node.HlTextNode("test", "Comment")
+      Node.MultiHlTextNode(texts, { "", "Statement", "", "Special", "", "Special", "", "Comment" }),
+      Node.RootNode(child_nodes)
     )
     return Node.KeymapNode(task_node, "<cr>", function()
       task_node.is_expanded = not task_node.is_expanded
@@ -77,11 +90,11 @@ function View:draw(model, persist_view_state)
       task_nodes = {},
     }
   end
-  local header_title = Node.HlTextNode("snippet-converter.nvim", "Title", Node.Style.CENTERED)
+  local header_title = Node.HlTextNode("snippet-converter.nvim", "Title", Node.Style.Centered())
   local header_url = Node.HlTextNode(
     "https://github.com/smjonas/snippet-converter.nvim",
     "Comment",
-    Node.Style.CENTERED
+    Node.Style.Centered()
   )
   local nodes = { header_title, header_url, Node.NewLine() }
   for source_format, task in pairs(model.tasks) do
