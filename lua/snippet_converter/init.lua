@@ -1,6 +1,7 @@
 local snippet_engines = require("snippet_converter.snippet_engines")
 local config = require("snippet_converter.config")
 local loader = require("snippet_converter.loader")
+local Model = require("snippet_converter.ui.model")
 
 local M = {}
 
@@ -45,7 +46,7 @@ local load_snippets = function(sources)
   return snippet_paths
 end
 
-local parse_snippets = function(controller, snippet_paths, sources)
+local parse_snippets = function(model, snippet_paths, sources)
   local snippets = {}
   for source_format, _ in pairs(sources) do
     snippets[source_format] = {}
@@ -68,12 +69,12 @@ local parse_snippets = function(controller, snippet_paths, sources)
       end
       num_files = num_files + #paths
     end
-    controller:notify_conversion_started(source_format, num_snippets, num_files, parser_errors)
+    model:submit_task(source_format, num_snippets, num_files, parser_errors)
   end
   return snippets
 end
 
-local convert_snippets = function(controller, snippets, output)
+local convert_snippets = function(model, snippets, output)
   for source_format, snippets_for_format in pairs(snippets) do
     local failures = {}
     for target_format, output_paths in pairs(output) do
@@ -97,7 +98,7 @@ local convert_snippets = function(controller, snippets, output)
           converter.export(converted_snippets, filetype, output_path)
         end
       end
-      controller:notify_conversion_completed(source_format, target_format, #output_paths, failures)
+      model:complete_task(source_format, target_format, #output_paths, failures)
     end
   end
 end
@@ -110,13 +111,13 @@ M.convert_snippets = function()
     return
   end
 
-  local model = {}
+  local model = Model.new()
   -- Make sure the window shows up before any potential long-running operations
   controller:create_view(model, settings)
   vim.schedule(function()
     local snippet_paths = load_snippets(cur_pipeline.sources)
-    local snippets = parse_snippets(controller, snippet_paths, cur_pipeline.sources)
-    convert_snippets(controller, snippets, cur_pipeline.output)
+    local snippets = parse_snippets(model, snippet_paths, cur_pipeline.sources)
+    convert_snippets(model, snippets, cur_pipeline.output)
     controller:finalize()
   end)
 end
