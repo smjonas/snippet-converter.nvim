@@ -15,6 +15,7 @@ function Controller:create_view(model, settings)
   self.model = model
   self.view = view.new(settings)
   self.view:open()
+  self.view:draw(model, false, true)
 end
 
 function Controller:notify_conversion_started(source_format, num_snippets, num_input_files)
@@ -27,7 +28,6 @@ function Controller:notify_conversion_started(source_format, num_snippets, num_i
     failures = {},
   }
   self.model.tasks = tasks
-  self.view:draw(self.model)
 end
 
 function Controller:notify_conversion_completed(
@@ -45,9 +45,11 @@ function Controller:notify_conversion_completed(
   tasks[source_label].failures[target_label] = failures
   tasks[source_label].num_output_files[target_label] = num_output_files
   self.model.tasks = tasks
-
   self.model.max_num_failures = math.max(self.model.max_num_failures or 0, #failures)
-  self.view:draw(self.model)
+end
+
+function Controller:finalize()
+  self.view:draw(self.model, false, false)
 end
 
 return Controller

@@ -56,7 +56,6 @@ local apply_style = function(window, text, style)
     local padding = (" "):rep(style.pad_amount)
     return padding .. text
   end
-
 end
 
 -- TODO: redraw

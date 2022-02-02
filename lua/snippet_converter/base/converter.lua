@@ -1,4 +1,5 @@
 local NodeType = require("snippet_converter.base.node_type")
+local err = require("snippet_converter.error")
 
 local converter = {}
 
@@ -46,8 +47,8 @@ converter.default_node_handler = function(custom_node_handler)
       return node.text
     end,
   }, {
-    __index = function(_, key)
-      error("[snippet_converter]: no handler found for node " .. NodeType.to_string(key))
+    __index = function(_, node_type)
+      err.raise_converter_error(NodeType.to_string(node_type))
     end,
   })
   return default

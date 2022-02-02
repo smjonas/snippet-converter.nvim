@@ -53,6 +53,7 @@ local parse_snippets = function(controller, snippet_paths, sources)
     local num_files = 0
 
     local parser = require(snippet_engines[source_format].parser)
+    local parser_errors = {}
     for filetype, paths in pairs(snippet_paths[source_format]) do
       if snippets[source_format][filetype] == nil then
         snippets[source_format][filetype] = {}
@@ -60,13 +61,14 @@ local parse_snippets = function(controller, snippet_paths, sources)
       for _, path in ipairs(paths) do
         local num_new_snippets = parser.parse(
           snippets[source_format][filetype],
-          parser.get_lines(path)
+          parser.get_lines(path),
+          parser_errors
         )
         num_snippets = num_snippets + num_new_snippets
       end
       num_files = num_files + #paths
     end
-    controller:notify_conversion_started(source_format, num_snippets, num_files)
+    controller:notify_conversion_started(source_format, num_snippets, num_files, parser_errors)
   end
   return snippets
 end
@@ -108,10 +110,15 @@ M.convert_snippets = function()
     return
   end
 
-  controller:create_view({}, settings)
-  local snippet_paths = load_snippets(cur_pipeline.sources)
-  local snippets = parse_snippets(controller, snippet_paths, cur_pipeline.sources)
-  convert_snippets(controller, snippets, cur_pipeline.output)
+  local model = {}
+  -- Make sure the window shows up before any potential long-running operations
+  controller:create_view(model, settings)
+  vim.schedule(function()
+    local snippet_paths = load_snippets(cur_pipeline.sources)
+    local snippets = parse_snippets(controller, snippet_paths, cur_pipeline.sources)
+    convert_snippets(controller, snippets, cur_pipeline.output)
+    controller:finalize()
+  end)
 end
 
 return M

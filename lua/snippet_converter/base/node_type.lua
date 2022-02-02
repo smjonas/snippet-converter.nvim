@@ -16,16 +16,16 @@ local NodeType = {
 }
 
 local _to_string = {
-  "TABSTOP",
-  "PLACEHOLDER",
-  "CHOICE",
-  "TEXT",
-  "TRANSFORM",
-  "FORMAT",
-  "VARIABLE",
-  "PYTHON_CODE",
-  "SHELL_CODE",
-  "VIMSCRIPT_CODE",
+  "tabstop",
+  "placeholder",
+  "choice",
+  "text",
+  "transform",
+  "format",
+  "variable",
+  "python code",
+  "shell code",
+  "vimscript code",
 }
 
 NodeType.to_string = function(type)
