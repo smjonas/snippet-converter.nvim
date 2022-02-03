@@ -1,8 +1,8 @@
-local NodeType = require("snippet_converter.base.node_type")
-local Variable = require("snippet_converter.vscode.body_parser").Variable
-local base_converter = require("snippet_converter.base.converter")
-local utils = require("snippet_converter.utils")
-local export_utils = require("snippet_converter.base.export_utils")
+local NodeType = require("snippet_converter.core.node_type")
+local Variable = require("snippet_converter.core.vscode.body_parser").Variable
+local base_converter = require("snippet_converter.core.converter")
+local utils = require("snippet_converter.utils.file_utils")
+local export_utils = require("snippet_converter.utils.export_utils")
 
 local M = {}
 

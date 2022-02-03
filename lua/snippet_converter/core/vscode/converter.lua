@@ -1,9 +1,9 @@
 local M = {}
 
-local NodeType = require("snippet_converter.base.node_type")
-local base_converter = require("snippet_converter.base.converter")
-local utils = require("snippet_converter.utils")
-local export_utils = require("snippet_converter.base.export_utils")
+local NodeType = require("snippet_converter.core.node_type")
+local base_converter = require("snippet_converter.core.converter")
+local utils = require("snippet_converter.utils.file_utils")
+local export_utils = require("snippet_converter.utils.export_utils")
 
 M.ultisnips_node_handler = setmetatable({
   [NodeType.TABSTOP] = function(node)

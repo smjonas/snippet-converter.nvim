@@ -1,20 +1,22 @@
-local parser = require("snippet_converter.snipmate.parser")
+local parser = require("snippet_converter.core.ultisnips.parser")
 
-describe("SnipMate parser", function()
+describe("UltiSnips parser", function()
   describe("should parse", function()
     it("multiple snippets", function()
       local lines = vim.split(
         [[
-snippet fn function
-	function ${1:name}($2)
-		${3:-- code}
-	end
+snippet fn "function" bA
+function ${1:name}($2)
+	${3:-- code}
+end
+endsnippet
 
-# A comment
+hey
 snippet for
-	for ${1:i}=${2:1},${3:10} do
-		${0:print(i)}
-	end
+for ${1:i}=${2:1},${3:10} do
+	${0:print(i)}
+end
+endsnippet
 
       ]],
         "\n"
@@ -23,6 +25,7 @@ snippet for
         {
           trigger = "fn",
           description = "function",
+          options = "bA",
           body = { "function ${1:name}($2)", "\t${3:-- code}", "end" },
         },
         {

@@ -1,5 +1,5 @@
-local p = require("snippet_converter.base.parser_utils")
-local NodeType = require("snippet_converter.base.node_type")
+local p = require("snippet_converter.core.parser_utils")
+local NodeType = require("snippet_converter.core.node_type")
 
 local Variable = {
   TM_CURRENT_LINE = "TM_CURRENT_LINE",

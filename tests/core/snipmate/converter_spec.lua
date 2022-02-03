@@ -1,4 +1,4 @@
-local converter = require("snippet_converter.snipmate.converter")
+local converter = require("snippet_converter.core.snipmate.converter")
 
 describe("SnipMate converter", function()
   describe("should convert snippet", function()

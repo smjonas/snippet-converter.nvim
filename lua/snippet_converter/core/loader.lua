@@ -1,5 +1,5 @@
 local snippet_engines = require("snippet_converter.snippet_engines")
-local utils = require("snippet_converter.utils")
+local utils = require("snippet_converter.utils.file_utils")
 
 local loader = {}
 

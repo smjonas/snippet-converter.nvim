@@ -1,4 +1,4 @@
-local parser = require("snippet_converter.ultisnips.header_parser")
+local parser = require("snippet_converter.core.ultisnips.header_parser")
 
 describe("parser for grammar", function()
   describe("with terminal symbol", function()

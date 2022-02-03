@@ -1,6 +1,6 @@
 local snippet_engines = require("snippet_converter.snippet_engines")
 local config = require("snippet_converter.config")
-local loader = require("snippet_converter.loader")
+local loader = require("snippet_converter.core.loader")
 local Model = require("snippet_converter.ui.model")
 
 local M = {}

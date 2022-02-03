@@ -1,5 +1,5 @@
-local parser = require("snippet_converter.ultisnips.body_parser")
-local NodeType = require("snippet_converter.base.node_type")
+local parser = require("snippet_converter.core.ultisnips.body_parser")
+local NodeType = require("snippet_converter.core.node_type")
 
 describe("UltiSnips body parser", function()
   it("should parse tabstop and placeholder", function()

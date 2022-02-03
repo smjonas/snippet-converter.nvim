@@ -1,7 +1,7 @@
-local header_parser = require("snippet_converter.ultisnips.header_parser")
-local body_parser = require("snippet_converter.ultisnips.body_parser")
-local utils = require("snippet_converter.utils")
-local err = require("snippet_converter.error")
+local header_parser = require("snippet_converter.core.ultisnips.header_parser")
+local body_parser = require("snippet_converter.core.ultisnips.body_parser")
+local utils = require("snippet_converter.utils.file_utils")
+local err = require("snippet_converter.utils.error")
 
 local parser = {}
 

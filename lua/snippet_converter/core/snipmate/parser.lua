@@ -1,4 +1,4 @@
-local utils = require("snippet_converter.utils")
+local utils = require("snippet_converter.utils.file_utils")
 
 local parser = {}
 

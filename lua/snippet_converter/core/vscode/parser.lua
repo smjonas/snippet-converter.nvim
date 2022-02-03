@@ -1,6 +1,6 @@
-local body_parser = require("snippet_converter.vscode.body_parser")
-local utils = require("snippet_converter.utils")
-local err = require("snippet_converter.error")
+local body_parser = require("snippet_converter.core.vscode.body_parser")
+local utils = require("snippet_converter.utils.file_utils")
+local err = require("snippet_converter.utils.error")
 
 local parser = {}
 

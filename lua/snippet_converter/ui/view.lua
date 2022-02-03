@@ -1,6 +1,5 @@
 local display = require("snippet_converter.ui.display")
 local Node = require("snippet_converter.ui.node")
-local TaskState = require("snippet_converter.ui.task_state")
 
 local View = {}
 

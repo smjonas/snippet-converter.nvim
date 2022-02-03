@@ -1,5 +1,5 @@
-local parser = require("snippet_converter.vscode.body_parser")
-local NodeType = require("snippet_converter.base.node_type")
+local parser = require("snippet_converter.core.vscode.body_parser")
+local NodeType = require("snippet_converter.core.node_type")
 
 describe("VSCode body parser", function()
   it("should parse tabstop and placeholder", function()
@@ -7,7 +7,7 @@ describe("VSCode body parser", function()
     local actual = parser.parse(input)
     local expected = {
       { text = "local " },
-      { int = "1", any = { text = "name" }, type = NodeType.PLACEHOLDER },
+      { int = "1", any = { type = NodeType.TEXT, text = "name" }, type = NodeType.PLACEHOLDER },
       { text = " = function(" },
       { int = "2", type = NodeType.TABSTOP },
       { text = ")" },
@@ -52,7 +52,7 @@ describe("VSCode body parser", function()
 
   it("should handle escaped chars in text element", function()
     local input = [[\\\$\}]]
-    local expected = { { text = [[\$}]] } }
+    local expected = { { type = NodeType.TEXT, text = [[\$}]] } }
     assert.are_same(expected, parser.parse(input))
   end)
 

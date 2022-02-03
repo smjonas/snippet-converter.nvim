@@ -1,5 +1,5 @@
-local NodeType = require("snippet_converter.base.node_type")
-local converter = require("snippet_converter.ultisnips.converter")
+local NodeType = require("snippet_converter.core.node_type")
+local converter = require("snippet_converter.core.ultisnips.converter")
 
 describe("UltiSnips converter", function()
   describe("should convert snippet", function()
