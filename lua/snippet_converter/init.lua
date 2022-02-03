@@ -61,7 +61,7 @@ local parse_snippets = function(model, snippet_paths, sources)
       end
       for _, path in ipairs(paths) do
         local num_new_snippets = parser.parse(
-          parser.get_lines(path),
+          path,
           snippets[source_format][filetype],
           parser_errors
         )
@@ -90,7 +90,7 @@ local convert_snippets = function(model, snippets, output)
           else
             failures[#failures + 1] = {
               msg = converted_snippet,
-              snippet = converted_snippet,
+              snippet = snippet,
             }
           end
         end

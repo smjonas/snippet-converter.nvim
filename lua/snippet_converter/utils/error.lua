@@ -16,8 +16,12 @@ M.assert_all = function(assertions, errors_ptr)
   return true
 end
 
-M.raise_converter_error = function(node)
-  error(("%sconversion of %s is not supported"):format(Type.CONVERTER_ERROR, node), 0)
+M.new_parser_error = function(path, line_nr, msg)
+  return {
+    path = path,
+    line_nr = line_nr,
+    msg = msg,
+  }
 end
 
 return M

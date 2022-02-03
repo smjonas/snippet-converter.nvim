@@ -48,7 +48,7 @@ converter.default_node_handler = function(custom_node_handler)
     end,
   }, {
     __index = function(_, node_type)
-      err.raise_converter_error(NodeType.to_string(node_type))
+      error(("conversion of %s is not supported"):format(NodeType.to_string(node_type)), 0)
     end,
   })
   return default

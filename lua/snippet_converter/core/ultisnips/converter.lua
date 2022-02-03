@@ -42,7 +42,7 @@ local convert_variable = setmetatable({
 M.node_handler = setmetatable({
   [NodeType.VARIABLE] = function(node)
     if node.transform then
-      error("Cannot convert variable with transform")
+      error("cannot convert variable with transform")
     end
     local var = convert_variable[node.var]
     if node.any then

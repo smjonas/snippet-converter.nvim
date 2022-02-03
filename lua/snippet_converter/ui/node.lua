@@ -10,6 +10,7 @@ local Type = {
 local Style = {
   CENTERED = 1,
   PADDING = 2,
+  LEFT_TRUNCATED = 3,
 }
 
 local Node = {
@@ -79,7 +80,14 @@ end
 Style.Padding = function(amount)
   return {
     type = Style.PADDING,
-    pad_amount = amount,
+    padding = amount,
+  }
+end
+
+Style.LeftTruncated = function(padding)
+  return {
+    type = Style.LEFT_TRUNCATED,
+    padding = padding
   }
 end
 

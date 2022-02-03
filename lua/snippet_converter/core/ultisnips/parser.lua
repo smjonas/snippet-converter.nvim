@@ -5,22 +5,25 @@ local err = require("snippet_converter.utils.error")
 
 local parser = {}
 
-function parser.get_lines(file)
-  return utils.read_file(file)
+parser.get_lines = function(path)
+  return utils.read_file(path)
 end
 
 -- TODO: docs for return values and params
-function parser.parse(parsed_snippets_ptr, lines, parser_errors_ptr)
+function parser.parse(path, parsed_snippets_ptr, parser_errors_ptr)
+  local lines = parser.get_lines(path)
   local cur_snippet
   local found_snippet_header = false
   local prev_count = #parsed_snippets_ptr
   local pos = prev_count + 1
 
-  for i, line in ipairs(lines) do
+  for line_nr, line in ipairs(lines) do
     if not found_snippet_header then
       local header = parser.parse_header(line)
       if header then
         cur_snippet = header
+        cur_snippet.path = path
+        cur_snippet.line_nr = line_nr
         cur_snippet.body = {}
         found_snippet_header = true
       end
@@ -31,7 +34,7 @@ function parser.parse(parsed_snippets_ptr, lines, parser_errors_ptr)
         parsed_snippets_ptr[pos] = cur_snippet
         pos = pos + 1
       else
-        parser_errors_ptr[#parser_errors_ptr + 1] = err.create_parser_error(i, result)
+        parser_errors_ptr[#parser_errors_ptr + 1] = err.new_parser_error(path, line_nr, result)
       end
       found_snippet_header = false
     else

@@ -58,7 +58,16 @@ local create_failure_node = function(failures, num_failures, view)
   }
   local failure_nodes = { Node.NewLine() }
   for i, failure in ipairs(failures) do
-    failure_nodes[i + 1] = Node.HlTextNode(failure.msg, "", Node.Style.Padding(5))
+    local detail_texts = {
+      ("%s:%s ("):format(failure.snippet.path, failure.snippet.line_nr),
+      failure.snippet.trigger,
+      ("): %s"):format(failure.msg),
+    }
+    failure_nodes[i + 1] = Node.MultiHlTextNode(detail_texts, {
+      "",
+      "Special",
+      "",
+    }, Node.Style.LeftTruncated(5))
   end
   return Node.ExpandableNode(
     Node.MultiHlTextNode(texts, { "", "", "Comment" }, Node.Style.Padding(4)),

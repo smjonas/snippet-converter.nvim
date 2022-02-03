@@ -53,8 +53,13 @@ local apply_style = function(window, text, style)
     local padding = math.floor((window.width - #text) / 2)
     return (" "):rep(math.max(0, padding)) .. text
   elseif style.type == Node.Style.PADDING then
-    local padding = (" "):rep(style.pad_amount)
-    return padding .. text
+    return (" "):rep(style.padding) .. text
+  elseif style.type == Node.Style.LEFT_TRUNCATED then
+    local max_width = window.width - style.padding - 2 -- Add 2 cells wide right margin
+    if #text > max_width then
+      text = "..." .. text:sub((#text - max_width + 1) + 3)
+    end
+    return (" "):rep(style.padding) .. text
   end
 end
 
