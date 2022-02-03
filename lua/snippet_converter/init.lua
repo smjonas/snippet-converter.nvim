@@ -61,8 +61,8 @@ local parse_snippets = function(model, snippet_paths, sources)
       end
       for _, path in ipairs(paths) do
         local num_new_snippets = parser.parse(
-          snippets[source_format][filetype],
           parser.get_lines(path),
+          snippets[source_format][filetype],
           parser_errors
         )
         num_snippets = num_snippets + num_new_snippets

@@ -6,8 +6,14 @@ local Type = {
 }
 M.Type = Type
 
-M.new_parser_error = function(line_nr, msg)
-  error(Type.PARSER_ERROR .. msg)
+M.assert_all = function(assertions, errors_ptr)
+  for _, assertion in ipairs(assertions) do
+    if not assertion.predicate then
+      errors_ptr[#errors_ptr + 1] = assertion.msg()
+      return false
+    end
+  end
+  return true
 end
 
 M.raise_converter_error = function(node)

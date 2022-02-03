@@ -8,12 +8,12 @@ local export_utils = require("snippet_converter.base.export_utils")
 M.ultisnips_node_handler = setmetatable({
   [NodeType.TABSTOP] = function(node)
     if not node.transform then
-      return base_converter.default_node_handler(M.ultisnips_node_handler)
+      return base_converter.default_node_handler(M.ultisnips_node_handler)[NodeType.TABSTOP](node)
     end
     local options = node.transform.options
     -- ASCII conversion option
     if options:match("a") then
-      error("Cannot convert option 'a' (ascii conversion) in transform node")
+      error("cannot convert option 'a' (ascii conversion) in transform node")
     end
     -- Only g, i and m options are valid - ignore the rest
     local converted_options = options:gsub("[^gim]", "")

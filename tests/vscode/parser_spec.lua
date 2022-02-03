@@ -1,42 +1,64 @@
 local parser = require("snippet_converter.vscode.parser")
 
 describe("VSCode parser", function()
+  local parsed_snippets, parser_errors
+  before_each(function()
+    parsed_snippets = {}
+    parser_errors = {}
+  end)
+
   describe("should parse", function()
     it("multiple snippets", function()
       local data = {
         ["a function"] = {
           prefix = "fn",
           description = "function",
-          body = "function ${1:name}($2)\n\t${3:-- code}\nend",
+          body = { "function ${1:name}($2)", "\t${3:-- code}", "end" },
         },
         ["for"] = {
           prefix = "for",
-          body = "for ${1:i}=${2:1},${3:10} do\n\t${0:print(i)}\nend",
-        },
-      }
-      local expected = {
-        {
-          name = "a function",
-          trigger = "fn",
-          description = "function",
-          body = { "function ${1:name}($2)", "\t${3:-- code}", "end" },
-        },
-        {
-          name = "for",
-          trigger = "for",
           body = { "for ${1:i}=${2:1},${3:10} do", "\t${0:print(i)}", "end" },
         },
       }
-      local actual = parser.parse(data)
-      assert.are_same(expected, actual)
+      parsed_snippets = {}
+      local num_new_snippets = parser.parse(data, parsed_snippets, parser_errors)
+      assert.is_true(type(parsed_snippets) == "table")
+
+      -- The pairs function does not specify the order in which the snippets will be traversed in,
+      -- so we need to check both of the two possibilities. We don't check the actual
+      -- contents of the AST because that is tested in vscode/body_parser.
+      local first_body_length = #parsed_snippets[1].body
+      if first_body_length == 7 then
+        assert.are_same(9, #parsed_snippets[2].body)
+      elseif first_body_length == 9 then
+        assert.are_same(7, #parsed_snippets[2].body)
+      end
+
+      assert.are_same({}, parser_errors)
+      assert.are_same(2, num_new_snippets)
     end)
   end)
 
-  describe("should not parse", function()
+  describe("should fail to parse", function()
     it("empty json", function()
       local data = {}
-      local actual = parser.parse(data)
-      assert.are_same({}, actual)
+      local num_new_snippets = parser.parse(data, parsed_snippets, parser_errors)
+      assert.are_same(0, num_new_snippets)
+      assert.are_same({}, parsed_snippets)
+      -- An empty input table doesn't count as a parser error as such
+      assert.are_same({}, parser_errors)
+    end)
+
+    it("when snippet name is not a string", function()
+      local data = {
+        [111] = {
+          body = "function ${1:name}($2)\n\t${3:-- code}\nend",
+        },
+      }
+      local num_new_snippets = parser.parse(data, parsed_snippets, parser_errors)
+      assert.are_same(0, num_new_snippets)
+      assert.are_same(parsed_snippets, {})
+      assert.are_same({ "snippet name must be a string, got number" }, parser_errors)
     end)
 
     it("when prefix is missing", function()
@@ -45,19 +67,36 @@ describe("VSCode parser", function()
           body = "function ${1:name}($2)\n\t${3:-- code}\nend",
         },
       }
-      local actual = parser.parse(data)
-      assert.are_same({}, actual)
+      local num_new_snippets = parser.parse(data, parsed_snippets, parser_errors)
+      assert.are_same(0, num_new_snippets)
+      assert.are_same(parsed_snippets, {})
+      assert.are_same({ "prefix must be string or non-empty table, got nil" }, parser_errors)
     end)
 
-    it("when body is table", function()
+    it("when description is not a string", function()
       local data = {
         ["fn"] = {
           prefix = "fn",
-          body = { "for ${1:i}=${2:1},${3:10} do", "\t${0:print(i)}", "end" },
+          description = { "some", "words" },
         },
       }
-      local actual = parser.parse(data)
-      assert.are_same({}, actual)
+      local num_new_snippets = parser.parse(data, parsed_snippets, parser_errors)
+      assert.are_same(0, num_new_snippets)
+      assert.are_same(parsed_snippets, {})
+      assert.are_same({ "description must be string or nil, got table" }, parser_errors)
+    end)
+
+    it("when body is not table", function()
+      local data = {
+        ["fn"] = {
+          prefix = "fn",
+          body = "for ${1:i}=${2:1},${3:10} do",
+        },
+      }
+      local num_new_snippets = parser.parse(data, parsed_snippets, parser_errors)
+      assert.are_same(0, num_new_snippets)
+      assert.are_same(parsed_snippets, {})
+      assert.are_same({ "body must be list, got string" }, parser_errors)
     end)
   end)
 end)
