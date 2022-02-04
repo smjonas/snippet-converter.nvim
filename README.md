@@ -63,19 +63,21 @@ Is there any other snippet engine or custom format that you think should be supp
 
 ## Getting started
 
-[This shows the planned API]
+To get started, pass a Lua table with a list of templates to the `setup` function. A template must contain
+`sources` (the formats and paths of your input snippets) and `output` tables (the target formats and paths).
 
-Here's an example using [packer.nvim](https://github.com/wbthomason/packer.nvim):
+Here's an example to convert a set of UltiSnips and SnipMate snippets to the VSCode snippets format (using packer.nvim):
 
 ```lua
 use {
   "smjonas/snippet-converter.nvim",
   config = function()
-    require("snippet_converter").setup {
+    local template = {
+      -- name = "My UltiSnips to VSCode template", (optionally give your template a name to refer to it in the transform stage)
       sources = {
         ultisnips = {
-          -- Add snippets from folders or individual files on your runtimepath...
-          "vim-snippets/UltiSnips"
+          -- Add snippets from (plugin) folders or individual files on your runtimepath...
+          "vim-snippets/UltiSnips",
           "latex-snippets/tex.snippets",
           -- ...or use absolute paths on your system.
           vim.fn.stdpath("config") .. "/UltiSnips",
@@ -87,6 +89,11 @@ use {
       output = {
         vscode = vim.fn.stdpath("data") .. "/vscode_snippets",
       },
+    }
+
+    require("snippet_converter").setup {
+      templates = { template },
+      -- settings = {}, (to change the default settings, see configuration section)
     }
   end
 }
