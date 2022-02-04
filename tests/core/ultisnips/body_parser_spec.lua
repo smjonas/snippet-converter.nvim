@@ -38,6 +38,12 @@ describe("UltiSnips body parser", function()
     assert.are_same(expected, parser.parse(input))
   end)
 
+  it("should parse visual placeholder with default text", function()
+    local input = [[${VISUAL:default}]]
+    local expected = { { default_text = "default", type = NodeType.VISUAL_PLACEHOLDER } }
+    assert.are_same(expected, parser.parse(input))
+  end)
+
   it("should parse transformation", function()
     local input = [[${1/\w+\s*/\u$0/}]]
     local expected = {

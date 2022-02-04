@@ -9,10 +9,11 @@ local NodeType = {
   -- VSCode
   VARIABLE = 7,
   -- UltiSnips
-  PYTHON_CODE = 8,
-  SHELL_CODE = 9,
+  VISUAL_PLACEHOLDER = 8,
+  PYTHON_CODE = 9,
+  SHELL_CODE = 10,
   -- UltiSnips / vsnip
-  VIMSCRIPT_CODE = 10,
+  VIMSCRIPT_CODE = 11,
 }
 
 local _to_string = {
@@ -23,6 +24,7 @@ local _to_string = {
   "transform",
   "format",
   "variable",
+  "visual placeholder",
   "python code",
   "shell code",
   "vimscript code",

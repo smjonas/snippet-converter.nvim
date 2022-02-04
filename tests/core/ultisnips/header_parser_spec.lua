@@ -282,5 +282,15 @@ describe("parser for", function()
       }
       assert.are_same(expected, result)
     end)
+
+    it("should match snippet where first char of trigger matches last char of option", function()
+      local result = parser.parse([[iff "iff" Ai]])
+      local expected = {
+        trigger = "iff",
+        description = "iff",
+        options = "Ai"
+      }
+      assert.are_same(expected, result)
+    end)
   end)
 end)

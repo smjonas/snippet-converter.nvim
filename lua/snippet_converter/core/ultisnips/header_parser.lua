@@ -89,9 +89,11 @@ parser.parse = function(input)
   local productions = {
     S = {
       rhs = {
+        -- The first alternative must come before the second one here because
+        -- we don't want to match the header 'Xtrigger "" biX' as a trigger.
+        "options w description w trigger",
         "trigger",
         "description w trigger",
-        "options w description w trigger",
         "options w expression w description w trigger",
       },
       verify_matches = function(rule, matches)

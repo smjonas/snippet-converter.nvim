@@ -1,25 +1,25 @@
 local p = require("snippet_converter.core.parser_utils")
 local NodeType = require("snippet_converter.core.node_type")
 
--- TODO: visual_tabstop
-
 -- Grammar in EBNF:
--- any         ::= tabstop | placeholder | choice | code | text
--- tabstop     ::= '$' int
---                 | '${' int '}'
---                 | '${' int  transform '}'
--- placeholder ::= '${' int ':' any '}'
--- choice      ::= '${' int '|' text (',' text)* '|}'
--- code        ::= '`' text '`'
---                 | '`!p ' text '`'
---                 | '`!v `' text '`'
--- transform   ::= '/' regex '/' replacement '/' options
--- regex       ::= JavaScript Regular Expression value (ctor-string)
--- replacement ::= text
--- options     ::= text
--- var         ::= [_a-zA-Z] [_a-zA-Z0-9]*
--- int         ::= [0-9]+
--- text        ::= .*
+-- any                ::= tabstop | placeholder | visual_placeholder | choice | code | text
+-- tabstop            ::= '$' int
+--                        | '${' int '}'
+--                        | '${' int  transform '}'
+-- placeholder        ::= '${' int ':' any '}'
+-- visual_placeholder ::= '${VISUAL}' | '${VISUAL:' text '}' | '${VISUAL:' text '/' search '/' replacement '/' options '}'
+-- choice             ::= '${' int '|' text (',' text)* '|}'
+-- code               ::= '`' text '`'
+--                        | '`!p ' text '`'
+--                        | '`!v `' text '`'
+-- transform          ::= '/' regex '/' replacement '/' options
+-- regex              ::= JavaScript Regular Expression value (ctor-string)
+-- search             ::= text
+-- replacement        ::= text
+-- options            ::= text
+-- var                ::= [_a-zA-Z] [_a-zA-Z0-9]*
+-- int                ::= [0-9]+
+-- text               ::= .*
 
 local var_pattern = "[_a-zA-Z][_a-zA-Z0-9]*"
 local options_pattern = "[^}]*"
@@ -125,6 +125,18 @@ parse_any = function(state)
         local transform = parse_tabstop_transform(state)
         -- transform may be nil
         return p.new_inner_node(NodeType.TABSTOP, { int = int, transform = transform })
+      end
+    elseif p.peek(state, "VISUAL") then
+      if p.peek(state, "}") then
+        -- visual placeholder 1
+        return p.new_inner_node(NodeType.VISUAL_PLACEHOLDER, {})
+      elseif p.peek(state, ":") then
+        local default_text = p.parse_escaped_text(state, "[/}]")
+        if p.peek(state, "}") then
+          -- visual placeholder 2
+          return p.new_inner_node(NodeType.VISUAL_PLACEHOLDER, { default_text = default_text })
+        end
+        -- TODO: visual placeholder 3
       end
     end
     p.raise_parse_error(state, "[any node]: expected int after '${' characters")

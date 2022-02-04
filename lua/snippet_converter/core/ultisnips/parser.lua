@@ -1,12 +1,12 @@
 local header_parser = require("snippet_converter.core.ultisnips.header_parser")
 local body_parser = require("snippet_converter.core.ultisnips.body_parser")
-local utils = require("snippet_converter.utils.file_utils")
+local io = require("snippet_converter.utils.io")
 local err = require("snippet_converter.utils.error")
 
 local parser = {}
 
 parser.get_lines = function(path)
-  return utils.read_file(path)
+  return io.read_file(path)
 end
 
 -- TODO: docs for return values and params
