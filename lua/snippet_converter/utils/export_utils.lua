@@ -1,5 +1,7 @@
 local M = {}
 
+local io = require("snippet_converter.utils.io")
+
 M.snippet_strings_to_lines = function(snippets_ptr, sep_chars, header, footer)
   local len = #snippets_ptr
   local total_len = 0
@@ -29,6 +31,13 @@ M.snippet_strings_to_lines = function(snippets_ptr, sep_chars, header, footer)
     snippet_lines[total_len + 1] = footer
   end
   return snippet_lines
+end
+
+M.get_output_path = function(output_path, filetype, extension)
+  if not io.is_file(output_path) then
+    output_path = ("%s/%s.%s"):format(output_path, filetype, extension)
+  end
+  return output_path
 end
 
 return M

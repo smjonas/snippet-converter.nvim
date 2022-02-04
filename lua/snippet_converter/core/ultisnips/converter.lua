@@ -1,7 +1,7 @@
 local NodeType = require("snippet_converter.core.node_type")
 local Variable = require("snippet_converter.core.vscode.body_parser").Variable
 local base_converter = require("snippet_converter.core.converter")
-local utils = require("snippet_converter.utils.file_utils")
+local io = require("snippet_converter.utils.file_utils")
 local export_utils = require("snippet_converter.utils.export_utils")
 
 local M = {}
@@ -55,7 +55,7 @@ M.node_handler = setmetatable({
   __index = base_converter.default_node_handler(M.node_handler),
 })
 
-M.convert = function(snippet)
+M.convert = function(snippet, source_format)
   local trigger = snippet.trigger
   -- Literal " in trigger
   if trigger:match([["]]) then
@@ -80,16 +80,18 @@ local HEADER_STRING =
 -- separates them by newlines and exports them to a file.
 -- @param converted_snippets string[] @A list of strings where each item is a snippet string to be exported
 -- @param filetype string @The filetype of the snippets
--- @param output_dir string @The absolute path to the directory to write the snippets to
-M.export = function(converted_snippets, filetype, output_dir)
+-- @param output_dir string @The absolute path to the directory (or file) to write the snippets to
+M.export = function(converted_snippets, filetype, output_path)
   local snippet_lines = export_utils.snippet_strings_to_lines(
     converted_snippets,
     "\n",
     HEADER_STRING,
     nil
   )
-  local output_path = string.format("%s/%s.snippets", output_dir, filetype)
-  utils.write_file(snippet_lines, output_path)
+  if not io.file_exists(output_path) then
+    output_path = string.format("%s/%s.snippets", output_path, filetype)
+  end
+  io.write_file(snippet_lines, output_path)
 end
 
 return M

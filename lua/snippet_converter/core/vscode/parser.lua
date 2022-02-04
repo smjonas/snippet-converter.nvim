@@ -1,11 +1,11 @@
 local body_parser = require("snippet_converter.core.vscode.body_parser")
-local utils = require("snippet_converter.utils.file_utils")
+local io = require("snippet_converter.utils.io")
 local err = require("snippet_converter.utils.error")
 
 local parser = {}
 
 parser.get_lines = function(file)
-  return utils.json_decode(file)
+  return io.json_decode(file)
 end
 
 local verify_snippet_format = function(snippet_name, snippet_info, errors_ptr)
@@ -39,6 +39,15 @@ local verify_snippet_format = function(snippet_name, snippet_info, errors_ptr)
   return err.assert_all(assertions, errors_ptr)
 end
 
+local create_snippet = function(snippet_name, trigger, snippet_info)
+  return {
+    name = snippet_name,
+    trigger = trigger,
+    description = snippet_info.description,
+    body = body_parser.parse(table.concat(snippet_info.body, "\n")),
+  }
+end
+
 parser.parse = function(snippet_data, parsed_snippets_ptr, parser_errors_ptr)
   if vim.tbl_isempty(snippet_data) then
     return 0
@@ -47,13 +56,15 @@ parser.parse = function(snippet_data, parsed_snippets_ptr, parser_errors_ptr)
   local pos = prev_count + 1
   for snippet_name, snippet_info in pairs(snippet_data) do
     if verify_snippet_format(snippet_name, snippet_info, parser_errors_ptr) then
-      parsed_snippets_ptr[pos] = {
-        name = snippet_name,
-        trigger = snippet_info.prefix,
-        description = snippet_info.description,
-        body = body_parser.parse(table.concat(snippet_info.body, "\n")),
-      }
-      pos = pos + 1
+      if type(snippet_info.prefix) == "table" then
+        for _, trigger in ipairs(snippet_info.prefix) do
+          parsed_snippets_ptr[pos] = create_snippet(snippet_name, trigger, snippet_info)
+          pos = pos + 1
+        end
+      else
+        parsed_snippets_ptr[pos] = create_snippet(snippet_name, snippet_info.prefix, snippet_info)
+        pos = pos + 1
+      end
     end
   end
   return (pos - 1) - prev_count

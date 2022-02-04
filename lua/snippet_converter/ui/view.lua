@@ -5,7 +5,7 @@ local View = {}
 
 View.new = function(settings)
   local self = {
-    settings = settings,
+    settings = settings or {},
     _window = display.new_window(),
   }
   local global_keymaps = {
@@ -92,7 +92,7 @@ local create_task_node = function(task, source_format, view)
     "(" .. tostring(task.num_input_files) .. " input files)",
   }
   local child_nodes = {}
-  for target_format, failures in pairs(task.failures) do
+  for target_format, failures in pairs(task.converter_errors) do
     local num_failures = #failures
     local num_output_files = task.num_output_files[target_format]
     local success_texts = {

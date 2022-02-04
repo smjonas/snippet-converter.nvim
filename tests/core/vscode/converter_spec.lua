@@ -19,7 +19,7 @@ describe("VSCode converter", function()
     end)
   end)
 
-  it("without description => use trigger for name", function()
+  it("without description, then use trigger for name", function()
     local snippet = {
       trigger = "some trigger",
       body = { "body" },
@@ -32,4 +32,5 @@ describe("VSCode converter", function()
     }
     assert.are_same(expected, actual)
   end)
+
 end)

@@ -76,7 +76,7 @@ end
 
 local convert_snippets = function(model, snippets, output)
   for source_format, snippets_for_format in pairs(snippets) do
-    local failures = {}
+    local converter_errors = {}
     for target_format, output_paths in pairs(output) do
       local converter = require(snippet_engines[target_format].converter)
       local converted_snippets = {}
@@ -88,7 +88,7 @@ local convert_snippets = function(model, snippets, output)
             converted_snippets[pos] = converted_snippet
             pos = pos + 1
           else
-            failures[#failures + 1] = {
+            converter_errors[#converter_errors + 1] = {
               msg = converted_snippet,
               snippet = snippet,
             }
@@ -98,7 +98,7 @@ local convert_snippets = function(model, snippets, output)
           converter.export(converted_snippets, filetype, output_path)
         end
       end
-      model:complete_task(source_format, target_format, #output_paths, failures)
+      model:complete_task(source_format, target_format, #output_paths, converter_errors)
     end
   end
 end
@@ -114,12 +114,17 @@ M.convert_snippets = function()
   local model = Model.new()
   -- Make sure the window shows up before any potential long-running operations
   controller:create_view(model, settings)
-  vim.schedule(function()
-    local snippet_paths = load_snippets(cur_pipeline.sources)
-    local snippets = parse_snippets(model, snippet_paths, cur_pipeline.sources)
-    convert_snippets(model, snippets, cur_pipeline.output)
-    controller:finalize()
-  end)
+
+  -- TODO:
+  -- vim.schedule(function()
+  --   ...
+  -- end)
+  local snippet_paths = load_snippets(cur_pipeline.sources)
+  print(vim.inspect(snippet_paths))
+  local snippets = parse_snippets(model, snippet_paths, cur_pipeline.sources)
+  convert_snippets(model, snippets, cur_pipeline.output)
+  controller:finalize()
+  return model
 end
 
 return M

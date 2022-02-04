@@ -2,7 +2,7 @@ local M = {}
 
 local NodeType = require("snippet_converter.core.node_type")
 local base_converter = require("snippet_converter.core.converter")
-local utils = require("snippet_converter.utils.file_utils")
+local io = require("snippet_converter.utils.io")
 local export_utils = require("snippet_converter.utils.export_utils")
 
 M.ultisnips_node_handler = setmetatable({
@@ -47,12 +47,15 @@ local list_to_json_string = function(list)
 end
 
 M.convert = function(snippet, source_format)
+  if snippet.options and snippet.options:match("r") then
+    error("cannot convert regex snippet")
+  end
   local body
   if source_format == "ultisnips" then
     body = list_to_json_string(base_converter.convert_ast(snippet.body, M.ultisnips_node_handler))
   else
     body = base_converter.convert_ast(snippet.body, base_converter.default_node_handler(nil))
-    body = utils.json_encode(vim.fn.split(body, "\n", true))
+    body = io.json_encode(vim.fn.split(body, "\n", true))
   end
 
   local description_string
@@ -71,10 +74,9 @@ end
 -- @param converted_snippets string[] @A list of strings where each item is a snippet string to be exported
 -- @param filetype string @The filetype of the snippets
 -- @param output_dir string @The absolute path to the directory to write the snippets to
-M.export = function(converted_snippets, filetype, output_dir)
+M.export = function(converted_snippets, filetype, output_path)
   local snippet_lines = export_utils.snippet_strings_to_lines(converted_snippets, ",", "{", "}")
-  local output_path = string.format("%s/%s.json", output_dir, filetype)
-  utils.write_file(snippet_lines, output_path)
+  io.write_file(snippet_lines, export_utils.get_output_path(output_path, filetype, "json"))
 end
 
 return M

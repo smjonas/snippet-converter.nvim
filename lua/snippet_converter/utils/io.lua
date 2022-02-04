@@ -1,15 +1,19 @@
-local utils = {}
+local M = {}
 
-utils.file_exists = function(path)
+M.file_exists = function(path)
   return vim.fn.filereadable(vim.fn.expand(path)) == 1
 end
 
-utils.read_file = function(path)
+M.is_file = function(path)
+  return M.file_exists(path) or vim.fn.fnamemodify(path, ":e") ~= nil
+end
+
+M.read_file = function(path)
   -- Maybe replace this with an async implementation?
   return vim.fn.readfile(path)
 end
 
-utils.write_file = function(object, path)
+M.write_file = function(object, path)
   vim.fn.writefile(object, path)
 end
 
@@ -21,8 +25,8 @@ else
   _json_decode = vim.fn.json_decode
 end
 
-utils.read_json = function(path)
-  local lines = table.concat(utils.read_file(path), "\n")
+M.read_json = function(path)
+  local lines = table.concat(M.read_file(path), "\n")
   return _json_decode(lines)
 end
 
@@ -33,6 +37,6 @@ else
   _json_encode = vim.fn.json_encode
 end
 
-utils.json_encode = _json_encode
+M.json_encode = _json_encode
 
-return utils
+return M

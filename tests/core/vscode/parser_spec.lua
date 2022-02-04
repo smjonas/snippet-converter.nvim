@@ -32,10 +32,37 @@ describe("VSCode parser", function()
         assert.are_same(9, #parsed_snippets[2].body)
       elseif first_body_length == 9 then
         assert.are_same(7, #parsed_snippets[2].body)
+      else
+        -- This should never happen unless the parser fails.
+        assert.is_false(true)
       end
 
       assert.are_same({}, parser_errors)
       assert.are_same(2, num_new_snippets)
+    end)
+
+    it("snippet with multiple triggers / prefixes", function()
+      local data = {
+        ["a function"] = {
+          prefix = { "fn", "fun" },
+          description = "function",
+          body = { "function ${1:name}($2)", "\t${3:-- code}", "end" },
+        },
+      }
+      parsed_snippets = {}
+      local num_new_snippets = parser.parse(data, parsed_snippets, parser_errors)
+      assert.are_same({}, parser_errors)
+      assert.are_same(2, num_new_snippets)
+
+      local first_trigger = parsed_snippets[1].trigger
+      if first_trigger == "fn" then
+        assert.are_same("fun", parsed_snippets[2].trigger)
+      elseif first_trigger == "fun" then
+        assert.are_same("fun", parsed_snippets[2].trigger)
+      else
+        -- This should never happen
+        assert.is_false(true)
+      end
     end)
   end)
 

@@ -1,9 +1,9 @@
-local utils = require("snippet_converter.utils.file_utils")
+local io = require("snippet_converter.utils.io")
 
 local parser = {}
 
 function parser.get_lines(file)
-  return utils.read_file(file)
+  return io.read_file(file)
 end
 
 function parser.parse(lines)

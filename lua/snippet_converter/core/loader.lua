@@ -1,5 +1,5 @@
 local snippet_engines = require("snippet_converter.snippet_engines")
-local utils = require("snippet_converter.utils.file_utils")
+local io = require("snippet_converter.utils.io")
 
 local loader = {}
 
@@ -33,7 +33,7 @@ end
 loader.get_matching_snippet_paths = function(source_format, source_paths)
   local matching_snippet_files = {}
   for _, source_path in pairs(source_paths) do
-    if utils.file_exists(source_path) then
+    if io.file_exists(source_path) then
       matching_snippet_files[#matching_snippet_files + 1] = source_path
     else
       find_matching_snippet_files_in_rtp(matching_snippet_files, source_format, source_path)
