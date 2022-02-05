@@ -13,7 +13,7 @@ describe("UltiSnips converter", function()
           {
             type = NodeType.PLACEHOLDER,
             int = "1",
-            any = { type = NodeType.TEXT, text = "name" },
+            any = { { type = NodeType.TEXT, text = "name" } },
           },
           { type = NodeType.TEXT, text = "(" },
           { type = NodeType.TABSTOP, int = "2" },
@@ -21,7 +21,7 @@ describe("UltiSnips converter", function()
           {
             type = NodeType.PLACEHOLDER,
             int = "3",
-            any = { type = NodeType.TEXT, text = "-- code" },
+            any = { { type = NodeType.TEXT, text = "-- code" } },
           },
           { type = NodeType.TEXT, text = "\nend" },
         },
@@ -116,8 +116,10 @@ endsnippet]],
             type = NodeType.PLACEHOLDER,
             int = "1",
             any = {
-              type = NodeType.TABSTOP,
-              int = "2",
+              {
+                type = NodeType.TABSTOP,
+                int = "2",
+              },
             },
           },
         },

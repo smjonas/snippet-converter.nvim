@@ -4,11 +4,11 @@
 
 Neovim plugin to parse, transform and convert snippets. Supports a variety of formats and snippet engines.
 
-[![Neovim](https://img.shields.io/badge/Neovim%200.5+-2357A143.svg?style=for-the-badge&logo=neovim)](https://neovim.io)
+[![Neovim](https://img.shields.io/badge/Neovim%200.5+-green.svg?style=flat-square&logo=neovim)](https://neovim.io)
 
 </div>
 
-> :warning: This plugin is still in its early stages and not currently usable. Stay tuned!
+> :warning: This plugin is still in development and not currently usable. Stay tuned!
 
 Are you switching to a new snippet engine but don't want to lose your hand-crafted snippets?
 Did you discover an awesome snippet collection but couldn't use it because your snippet engine

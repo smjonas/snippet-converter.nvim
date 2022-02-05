@@ -1,36 +1,33 @@
+local NodeType = require("snippet_converter.core.node_type")
 local converter = require("snippet_converter.core.vscode.converter")
 
 describe("VSCode converter", function()
-  describe("should convert snippet", function()
+  describe("should convert snippet to JSON", function()
     it("(basic)", function()
       local snippet = {
         trigger = "fn",
         description = "function",
-        body = { "function ${1:name}($2)", "\t${3:-- code}", "end" },
+        -- "local ${1:name} = function($2)"
+        body = {
+          { type = NodeType.TEXT, text = "local " },
+          {
+            type = NodeType.PLACEHOLDER,
+            int = "1",
+            any = { { type = NodeType.TEXT, text = "name" } },
+          },
+          { type = NodeType.TEXT, text = " = function(" },
+          { type = NodeType.TABSTOP, int = "2" },
+          { type = NodeType.TEXT, text = ")" },
+        },
       }
       local actual = converter.convert(snippet)
-      local expected = {
-        name = "function",
-        prefix = { "fn" },
-        description = "function",
-        body = { "function ${1:name}($2)", "\t${3:-- code}", "end" },
-      }
+      local expected = [[
+  "fn": {
+    "prefix": "fn",
+    "body": ["local ${1:name} = function($2)"],
+    "description": "function"
+  }]]
       assert.are_same(expected, actual)
     end)
   end)
-
-  it("without description, then use trigger for name", function()
-    local snippet = {
-      trigger = "some trigger",
-      body = { "body" },
-    }
-    local actual = converter.convert(snippet)
-    local expected = {
-      name = "some trigger",
-      prefix = { "some trigger" },
-      body = { "body" },
-    }
-    assert.are_same(expected, actual)
-  end)
-
 end)

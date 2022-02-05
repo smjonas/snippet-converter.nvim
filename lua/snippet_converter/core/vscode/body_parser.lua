@@ -1,6 +1,7 @@
 local p = require("snippet_converter.core.parser_utils")
 local NodeType = require("snippet_converter.core.node_type")
 
+--TODO: grammar in EBNF
 local Variable = {
   TM_CURRENT_LINE = "TM_CURRENT_LINE",
   TM_CURRENT_WORD = "TM_CURRENT_WORD",

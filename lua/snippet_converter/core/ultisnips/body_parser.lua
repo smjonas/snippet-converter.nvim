@@ -7,7 +7,9 @@ local NodeType = require("snippet_converter.core.node_type")
 --                        | '${' int '}'
 --                        | '${' int  transform '}'
 -- placeholder        ::= '${' int ':' any '}'
--- visual_placeholder ::= '${VISUAL}' | '${VISUAL:' text '}' | '${VISUAL:' text '/' search '/' replacement '/' options '}'
+-- visual_placeholder ::= '${VISUAL}'
+--                        | '${VISUAL:' text '}'
+--                        | '${VISUAL:' text '/' search '/' replacement '/' options '}'
 -- choice             ::= '${' int '|' text (',' text)* '|}'
 -- code               ::= '`' text '`'
 --                        | '`!p ' text '`'
@@ -155,7 +157,6 @@ end
 
 local parser = {}
 
--- TODO: extract common code
 parser.parse = function(input)
   local state = {
     input = input,

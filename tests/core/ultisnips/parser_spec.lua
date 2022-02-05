@@ -1,6 +1,12 @@
 local parser = require("snippet_converter.core.ultisnips.parser")
 
 describe("UltiSnips parser", function()
+  local parsed_snippets, parser_errors
+  before_each(function()
+    parsed_snippets = {}
+    parser_errors = {}
+  end)
+
   describe("should parse", function()
     it("multiple snippets", function()
       local lines = vim.split(
@@ -21,20 +27,14 @@ endsnippet
       ]],
         "\n"
       )
-      local expected = {
-        {
-          trigger = "fn",
-          description = "function",
-          options = "bA",
-          body = { "function ${1:name}($2)", "\t${3:-- code}", "end" },
-        },
-        {
-          trigger = "for",
-          body = { "for ${1:i}=${2:1},${3:10} do", "\t${0:print(i)}", "end" },
-        },
-      }
-      local actual = parser.parse(lines)
-      assert.are_same(expected, actual)
+      parser.get_lines = function(_)
+        return lines
+      end
+
+      local num_new_snippets = parser.parse(nil, parsed_snippets, parser_errors)
+      assert.are_same(2, num_new_snippets)
+      assert.are_same({}, parser_errors)
+      -- TODO: test line number
     end)
   end)
 end)

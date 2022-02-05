@@ -1,7 +1,7 @@
 local NodeType = require("snippet_converter.core.node_type")
 local Variable = require("snippet_converter.core.vscode.body_parser").Variable
 local base_converter = require("snippet_converter.core.converter")
-local io = require("snippet_converter.utils.file_utils")
+local io = require("snippet_converter.utils.io")
 local export_utils = require("snippet_converter.utils.export_utils")
 
 local M = {}
@@ -15,7 +15,7 @@ M.can_convert = function(snippet, target_engine)
 end
 
 local convert_variable = setmetatable({
-  [Variable.TM_FILENAME] = [[``!v expand('%:t')``]],
+  [Variable.TM_FILENAME] = [[`!v expand('%:t')`]],
   [Variable.TM_FILENAME_BASE] = [[`!v expand('%:t:r')`]],
   [Variable.TM_DIRECTORY] = [[`!v expand('%:p:r')`]],
   [Variable.TM_FILEPATH] = [[`!v expand('%:p')`]],
