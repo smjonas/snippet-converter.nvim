@@ -1,19 +1,23 @@
-local snippet_engines = require("snippet_converter.snippet_engines")
-local config = require("snippet_converter.config")
-local loader = require("snippet_converter.core.loader")
-local Model = require("snippet_converter.ui.model")
-
 local M = {}
 
-local settings
-M.setup = function(user_settings)
-  settings = config.merge_settings(user_settings)
-  config.validate_settings(settings)
+local snippet_engines, loader, Model
+local config, controller
+
+-- Setup function must be called before using the plugin!
+M.setup = function(user_config)
+  local cfg = require("snippet_converter.config")
+  config = cfg.merge_config(user_config)
+  cfg.validate(config)
+  -- Load modules and create controller
+  snippet_engines = require("snippet_converter.snippet_engines")
+  loader = require("snippet_converter.core.loader")
+  Model = require("snippet_converter.ui.model")
+  controller = require("snippet_converter.ui.controller"):new()
 end
 
 local cur_pipeline
 M.set_pipeline = function(pipeline)
-  config.validate_sources(pipeline.sources, snippet_engines)
+  -- config.validate_sources(pipeline.sources, snippet_engines)
   cur_pipeline = pipeline
 end
 
@@ -103,8 +107,6 @@ local convert_snippets = function(model, snippets, output)
   end
 end
 
-local controller = require("snippet_converter.ui.controller"):new()
-
 M.convert_snippets = function()
   if config == nil then
     error("setup function must be called with valid config before converting snippets")
@@ -113,7 +115,7 @@ M.convert_snippets = function()
 
   local model = Model.new()
   -- Make sure the window shows up before any potential long-running operations
-  controller:create_view(model, settings)
+  controller:create_view(model, config)
 
   -- TODO:
   -- vim.schedule(function()
