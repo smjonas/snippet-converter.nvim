@@ -6,12 +6,17 @@ describe("VSCode body parser", function()
     local input = "local ${1:name} = function($2)"
     local actual = parser.parse(input)
     local expected = {
-      { text = "local " },
-      { int = "1", any = { type = NodeType.TEXT, text = "name" }, type = NodeType.PLACEHOLDER },
-      { text = " = function(" },
+      { type = NodeType.TEXT, text = "local " },
+      {
+        type = NodeType.PLACEHOLDER,
+        int = "1",
+        any = { { type = NodeType.TEXT, text = "name" } },
+      },
+      { type = NodeType.TEXT, text = " = function(" },
       { int = "2", type = NodeType.TABSTOP },
-      { text = ")" },
+      { type = NodeType.TEXT, text = ")" },
     }
+    print(vim.inspect(expected))
     assert.are_same(expected, actual)
   end)
 
@@ -22,6 +27,7 @@ describe("VSCode body parser", function()
       {
         var = "TM_FILENAME",
         transform = {
+          type = NodeType.TRANSFORM,
           regex = "(.*)",
           format_or_text = {
             { int = "1", format_modifier = "upcase", type = NodeType.FORMAT },
@@ -62,4 +68,11 @@ describe("VSCode body parser", function()
       parser.parse(input)
     end)
   end)
+
+  -- TODO?
+  -- it("should handle unescaped $ and \\ characters", function()
+  --   local input = [[$\cup$]]
+  --   local result = parser.parse(input)
+  --   assert(result, "a")
+  -- end)
 end)

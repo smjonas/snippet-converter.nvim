@@ -39,7 +39,12 @@ local verify_snippet_format = function(snippet_name, snippet_info, errors_ptr)
   return err.assert_all(assertions, errors_ptr)
 end
 
-local create_snippet = function(snippet_name, trigger, snippet_info)
+local create_snippet = function(snippet_name, trigger, snippet_info, parser_errors_ptr)
+  local ok, result = pcall(body_parser.parse, table.concat(snippet_info.body, "\n"))
+  if not ok then
+    parser_errors_ptr[#parser_errors_ptr + 1] = result
+    return nil
+  end
   return {
     name = snippet_name,
     trigger = trigger,
@@ -58,12 +63,18 @@ parser.parse = function(snippet_data, parsed_snippets_ptr, parser_errors_ptr)
     if verify_snippet_format(snippet_name, snippet_info, parser_errors_ptr) then
       if type(snippet_info.prefix) == "table" then
         for _, trigger in ipairs(snippet_info.prefix) do
-          parsed_snippets_ptr[pos] = create_snippet(snippet_name, trigger, snippet_info)
-          pos = pos + 1
+          local snippet = create_snippet(snippet_name, trigger, snippet_info, parser_errors_ptr)
+          if snippet then
+            parsed_snippets_ptr[pos] = snippet
+            pos = pos + 1
+          end
         end
       else
-        parsed_snippets_ptr[pos] = create_snippet(snippet_name, snippet_info.prefix, snippet_info)
-        pos = pos + 1
+        local snippet = create_snippet(snippet_name, snippet_info.prefix, snippet_info, parser_errors_ptr)
+        if snippet then
+          parsed_snippets_ptr[pos] = snippet
+          pos = pos + 1
+        end
       end
     end
   end

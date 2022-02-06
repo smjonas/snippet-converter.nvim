@@ -24,8 +24,33 @@ describe("VSCode converter", function()
       local expected = [[
   "fn": {
     "prefix": "fn",
-    "body": ["local ${1:name} = function($2)"],
-    "description": "function"
+    "description": "function",
+    "body": ["local ${1:name} = function($2)"]
+  }]]
+      assert.are_same(expected, actual)
+    end)
+
+    it("(missing description)", function()
+      local snippet = {
+        trigger = "fn",
+        -- "local ${1:name} = function($2)"
+        body = {
+          { type = NodeType.TEXT, text = "local " },
+          {
+            type = NodeType.PLACEHOLDER,
+            int = "1",
+            any = { { type = NodeType.TEXT, text = "name" } },
+          },
+          { type = NodeType.TEXT, text = " = function(" },
+          { type = NodeType.TABSTOP, int = "2" },
+          { type = NodeType.TEXT, text = ")" },
+        },
+      }
+      local actual = converter.convert(snippet)
+      local expected = [[
+  "fn": {
+    "prefix": "fn",
+    "body": ["local ${1:name} = function($2)"]
   }]]
       assert.are_same(expected, actual)
     end)

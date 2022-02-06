@@ -60,13 +60,13 @@ M.convert = function(snippet, source_format)
 
   local description_string
   if snippet.description then
-    description_string = (',\n    "description": "%s"'):format(snippet.description)
+    description_string = ('\n    "description": "%s",'):format(snippet.description)
   end
   return ([[
   "%s": {
-    "prefix": "%s",
-    "body": %s%s
-  }]]):format(snippet.trigger, snippet.trigger, body, description_string or "")
+    "prefix": "%s",%s
+    "body": %s
+  }]]):format(snippet.trigger, snippet.trigger, description_string or "", body)
 end
 
 -- Takes a list of converted snippets for a particular filetype and exports them to a JSON

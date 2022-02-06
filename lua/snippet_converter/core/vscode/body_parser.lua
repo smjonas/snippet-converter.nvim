@@ -1,7 +1,29 @@
 local p = require("snippet_converter.core.parser_utils")
 local NodeType = require("snippet_converter.core.node_type")
 
---TODO: grammar in EBNF
+-- Grammar in EBNF (see https://code.visualstudio.com/docs/editor/userdefinedsnippets#_grammar)
+-- any                ::= tabstop | placeholder | choice | variable | text
+-- tabstop            ::= '$' int
+--                        | '${' int '}'
+--                        | '${' int  transform '}'
+-- placeholder        ::= '${' int ':' any '}'
+-- choice             ::= '${' int '|' text (',' text)* '|}'
+-- variable           ::= '$' var | '${' var '}'
+--                        | '${' var ':' any '}'
+--                        | '${' var transform '}'
+-- transform          ::= '/' regex '/' replacement '/' options
+-- format             ::= '$' int | '${' int '}'
+--                        | '${' int ':' '/upcase' | '/downcase' | '/capitalize' | '/camelcase' | '/pascalcase' '}'
+--                        | '${' int ':+' if '}'
+--                        | '${' int ':?' if ':' else '}'
+--                        | '${' int ':-' else '}' | '${' int ':' else '}'
+-- regex              ::= JavaScript Regular Expression value (ctor-string)
+-- replacement        ::= text
+-- options            ::= text
+-- var                ::= [_a-zA-Z] [_a-zA-Z0-9]*
+-- int                ::= [0-9]+
+-- text               ::= .*
+
 local Variable = {
   TM_CURRENT_LINE = "TM_CURRENT_LINE",
   TM_CURRENT_WORD = "TM_CURRENT_WORD",
@@ -217,7 +239,7 @@ parse_any = function(state)
     if state.input == prev_input then
       state.input = ""
     else
-      return { text = text }
+      return p.new_inner_node(NodeType.TEXT, { text = text })
     end
   end
 end

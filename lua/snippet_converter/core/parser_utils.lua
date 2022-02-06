@@ -6,7 +6,7 @@ M.new_inner_node = function(type, node)
 end
 
 M.raise_parse_error = function(state, description)
-  error(string.format("%s at '%s' (source '%s')", description, state.input, state.source))
+  error(string.format("%s at '%s' (input string: '%s')", description, state.input, state.source))
 end
 
 M.expect = function(state, chars)

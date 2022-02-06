@@ -1,6 +1,11 @@
+local assertions = require("tests.custom_assertions")
 local parser = require("snippet_converter.core.vscode.parser")
 
 describe("VSCode parser", function()
+  setup(function()
+    assertions.register(assert)
+  end)
+
   local parsed_snippets, parser_errors
   before_each(function()
     parsed_snippets = {}
@@ -124,6 +129,20 @@ describe("VSCode parser", function()
       assert.are_same(0, num_new_snippets)
       assert.are_same(parsed_snippets, {})
       assert.are_same({ "body must be list, got string" }, parser_errors)
+    end)
+
+    it("when snippet syntax is invalid", function()
+      local data = {
+        ["fn"] = {
+          prefix = "fn",
+          body = { "for ${}" },
+        },
+      }
+      local num_new_snippets = parser.parse(data, parsed_snippets, parser_errors)
+      assert.are_same(0, num_new_snippets)
+      assert.are_same(parsed_snippets, {})
+      assert.ends_with("pattern [_a-zA-Z][_a-zA-Z0-9]* not matched at '}' (input string: 'for ${}')", parser_errors[1])
+      assert.are_same(1, #parser_errors)
     end)
   end)
 end)
