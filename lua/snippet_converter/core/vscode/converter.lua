@@ -5,10 +5,10 @@ local base_converter = require("snippet_converter.core.converter")
 local io = require("snippet_converter.utils.io")
 local export_utils = require("snippet_converter.utils.export_utils")
 
-M.ultisnips_node_handler = setmetatable({
+M.visit_ultisnips_node = setmetatable({
   [NodeType.TABSTOP] = function(node)
     if not node.transform then
-      return base_converter.default_node_handler(M.ultisnips_node_handler)[NodeType.TABSTOP](node)
+      return base_converter.visit_node(M.visit_ultisnips_node)[NodeType.TABSTOP](node)
     end
     local options = node.transform.options
     -- ASCII conversion option
@@ -25,7 +25,7 @@ M.ultisnips_node_handler = setmetatable({
     )
   end,
 }, {
-  __index = base_converter.default_node_handler(M.ultisnips_node_handler),
+  __index = base_converter.visit_node(M.visit_ultisnips_node),
 })
 
 local list_to_json_string = function(list)
@@ -52,9 +52,9 @@ M.convert = function(snippet, source_format)
   end
   local body
   if source_format == "ultisnips" then
-    body = list_to_json_string(base_converter.convert_ast(snippet.body, M.ultisnips_node_handler))
+    body = list_to_json_string(base_converter.convert_ast(snippet.body, M.visit_ultisnips_node))
   else
-    body = base_converter.convert_ast(snippet.body, base_converter.default_node_handler(nil))
+    body = base_converter.convert_ast(snippet.body, base_converter.visit_node(nil))
     body = io.json_encode(vim.fn.split(body, "\n", true))
   end
 

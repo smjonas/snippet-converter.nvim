@@ -34,7 +34,7 @@ M.snippet_strings_to_lines = function(snippets_ptr, sep_chars, header, footer)
 end
 
 M.get_output_path = function(output_path, filetype, extension)
-  if not io.is_file(output_path) then
+  if io.is_file(output_path) then
     output_path = ("%s/%s.%s"):format(output_path, filetype, extension)
   end
   return output_path

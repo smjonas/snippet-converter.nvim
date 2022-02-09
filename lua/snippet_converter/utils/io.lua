@@ -9,11 +9,16 @@ M.is_file = function(path)
 end
 
 M.read_file = function(path)
-  -- Maybe replace this with an async implementation?
+  -- Replace this with an async implementation (libuv)?
   return vim.fn.readfile(path)
 end
 
 M.write_file = function(object, path)
+  local dir_name = vim.fn.fnamemodify(path, ":p:h")
+  -- Create missing directories (if any)
+  if vim.fn.isdirectory(dir_name) ~= 1 then
+    vim.fn.mkdir(dir_name, "p")
+  end
   vim.fn.writefile(object, path)
 end
 

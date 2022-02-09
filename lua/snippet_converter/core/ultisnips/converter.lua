@@ -39,20 +39,20 @@ local convert_variable = setmetatable({
   end,
 })
 
-M.node_handler = setmetatable({
+M.visit_node = setmetatable({
   [NodeType.VARIABLE] = function(node)
     if node.transform then
       error("cannot convert variable with transform")
     end
     local var = convert_variable[node.var]
     if node.any then
-      local any = base_converter.convert_node_recursive(node.any, M.node_handler)
+      local any = base_converter.convert_node_recursive(node.any, M.visit_node)
       return string.format("${%s:%s}", var, any)
     end
     return var
   end,
 }, {
-  __index = base_converter.default_node_handler(M.node_handler),
+  __index = base_converter.visit_node(M.visit_node),
 })
 
 M.convert = function(snippet, source_format)
@@ -69,7 +69,7 @@ M.convert = function(snippet, source_format)
   if snippet.description then
     description = string.format([[ "%s"]], snippet.description)
   end
-  local body = base_converter.convert_ast(snippet.body, M.node_handler)
+  local body = base_converter.convert_ast(snippet.body, M.visit_node)
   return string.format("snippet %s%s\n%s\nendsnippet", trigger, description, body)
 end
 
