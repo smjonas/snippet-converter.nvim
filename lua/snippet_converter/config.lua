@@ -6,32 +6,34 @@ local DEFAULT_CONFIG = {
   use_nerdfont_icons = true,
 }
 
-M.validate_sources = function(sources)
-  -- The user might choose to call add_pipeline after the initial call to setup, thus sources may be nil.
-  if sources == nil then
-    return
-  end
+local validate_table = function(name, tbl, is_optional)
   vim.validate {
-    sources = {
-      sources,
+    [name] = {
+      tbl,
       "table",
-    },
+      is_optional
+    }
   }
+end
+
+local validate_paths = function(name, paths_for_format, format_name, path_name)
+  validate_table(name, paths_for_format)
   local supported_formats = vim.tbl_keys(snippet_engines)
-  for source_format, source_paths in ipairs(sources) do
+  for format, paths in pairs(paths_for_format) do
     vim.validate {
-      source_format = {
-        source_format,
+      [format_name] = {
+        format,
         function(arg)
           return vim.tbl_contains(supported_formats, arg)
         end,
         "one of " .. vim.fn.join(supported_formats, ", "),
       },
     }
-    for _, source_path in ipairs(source_paths) do
+    validate_table("source.paths", paths)
+    for _, path in ipairs(paths) do
       vim.validate {
-        source_path = {
-          source_path,
+        [path_name] = {
+          path,
           "string", -- TODO: support * as path to find all files matching extension in rtp
         },
       }
@@ -39,24 +41,29 @@ M.validate_sources = function(sources)
   end
 end
 
+M.validate_template = function(template)
+  validate_table("template", template)
+  validate_paths("template.sources", template.sources, "source.format", "source.path")
+  validate_paths("template.output", template.output, "output.format", "output.path")
+end
+
+local validate_templates = function(templates)
+  -- The user might choose to call add_template after the initial call to setup, thus templates may be nil.
+  if templates == nil then
+    return
+  end
+  validate_table("templates", templates)
+  for _, template in templates do
+    M.validate_template(template)
+  end
+end
+
 local validate_settings = function(settings)
-  vim.validate {
-    settings = {
-      settings,
-      "table",
-      true,
-    },
-  }
+  validate_table("settings", settings, true)
   if settings == nil then
     return
   end
-  vim.validate {
-    ui = {
-      settings.ui,
-      "table",
-      true,
-    },
-  }
+  validate_table("settings.ui", settings.ui, true)
   if settings.ui then
     vim.validate {
       use_nerdfont_icons = {
@@ -69,13 +76,8 @@ local validate_settings = function(settings)
 end
 
 M.validate = function(user_config)
-  vim.validate {
-    config = {
-      user_config,
-      "table",
-    },
-  }
-  M.validate_sources(user_config.sources)
+  validate_table("config", user_config)
+  validate_templates(user_config.templates)
   validate_settings(user_config.settings)
 end
 

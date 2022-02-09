@@ -3,11 +3,14 @@ local M = {}
 local snippet_engines, loader, Model
 local config, controller
 
+local templates
+
 -- Setup function must be called before using the plugin!
 M.setup = function(user_config)
   local cfg = require("snippet_converter.config")
   config = cfg.merge_config(user_config)
   cfg.validate(config)
+  templates = config.templates
   -- Load modules and create controller
   snippet_engines = require("snippet_converter.snippet_engines")
   loader = require("snippet_converter.core.loader")
@@ -15,10 +18,14 @@ M.setup = function(user_config)
   controller = require("snippet_converter.ui.controller"):new()
 end
 
-local cur_pipeline
-M.set_pipeline = function(pipeline)
-  -- config.validate_sources(pipeline.sources, snippet_engines)
-  cur_pipeline = pipeline
+M.add_template = function(template)
+  local cfg = require("snippet_converter.config")
+  cfg.validate_template(template)
+  if not templates then
+    templates = { template }
+  else
+    templates[#templates + 1] = template
+  end
 end
 
 -- Partitions the snippet paths into a table of <filetype, [snippet_paths]>
@@ -117,16 +124,17 @@ M.convert_snippets = function()
   -- Make sure the window shows up before any potential long-running operations
   controller:create_view(model, config)
 
-  -- TODO:
-  -- vim.schedule(function()
-  --   ...
-  -- end)
-  local snippet_paths = load_snippets(cur_pipeline.sources)
-  print(vim.inspect(snippet_paths))
-  local snippets = parse_snippets(model, snippet_paths, cur_pipeline.sources)
-  convert_snippets(model, snippets, cur_pipeline.output)
-  controller:finalize()
-  return model
+  vim.schedule(function()
+    -- TODO
+    local template = templates[1]
+    local snippet_paths = load_snippets(template.sources)
+    print(vim.inspect(snippet_paths))
+    local snippets = parse_snippets(model, snippet_paths, template.sources)
+    convert_snippets(model, snippets, template.output)
+    controller:finalize()
+    return model
+  end)
+
 end
 
 return M

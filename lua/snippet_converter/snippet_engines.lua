@@ -1,21 +1,9 @@
 local snippet_engines = {}
 
--- Contains a list of features that a snippet-engine may support.
--- If the target engine also supports that capability, the snippet
--- can be converted.
-local capabilities = {
-  VIMSCRIPT_INTERPOLATION = 1,
-}
-
-snippet_engines.capabilities = capabilities
-
 snippet_engines.snipmate = {
   label = "SnipMate",
   extension = "snippets",
   parser = "snippet_converter.core.snipmate.parser",
-  capabilities = {
-    capabilities.VIMSCRIPT_INTERPOLATION,
-  },
 }
 
 snippet_engines.ultisnips = {

@@ -16,7 +16,6 @@ describe("VSCode body parser", function()
       { int = "2", type = NodeType.TABSTOP },
       { type = NodeType.TEXT, text = ")" },
     }
-    print(vim.inspect(expected))
     assert.are_same(expected, actual)
   end)
 

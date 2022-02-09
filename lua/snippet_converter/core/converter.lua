@@ -1,5 +1,4 @@
 local NodeType = require("snippet_converter.core.node_type")
-local err = require("snippet_converter.utils.error")
 
 local converter = {}
 
