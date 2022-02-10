@@ -73,7 +73,7 @@ M.parse_bracketed = function(state, parse_fn)
   return false, result
 end
 
-M.parse_escaped_text = function(state, escape_pattern)
+M.parse_escaped_text = function(state, escape_pattern, break_pattern)
   local input = state.input
   if input == "" then
     M.raise_parse_error("parse_escaped_text: input is nil or empty")
@@ -85,7 +85,7 @@ M.parse_escaped_text = function(state, escape_pattern)
   while cur_char ~= "" do
     if not begin_escape then
       begin_escape = cur_char == [[\]]
-      if not begin_escape and cur_char:match(escape_pattern) then
+      if not begin_escape and cur_char:match(break_pattern or escape_pattern) then
         break
       end
       parsed_text[#parsed_text + 1] = cur_char

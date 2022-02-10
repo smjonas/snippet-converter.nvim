@@ -2,20 +2,23 @@ local io = require("snippet_converter.utils.io")
 
 local parser = {}
 
-function parser.get_lines(file)
+parser.get_lines = function(file)
   return io.read_file(file)
 end
 
-function parser.parse(lines)
-  local parsed_snippets = {}
+parser.parse = function(path, parsed_snippets_ptr, parser_errors_ptr)
+  local lines = parser.get_lines(path)
   local cur_snippet
+  local prev_count = #parsed_snippets_ptr
+  local pos = prev_count + 1
 
   for _, line in ipairs(lines) do
     local header = parser.get_header(line)
     -- Found possible snippet header
     if header then
       if cur_snippet ~= nil then
-        parsed_snippets[#parsed_snippets + 1] = cur_snippet
+        parsed_snippets_ptr[pos] = cur_snippet
+        pos = pos + 1
       end
       cur_snippet = header
       cur_snippet.body = {}
@@ -25,9 +28,8 @@ function parser.parse(lines)
       end
     end
   end
-  -- Store last snippet
-  parsed_snippets[#parsed_snippets + 1] = cur_snippet
-  return parsed_snippets
+  -- Return the number of snippets that have been parsed
+  return (pos - 1) - prev_count
 end
 
 function parser.get_header(line)
