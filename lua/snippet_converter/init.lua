@@ -116,25 +116,21 @@ end
 
 M.convert_snippets = function()
   if config == nil then
-    error("setup function must be called with valid config before converting snippets")
+    error("setup function must be called before converting snippets")
     return
   end
 
   local model = Model.new()
   -- Make sure the window shows up before any potential long-running operations
   controller:create_view(model, config)
-
   vim.schedule(function()
-    -- TODO
     local template = templates[1]
     local snippet_paths = load_snippets(template.sources)
-    print(vim.inspect(snippet_paths))
     local snippets = parse_snippets(model, snippet_paths, template.sources)
     convert_snippets(model, snippets, template.output)
     controller:finalize()
-    return model
   end)
-
+  return model
 end
 
 return M

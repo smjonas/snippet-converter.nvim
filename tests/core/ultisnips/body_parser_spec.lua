@@ -85,5 +85,14 @@ describe("UltiSnips body parser", function()
     assert.are_same(expected, parser.parse(input))
   end)
 
+  describe("should fail to parse", function()
+    it("when encountering unescaped chars", function()
+      local input = [[if($1) {\n}]]
+      assert.has_errors(function()
+        parser.parse(input)
+      end, [[unescaped char at '{\n}' (input string: 'if($1) {\n}')]])
+    end)
+  end)
+
   -- TODO: how are unescaped chars handled?
 end)

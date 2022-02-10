@@ -88,9 +88,7 @@ M.export = function(converted_snippets, filetype, output_path)
     HEADER_STRING,
     nil
   )
-  if not io.file_exists(output_path) then
-    output_path = string.format("%s/%s.snippets", output_path, filetype)
-  end
+  output_path = export_utils.get_output_path(output_path, filetype, "snippets")
   io.write_file(snippet_lines, output_path)
 end
 

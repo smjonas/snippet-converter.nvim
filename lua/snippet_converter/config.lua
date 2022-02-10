@@ -2,7 +2,7 @@ local M = {}
 
 local snippet_engines = require("snippet_converter.snippet_engines")
 
-local DEFAULT_CONFIG = {
+M.DEFAULT_CONFIG = {
   use_nerdfont_icons = true,
 }
 
@@ -53,7 +53,7 @@ local validate_templates = function(templates)
     return
   end
   validate_table("templates", templates)
-  for _, template in templates do
+  for _, template in ipairs(templates) do
     M.validate_template(template)
   end
 end
@@ -82,7 +82,7 @@ M.validate = function(user_config)
 end
 
 M.merge_config = function(user_config)
-  return vim.tbl_deep_extend("force", DEFAULT_CONFIG, user_config)
+  return vim.tbl_deep_extend("force", M.DEFAULT_CONFIG, user_config)
 end
 
 return M

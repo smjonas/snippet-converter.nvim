@@ -6,7 +6,13 @@ M.new_inner_node = function(type, node)
 end
 
 M.raise_parse_error = function(state, description)
-  error(string.format("%s at '%s' (input string: '%s')", description, state.input, state.source))
+  -- Only show the line where the error occurred.
+  local error_line = state.input:match("^[^\n]*")
+  local source_line = state.source:match("^[^\n]*")
+  if #source_line < #state.source then
+    source_line = source_line .. "..."
+  end
+  error(("%s at '%s' (input string: '%s')"):format(description, error_line, source_line), 0)
 end
 
 M.expect = function(state, chars)

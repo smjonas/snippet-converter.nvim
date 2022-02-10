@@ -5,7 +5,7 @@ M.file_exists = function(path)
 end
 
 M.is_file = function(path)
-  return M.file_exists(path) or vim.fn.fnamemodify(path, ":e") ~= nil
+  return vim.fn.fnamemodify(path, ":e") ~= nil or M.file_exists(path)
 end
 
 M.read_file = function(path)

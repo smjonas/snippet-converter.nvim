@@ -14,7 +14,7 @@ M.snippet_strings_to_lines = function(snippets_ptr, sep_chars, header, footer)
       snippets_ptr[i] = string.format("%s" .. sep_chars, snippets_ptr[i])
     end
     -- Replace "\n" with new line
-    cur_snippet_lines = vim.fn.split(snippets_ptr[i], "\n", true)
+    cur_snippet_lines = vim.split(snippets_ptr[i], "\n", true)
     local cur_len = #cur_snippet_lines
     for j = 1, cur_len do
       snippet_lines[j + total_len] = cur_snippet_lines[j]
@@ -34,7 +34,8 @@ M.snippet_strings_to_lines = function(snippets_ptr, sep_chars, header, footer)
 end
 
 M.get_output_path = function(output_path, filetype, extension)
-  if io.is_file(output_path) then
+  if not io.is_file(output_path) then
+    print(output_path, "is file")
     output_path = ("%s/%s.%s"):format(output_path, filetype, extension)
   end
   return output_path

@@ -34,7 +34,8 @@ function parser.parse(path, parsed_snippets_ptr, parser_errors_ptr)
         parsed_snippets_ptr[pos] = cur_snippet
         pos = pos + 1
       else
-        parser_errors_ptr[#parser_errors_ptr + 1] = err.new_parser_error(path, line_nr, result)
+        start_line_nr = line_nr - #cur_snippet.body
+        parser_errors_ptr[#parser_errors_ptr + 1] = err.new_parser_error(path, start_line_nr, result)
       end
       found_snippet_header = false
     else

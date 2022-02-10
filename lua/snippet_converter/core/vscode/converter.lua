@@ -76,7 +76,8 @@ end
 -- @param output_dir string @The absolute path to the directory to write the snippets to
 M.export = function(converted_snippets, filetype, output_path)
   local snippet_lines = export_utils.snippet_strings_to_lines(converted_snippets, ",", "{", "}")
-  io.write_file(snippet_lines, export_utils.get_output_path(output_path, filetype, "json"))
+  output_path = export_utils.get_output_path(output_path, filetype, "json")
+  io.write_file(snippet_lines, output_path)
 end
 
 return M

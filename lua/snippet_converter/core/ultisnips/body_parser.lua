@@ -147,8 +147,10 @@ parse_any = function(state)
   else
     local prev_input = state.input
     local text = parse_text(state)
+    -- This happens if parse_text could not parse anything because the next char was not escaped.
     if state.input == prev_input then
-      state.input = ""
+      -- state.input = ""
+      p.raise_parse_error(state, "unescaped char")
     else
       return p.new_inner_node(NodeType.TEXT, { text = text })
     end
