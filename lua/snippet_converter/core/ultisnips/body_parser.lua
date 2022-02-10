@@ -19,22 +19,14 @@ local NodeType = require("snippet_converter.core.node_type")
 -- search             ::= text
 -- replacement        ::= text
 -- options            ::= text
--- var                ::= [_a-zA-Z] [_a-zA-Z0-9]*
 -- int                ::= [0-9]+
 -- text               ::= .*
 
-local var_pattern = "[_a-zA-Z][_a-zA-Z0-9]*"
 local options_pattern = "[^}]*"
-local parse_int = p.pattern("[0-9]+")
-
 local parse_text = function(state)
   -- '`', '{', '$' and '\' must be escaped; '}' signals the end of the text
   return p.parse_escaped_text(state, "[`{%$\\}]")
 end
-
--- TODO
-local parse_if = parse_text
-local parse_else = parse_text
 
 local parse_escaped_choice_text = function(state)
   return p.parse_escaped_text(state, "[%$}\\,|]")

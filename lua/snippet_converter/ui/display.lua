@@ -100,14 +100,16 @@ render_node = {
     out.lines[line_idx + 1] = merged_line
     for i, hl_group in ipairs(node.hl_groups) do
       local text_len = #node.texts[i]
-      -- Ignore empty highlight groups
-      if hl_group ~= "" then
-        out.highlights[#out.highlights + 1] = {
-          hl_group = hl_group,
-          line = line_idx,
-          col_start = col_offset,
-          col_end = col_offset + text_len,
-        }
+      if col_offset >= 0 then
+        -- Ignore empty highlight groups
+        if hl_group ~= "" then
+          out.highlights[#out.highlights + 1] = {
+            hl_group = hl_group,
+            line = line_idx,
+            col_start = col_offset,
+            col_end = col_offset + text_len,
+          }
+        end
       end
       col_offset = col_offset + text_len
     end

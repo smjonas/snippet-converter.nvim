@@ -89,7 +89,7 @@ local create_task_node = function(task, source_format, view)
     " / ",
     tostring(task.num_snippets),
     " snippets ",
-    "(" .. tostring(task.num_input_files) .. " input files)",
+    ("(%s input %s)"):format(tostring(task.num_input_files), amount_to_files_string(task.num_input_files)),
   }
   local child_nodes = {}
   for target_format, failures in pairs(task.converter_errors) do

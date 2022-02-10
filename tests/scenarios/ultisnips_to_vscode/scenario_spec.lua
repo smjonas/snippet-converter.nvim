@@ -14,5 +14,4 @@ describe("UltiSnips to VSCode scenario", function()
   -- Mock vim.schedule
   vim.schedule = function(fn) fn() end
   local model = snippet_converter.convert_snippets()
-  print(vim.inspect(model))
 end)
