@@ -74,6 +74,20 @@ local parse_snippets = function(model, snippet_paths, sources)
   return snippets
 end
 
+local handle_snippet_transformation = function(transformation, snippet, source_format)
+  local skip, converted_snippet, ok
+  local result = transformation(snippet, source_format)
+  if result == nil then
+    skip = true
+  elseif type(result) == "table" then -- overwrites the snippet to be converted
+    snippet = result
+    ok = true
+  elseif type(result) == "string" then -- overwrites the conversion result
+    converted_snippet = result
+  end
+  return skip, converted_snippet, ok
+end
+
 local convert_snippets = function(model, snippets, output)
   for source_format, snippets_for_format in pairs(snippets) do
     local converter_errors = {}
@@ -83,15 +97,28 @@ local convert_snippets = function(model, snippets, output)
       local pos = 1
       for filetype, _snippets in pairs(snippets_for_format) do
         for _, snippet in ipairs(_snippets) do
-          local ok, converted_snippet = pcall(converter.convert, snippet, source_format)
-          if ok then
-            converted_snippets[pos] = converted_snippet
-            pos = pos + 1
-          else
-            converter_errors[#converter_errors + 1] = {
-              msg = converted_snippet,
-              snippet = snippet,
-            }
+          local skip, converted_snippet, ok
+          if M.config.transform_snippets then
+            skip, converted_snippet, ok = handle_snippet_transformation(
+              M.config.transform_snippets,
+              snippet,
+              source_format
+            )
+          end
+          if not skip then
+            if not converted_snippet then
+              ok, converted_snippet = pcall(converter.convert, snippet, source_format)
+              if not ok then
+                converter_errors[#converter_errors + 1] = {
+                  msg = converted_snippet,
+                  snippet = snippet,
+                }
+              end
+            end
+            if ok then
+              converted_snippets[pos] = converted_snippet
+              pos = pos + 1
+            end
           end
         end
         for _, output_path in ipairs(output_paths) do
@@ -114,7 +141,7 @@ M.convert_snippets = function()
 
   local model = Model.new()
   -- Make sure the window shows up before any potential long-running operations
-  controller:create_view(model, M.config)
+  controller:create_view(model, M.config.settings)
   vim.schedule(function()
     local template = M.config.templates[1]
     local snippet_paths = load_snippets(template.sources)

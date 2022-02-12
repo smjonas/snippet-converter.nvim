@@ -4,6 +4,7 @@ local Node = require("snippet_converter.ui.node")
 local View = {}
 
 View.new = function(settings)
+  print(vim.inspect(settings))
   local self = {
     settings = settings or {},
     _window = display.new_window(),
@@ -27,7 +28,7 @@ function View:destroy()
 end
 
 function View:get_node_icons(is_expanded)
-  if self.settings.use_nerdfont_icons then
+  if self.settings.ui.use_nerdfont_icons then
     if is_expanded then
       return "  "
     else

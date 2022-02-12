@@ -3,7 +3,11 @@ local M = {}
 local snippet_engines = require("snippet_converter.snippet_engines")
 
 M.DEFAULT_CONFIG = {
-  use_nerdfont_icons = true,
+  settings = {
+    ui = {
+      use_nerdfont_icons = true,
+    },
+  },
 }
 
 local validate_table = function(name, tbl, is_optional)
@@ -11,8 +15,8 @@ local validate_table = function(name, tbl, is_optional)
     [name] = {
       tbl,
       "table",
-      is_optional
-    }
+      is_optional,
+    },
   }
 end
 
@@ -75,6 +79,13 @@ M.validate = function(user_config)
   validate_table("config", user_config)
   validate_templates(user_config.templates)
   validate_settings(user_config.settings)
+  vim.validate {
+    transform_snippets = {
+      user_config.transform_snippets,
+      "function",
+      true,
+    },
+  }
 end
 
 M.merge_config = function(user_config)

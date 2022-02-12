@@ -50,13 +50,7 @@ M.convert = function(snippet, source_format)
   if snippet.options and snippet.options:match("r") then
     error("cannot convert regex snippet")
   end
-  local body
-  if source_format == "ultisnips" then
-    body = list_to_json_string(base_converter.convert_ast(snippet.body, M.visit_ultisnips_node))
-  else
-    body = base_converter.convert_ast(snippet.body, base_converter.visit_node(nil))
-    body = io.json_encode(vim.fn.split(body, "\n", true))
-  end
+  local body = list_to_json_string(base_converter.convert_ast(snippet.body, M.visit_ultisnips_node))
 
   local description_string
   if snippet.description then
