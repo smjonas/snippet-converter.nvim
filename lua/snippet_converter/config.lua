@@ -41,20 +41,16 @@ local validate_paths = function(name, paths_for_format, format_name, path_name)
   end
 end
 
-M.validate_template = function(template)
+local validate_template = function(template)
   validate_table("template", template)
   validate_paths("template.sources", template.sources, "source.format", "source.path")
   validate_paths("template.output", template.output, "output.format", "output.path")
 end
 
 local validate_templates = function(templates)
-  -- The user might choose to call add_template after the initial call to setup, thus templates may be nil.
-  if templates == nil then
-    return
-  end
   validate_table("templates", templates)
   for _, template in ipairs(templates) do
-    M.validate_template(template)
+    validate_template(template)
   end
 end
 

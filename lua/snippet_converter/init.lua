@@ -1,31 +1,20 @@
-local M = {}
+local M = {
+  config = nil,
+}
 
 local snippet_engines, loader, Model
-local config, controller
-
-local templates
+local controller
 
 -- Setup function must be called before using the plugin!
 M.setup = function(user_config)
   local cfg = require("snippet_converter.config")
-  config = cfg.merge_config(user_config)
-  cfg.validate(config)
-  templates = config.templates
+  M.config = cfg.merge_config(user_config)
+  cfg.validate(M.config)
   -- Load modules and create controller
   snippet_engines = require("snippet_converter.snippet_engines")
   loader = require("snippet_converter.core.loader")
   Model = require("snippet_converter.ui.model")
   controller = require("snippet_converter.ui.controller"):new()
-end
-
-M.add_template = function(template)
-  local cfg = require("snippet_converter.config")
-  cfg.validate_template(template)
-  if not templates then
-    templates = { template }
-  else
-    templates[#templates + 1] = template
-  end
 end
 
 -- Partitions the snippet paths into a table of <filetype, [snippet_paths]>
@@ -106,6 +95,9 @@ local convert_snippets = function(model, snippets, output)
           end
         end
         for _, output_path in ipairs(output_paths) do
+          if filetype == snippet_engines[source_format].all_filename then
+            filetype = snippet_engines[target_format].all_filename
+          end
           converter.export(converted_snippets, filetype, output_path)
         end
       end
@@ -115,16 +107,16 @@ local convert_snippets = function(model, snippets, output)
 end
 
 M.convert_snippets = function()
-  if config == nil then
+  if M.config == nil then
     error("setup function must be called before converting snippets")
     return
   end
 
   local model = Model.new()
   -- Make sure the window shows up before any potential long-running operations
-  controller:create_view(model, config)
+  controller:create_view(model, M.config)
   vim.schedule(function()
-    local template = templates[1]
+    local template = M.config.templates[1]
     local snippet_paths = load_snippets(template.sources)
     local snippets = parse_snippets(model, snippet_paths, template.sources)
     convert_snippets(model, snippets, template.output)
