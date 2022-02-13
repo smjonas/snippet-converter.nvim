@@ -8,10 +8,12 @@ describe("UltiSnips to VSCode scenario", function()
     },
     output = {
       vscode = { "tests/scenarios/ultisnips_to_vscode/output.json" },
-    }
+    },
   }
-  snippet_converter.setup { templates = { template }}
+  snippet_converter.setup { templates = { template } }
   -- Mock vim.schedule
-  vim.schedule = function(fn) fn() end
+  vim.schedule = function(fn)
+    fn()
+  end
   local model = snippet_converter.convert_snippets()
 end)

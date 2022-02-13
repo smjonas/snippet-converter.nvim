@@ -75,17 +75,16 @@ local parse_snippets = function(model, snippet_paths, sources)
 end
 
 local handle_snippet_transformation = function(transformation, snippet, source_format)
-  local skip, converted_snippet, ok
+  local skip, converted_snippet
   local result = transformation(snippet, source_format)
   if result == nil then
     skip = true
   elseif type(result) == "table" then -- overwrites the snippet to be converted
     snippet = result
-    ok = true
   elseif type(result) == "string" then -- overwrites the conversion result
     converted_snippet = result
   end
-  return skip, converted_snippet, ok
+  return skip, converted_snippet
 end
 
 local convert_snippets = function(model, snippets, output)
@@ -98,14 +97,16 @@ local convert_snippets = function(model, snippets, output)
       for filetype, _snippets in pairs(snippets_for_format) do
         for _, snippet in ipairs(_snippets) do
           local skip, converted_snippet, ok
-          if M.config.transform_snippets then
+          -- TODO: fix for more than 1 template
+          if M.config.templates[1].transform_snippets then
             skip, converted_snippet, ok = handle_snippet_transformation(
-              M.config.transform_snippets,
+              M.config.templates[1].transform_snippets,
               snippet,
               source_format
             )
           end
           if not skip then
+            local ok = true
             if not converted_snippet then
               ok, converted_snippet = pcall(converter.convert, snippet, source_format)
               if not ok then
@@ -132,6 +133,9 @@ local convert_snippets = function(model, snippets, output)
     end
   end
 end
+
+-- Expose functions to tests
+M._convert_snippets = convert_snippets
 
 M.convert_snippets = function()
   if M.config == nil then

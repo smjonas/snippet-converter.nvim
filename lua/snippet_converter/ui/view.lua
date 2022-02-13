@@ -4,7 +4,6 @@ local Node = require("snippet_converter.ui.node")
 local View = {}
 
 View.new = function(settings)
-  print(vim.inspect(settings))
   local self = {
     settings = settings or {},
     _window = display.new_window(),

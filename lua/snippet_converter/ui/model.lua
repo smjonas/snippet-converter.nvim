@@ -4,13 +4,10 @@ local TaskState = require("snippet_converter.ui.task_state")
 local Model = {}
 
 Model.new = function()
-  return setmetatable({}, { __index = Model })
+  return setmetatable({ tasks = {} }, { __index = Model })
 end
 
 function Model:submit_task(source_format, num_snippets, num_input_files, parser_errors)
-  if not self.tasks then
-    self.tasks = {}
-  end
   self.tasks[snippet_engines[source_format].label] = {
     state = TaskState.CONVERSION_STARTED,
     num_snippets = num_snippets,
