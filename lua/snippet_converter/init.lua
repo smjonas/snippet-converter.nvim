@@ -96,10 +96,10 @@ local convert_snippets = function(model, snippets, output)
       local pos = 1
       for filetype, _snippets in pairs(snippets_for_format) do
         for _, snippet in ipairs(_snippets) do
-          local skip, converted_snippet, ok
+          local skip, converted_snippet
           -- TODO: fix for more than 1 template
           if M.config.templates[1].transform_snippets then
-            skip, converted_snippet, ok = handle_snippet_transformation(
+            skip, converted_snippet = handle_snippet_transformation(
               M.config.templates[1].transform_snippets,
               snippet,
               source_format

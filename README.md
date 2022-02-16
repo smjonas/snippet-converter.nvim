@@ -10,17 +10,28 @@ Neovim plugin to parse, transform and convert snippets. Supports a variety of fo
 
 > :warning: This plugin is still in development and not currently usable. Stay tuned!
 
-Are you switching to a new snippet engine but don't want to lose your hand-crafted snippets?
-Did you discover an awesome snippet collection but couldn't use it because your snippet engine
-only supports some custom format? Check out SnippetConverter!
+## When should you use this plugin?
+There are several cases where using this plugin comes in handy:
+
+- You are **switching to a new snippet engine** but don't want to lose your
+  hand-crafted snippets:\
+  Simply let SnippetConverter convert them to your desired output format.
+- You are using a collection of predefined snippets such as [friendly-snippets](https://github.com/rafamadriz/friendly-snippets) or
+  [vim-snipmate](https://github.com/honza/vim-snippets), however there is that **one snippet
+  that always gets in your way:**\
+  Instead of maintaining your own fork of the snippet collection, simply remove or modify the snippet with a few lines of Lua code.
+- You are a **plugin author** and don't want to reinvent the wheel by writing your own parsers:\
+  SnippetConverter generates a standardized (format-agnostic) AST from your snippet definitions. Feel free to integrate SnippetConverter with your plugin!
+
 
 ### Supported snippet engines
 SnippetConverter currently supports the following snippet formats:
-- VSCode snippets (used by [vim-vsnip](https://github.com/hrsh7th/vim-vsnip), [LuaSnip](https://github.com/L3MON4D3/LuaSnip))
-- [UltiSnips](https://github.com/SirVer/ultisnips) snippets
-- [SnipMate](https://github.com/garbas/vim-snipmate) snippets
+- VSCode (used by [vim-vsnip](https://github.com/hrsh7th/vim-vsnip), [LuaSnip](https://github.com/L3MON4D3/LuaSnip))
+- [UltiSnips](https://github.com/SirVer/ultisnips)
+- [SnipMate](https://github.com/garbas/vim-snipmate)
 
-Support for the following snippet engines will be added next:
+Support for the following formats is planned for a future version:
+- Native [LuaSnip](https://github.com/L3MON4D3/LuaSnip) (the snippets are defined in Lua code)
 - [neosnippet.vim](https://github.com/Shougo/neosnippet.vim)
 
 Is there any other snippet engine or custom format that you think should be supported? Let me know by creating an issue!
@@ -40,26 +51,26 @@ Is there any other snippet engine or custom format that you think should be supp
 			<td rowspan="3"><i>Source</br>format</i></td>
 			<td>UltiSnips</td>
 			<td>–</td>
-			<td>(&uarr;)<sup>1</sup></td>
-			<td>&uarr;</td>
+			<td>(✓)<sup>1</sup></td>
+			<td>✓</td>
 		</tr>
 		<tr>
 			<td>VSCode</td>
-			<td>&uarr;</td>
+			<td>✓</td>
 			<td>–</td>
 			<td></td>
 		</tr>
 		<tr>
 			<td>SnipMate</td>
-			<td>&uarr;</td>
-			<td>&uarr;</td>
+			<td>✓</td>
+			<td>✓</td>
 			<td>–</td>
 		</tr>
 	</tbody>
 </table>
 
-<sup>&uarr;: All snippets can be converted - no exceptions.</sup>\
-<sup>(&uarr;)<sup>1</sup>: Except snippets with Python / VimScript / shell code.</sup>
+<sup>✓: All snippets can be converted - no exceptions.</sup>\
+<sup>(✓)<sup>1</sup>: Except snippets with python / vimscript / shell code.</sup>
 
 ## Getting started
 
