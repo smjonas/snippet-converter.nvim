@@ -32,11 +32,12 @@ describe("VSCode parser", function()
       -- The pairs function does not specify the order in which the snippets will be traversed in,
       -- so we need to check both of the two possibilities. We don't check the actual
       -- contents of the AST because that is tested in vscode/body_parser.
-      local first_body_length = #parsed_snippets[1].body
-      if first_body_length == 7 then
-        assert.are_same(9, #parsed_snippets[2].body)
-      elseif first_body_length == 9 then
-        assert.are_same(7, #parsed_snippets[2].body)
+      if parsed_snippets[1].trigger == "fn" then
+        assert.are_same("function", parsed_snippets[1].description)
+        assert.are_same(7, #parsed_snippets[1].body)
+      elseif parsed_snippets[1].trigger == "for" then
+        assert.is_nil(parsed_snippets[1].description)
+        assert.are_same(9, #parsed_snippets[1].body)
       else
         -- This should never happen unless the parser fails.
         assert.is_false(true)
@@ -59,6 +60,7 @@ describe("VSCode parser", function()
       assert.are_same({}, parser_errors)
       assert.are_same(2, num_new_snippets)
 
+      -- TODO: fix assertion
       local first_trigger = parsed_snippets[1].trigger
       if first_trigger == "fn" then
         assert.are_same("fun", parsed_snippets[2].trigger)

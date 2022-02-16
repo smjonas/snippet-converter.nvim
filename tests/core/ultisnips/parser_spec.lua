@@ -28,9 +28,27 @@ endsnippet]],
       return lines
     end
 
-    local num_new_snippets = parser.parse(nil, parsed_snippets, parser_errors)
+    local num_new_snippets = parser.parse(
+      "/some/snippet/path.snippets",
+      parsed_snippets,
+      parser_errors
+    )
     assert.are_same(2, num_new_snippets)
     assert.are_same({}, parser_errors)
+
+    -- The pairs function does not specify the order in which the snippets will be traversed in,
+    -- so we need to check both of the two possibilities. We don't check the actual
+    -- contents of the AST because that is tested in vscode/body_parser.
+    if parsed_snippets[1].trigger == "fn" then
+      assert.are_same("function", parsed_snippets[1].description)
+      assert.are_same(7, #parsed_snippets[1].body)
+    elseif parsed_snippets[1].trigger == "for" then
+      assert.is_nil(parsed_snippets[1].description)
+      assert.are_same(9, #parsed_snippets[1].body)
+    else
+      -- This should never happen unless the parser fails.
+      assert.is_false(true)
+    end
   end)
 
   it("should return correct info on parse failure", function()
