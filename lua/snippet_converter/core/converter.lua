@@ -1,7 +1,8 @@
+local M = {}
+
 local NodeType = require("snippet_converter.core.node_type")
 local Variable = require("snippet_converter.core.vscode.body_parser").Variable
-
-local M = {}
+local err = require("snippet_converter.utils.error")
 
 M.convert_node_recursive = function(node, node_visitor)
   local result = {}
@@ -9,7 +10,7 @@ M.convert_node_recursive = function(node, node_visitor)
   if is_non_terminal_node then
     result[#result + 1] = node_visitor[node.type](node)
   else
-    error("node.type is nil " .. vim.inspect(node), 0)
+    error("node.type is nil " .. vim.inspect(node))
   end
   return table.concat(result)
 end
@@ -71,7 +72,7 @@ M.visit_node = function(custom_node_visitor)
     end,
     [NodeType.VARIABLE] = function(node)
       if node.transform then
-        error("cannot convert variable with transform")
+        err.raise_converter_error("transform")
       end
       local var = convert_variable[node.var]
       if node.any then
@@ -85,7 +86,7 @@ M.visit_node = function(custom_node_visitor)
     end,
   }, {
     __index = function(_, node_type)
-      error(("conversion of %s is not supported"):format(NodeType.to_string(node_type)), 0)
+      err.raise_converter_error(NodeType.to_string(node_type))
     end,
   })
   return default

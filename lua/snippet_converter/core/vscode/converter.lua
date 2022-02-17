@@ -2,6 +2,7 @@ local M = {}
 
 local NodeType = require("snippet_converter.core.node_type")
 local base_converter = require("snippet_converter.core.converter")
+local err = require("snippet_converter.utils.error")
 local io = require("snippet_converter.utils.io")
 local export_utils = require("snippet_converter.utils.export_utils")
 
@@ -13,7 +14,7 @@ M.visit_ultisnips_node = setmetatable({
     local options = node.transform.options
     -- ASCII conversion option
     if options:match("a") then
-      error("cannot convert option 'a' (ascii conversion) in transform node")
+      err.raise_converter_error("option 'a' (ascii conversion) in transform node")
     end
     -- Only g, i and m options are valid - ignore the rest
     local converted_options = options:gsub("[^gim]", "")
@@ -48,7 +49,7 @@ end
 
 M.convert = function(snippet, source_format)
   if snippet.options and snippet.options:match("r") then
-    error("cannot convert regex snippet")
+    err.raise_converter_error("regex trigger")
   end
   local body = list_to_json_string(base_converter.convert_ast(snippet.body, M.visit_ultisnips_node))
 

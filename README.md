@@ -29,7 +29,7 @@ Other reasons include:
   awkward to write in JSON, why not write them in UltiSnips format and convert them afterwards?).
 - You want to **validate the syntax** of your snippets:\
   SnippetConverter includes a graphical UI that will show you exactly where and why your snippet
-  could not be parsed.
+  could not be parsed. Just send the errors to the quickfix list and step through them one by one!
 
 
 ### Supported snippet engines

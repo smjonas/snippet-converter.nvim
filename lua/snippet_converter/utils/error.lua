@@ -16,6 +16,10 @@ M.assert_all = function(assertions, errors_ptr)
   return true
 end
 
+M.raise_converter_error = function(node_string)
+  error(("conversion of %s is not supported"):format(node_string), 0)
+end
+
 M.new_parser_error = function(path, line_nr, msg)
   return {
     path = path,

@@ -50,6 +50,19 @@ local amount_to_files_string = function(amount)
   end
 end
 
+local show_failures_in_qflist = function(failures)
+  local qf_entries = {}
+  for i, failure in ipairs(failures) do
+    qf_entries[i] = {
+      filename = failure.snippet.path,
+      lnum = failure.snippet.line_nr,
+      text = failure.msg,
+    }
+  end
+  vim.fn.setqflist(qf_entries, "r")
+  vim.cmd("copen")
+end
+
 local create_failure_node = function(failures, num_failures, view)
   local texts = {
     view:get_node_icons(false),
@@ -63,11 +76,15 @@ local create_failure_node = function(failures, num_failures, view)
       failure.snippet.trigger,
       ("): %s"):format(failure.msg),
     }
-    failure_nodes[i + 1] = Node.MultiHlTextNode(detail_texts, {
+    local failure_node = Node.MultiHlTextNode(detail_texts, {
       "",
       "Special",
       "",
     }, Node.Style.LeftTruncated(5))
+    failure_nodes[i + 1] = Node.KeymapNode(failure_node, "<c-q>", function()
+      view._window.close()
+      show_failures_in_qflist(failures)
+    end)
   end
   return Node.ExpandableNode(
     Node.MultiHlTextNode(texts, { "", "", "Comment" }, Node.Style.Padding(4)),
@@ -89,7 +106,10 @@ local create_task_node = function(task, source_format, view)
     " / ",
     tostring(task.num_snippets),
     " snippets ",
-    ("(%s input %s)"):format(tostring(task.num_input_files), amount_to_files_string(task.num_input_files)),
+    ("(%s input %s)"):format(
+      tostring(task.num_input_files),
+      amount_to_files_string(task.num_input_files)
+    ),
   }
   local child_nodes = {}
   for target_format, failures in pairs(task.converter_errors) do
