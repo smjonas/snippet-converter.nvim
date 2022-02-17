@@ -4,14 +4,14 @@
 
 Neovim plugin to parse, transform and convert snippets. Supports a variety of formats and snippet engines.
 
-[![Neovim](https://img.shields.io/badge/Neovim%200.5+-green.svg?style=flat-square&logo=neovim)](https://neovim.io)
+[![Neovim](https://img.shields.io/badge/Neovim%200.5+-green.svg?style=for-the-badge&logo=neovim)](https://neovim.io)
 
 </div>
 
 > :warning: This plugin is still in development and not currently usable. Stay tuned!
 
 ## When should you use this plugin?
-There are several cases where using this plugin comes in handy:
+There are several cases where this plugin comes in handy:
 
 - You are **switching to a new snippet engine** but don't want to lose your
   hand-crafted snippets:\
@@ -23,6 +23,14 @@ There are several cases where using this plugin comes in handy:
 - You are a **plugin author** and don't want to reinvent the wheel by writing your own parsers:\
   SnippetConverter generates a standardized (format-agnostic) AST from your snippet definitions. Feel free to integrate SnippetConverter with your plugin!
 
+Other reasons include:
+- You **dislike the snippets format** your snippet engine supports:\
+  In that case, simply write the snippet in a nicer format (in my opinion, VSCode snippets are quite
+  awkward to write in JSON, why not write them in UltiSnips format and convert them afterwards?).
+- You want to **validate the syntax** of your snippets:\
+  SnippetConverter includes a graphical UI that will show you exactly where and why your snippet
+  could not be parsed.
+
 
 ### Supported snippet engines
 SnippetConverter currently supports the following snippet formats:
@@ -33,8 +41,6 @@ SnippetConverter currently supports the following snippet formats:
 Support for the following formats is planned for a future version:
 - Native [LuaSnip](https://github.com/L3MON4D3/LuaSnip) (the snippets are defined in Lua code)
 - [neosnippet.vim](https://github.com/Shougo/neosnippet.vim)
-
-Is there any other snippet engine or custom format that you think should be supported? Let me know by creating an issue!
 
 <table>
 	<tbody>
@@ -71,6 +77,8 @@ Is there any other snippet engine or custom format that you think should be supp
 
 <sup>✓: All snippets can be converted - no exceptions.</sup>\
 <sup>(✓)<sup>1</sup>: Except snippets with python / vimscript / shell code.</sup>
+
+Is there any other snippet engine or custom format that you think should be supported? Let me know by creating an issue!
 
 ## Getting started
 

@@ -15,7 +15,6 @@ local function matches_snippet(_, arguments)
 end
 
 M.register = function(assert)
-  print(1)
   local say = require("say")
   say:set("assertion.ends_with.positive", 'Expected string to end with "%s": "%s"')
   say:set("assertion.ends_with.negative", 'Expected string to not end with "%s": "%s"')
