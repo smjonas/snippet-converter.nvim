@@ -85,6 +85,18 @@ describe("UltiSnips body parser", function()
     assert.are_same(expected, parser.parse(input))
   end)
 
+  it("should handle unambiguous unescaped chars", function()
+    local input = [[${\cup}$]]
+    local expected = {
+      {
+        -- $ does not need to be escaped because it does not mark the beginning of a tabstop
+        text = [[${\cup}$]],
+        type = NodeType.TEXT,
+      },
+    }
+    assert.are_same(expected, parser.parse(input))
+  end)
+
   describe("should fail to parse", function()
     it("when encountering unescaped chars", function()
       local input = [[if($1) {\n}]]

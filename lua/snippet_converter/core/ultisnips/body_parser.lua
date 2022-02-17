@@ -151,14 +151,47 @@ end
 
 local parser = {}
 
+local backtrack = function(ast, state, prev_input)
+  state.input = prev_input
+  -- Parse the next chars as a text node, then try from that position
+  local chars = {}
+  local cur_pos = 1
+  local ok, result
+  while not ok do
+    if state.input == "" then
+      ast[#ast + 1] = p.new_inner_node(NodeType.TEXT, { text = prev_input })
+      break
+    end
+    chars[#chars + 1] = state.input:sub(1, 1)
+    state.input = state.input:sub(2)
+    ok, result = pcall(parse_any, state)
+    if ok then
+      ast[#ast + 1] = p.new_inner_node(NodeType.TEXT, { text = table.concat(chars) })
+      ast[#ast + 1] = result
+      break
+    end
+    cur_pos = cur_pos + 1
+  end
+  if ast[#ast].type == NodeType.TEXT and ast[#ast - 1].type == NodeType.TEXT then
+    ast[#ast - 1].text = ast[#ast - 1].text .. ast[#ast].text
+    ast[#ast] = nil
+  end
+end
+
 parser.parse = function(input)
   local state = {
     input = input,
     source = input,
   }
   local ast = {}
-  while state.input ~= nil and state.input ~= "" do
-    ast[#ast + 1] = parse_any(state)
+  while state.input ~= "" do
+    local prev_input = state.input
+    local ok, result = pcall(parse_any, state)
+    if ok then
+      ast[#ast + 1] = result
+    else
+      backtrack(ast, state, prev_input)
+    end
   end
   return ast
 end
