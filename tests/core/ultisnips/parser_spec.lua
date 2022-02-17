@@ -70,8 +70,8 @@ endsnippet]],
       return lines
     end
 
-    local num_new_snippets = parser.parse("the_snippet_path", parsed_snippets, parser_errors)
-    assert.are_same(1, num_new_snippets)
+    local num_snippets = parser.parse("the_snippet_path", parsed_snippets, parser_errors)
+    assert.are_same(1, num_snippets)
     assert.are_same({
       {
         msg = [[unescaped char at '{' (input string: 'line 7: if($1) {...')]],

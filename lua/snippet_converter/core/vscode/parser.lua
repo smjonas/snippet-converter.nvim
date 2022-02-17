@@ -2,10 +2,10 @@ local body_parser = require("snippet_converter.core.vscode.body_parser")
 local io = require("snippet_converter.utils.io")
 local err = require("snippet_converter.utils.error")
 
-local parser = {}
+local M = {}
 
-parser.get_lines = function(file)
-  return io.json_decode(file)
+M.get_lines = function(path)
+  return io.read_json(path)
 end
 
 local verify_snippet_format = function(snippet_name, snippet_info, errors_ptr)
@@ -53,25 +53,34 @@ local create_snippet = function(snippet_name, trigger, snippet_info, parser_erro
   }
 end
 
-parser.parse = function(snippet_data, parsed_snippets_ptr, parser_errors_ptr)
+M.parse = function(path, parsed_snippets_ptr, parser_errors_ptr)
+  local snippet_data = M.get_lines(path)
   if vim.tbl_isempty(snippet_data) then
-    return 0
+    return #parsed_snippets_ptr
   end
   local prev_count = #parsed_snippets_ptr
   local pos = prev_count + 1
   for snippet_name, snippet_info in pairs(snippet_data) do
     if verify_snippet_format(snippet_name, snippet_info, parser_errors_ptr) then
+      -- The snippet has multiple prefixes.
       if type(snippet_info.prefix) == "table" then
         for _, trigger in ipairs(snippet_info.prefix) do
           local snippet = create_snippet(snippet_name, trigger, snippet_info, parser_errors_ptr)
           if snippet then
+            snippet.path = path
             parsed_snippets_ptr[pos] = snippet
             pos = pos + 1
           end
         end
       else
-        local snippet = create_snippet(snippet_name, snippet_info.prefix, snippet_info, parser_errors_ptr)
+        local snippet = create_snippet(
+          snippet_name,
+          snippet_info.prefix,
+          snippet_info,
+          parser_errors_ptr
+        )
         if snippet then
+          snippet.path = path
           parsed_snippets_ptr[pos] = snippet
           pos = pos + 1
         end
@@ -81,4 +90,4 @@ parser.parse = function(snippet_data, parsed_snippets_ptr, parser_errors_ptr)
   return (pos - 1) - prev_count
 end
 
-return parser
+return M

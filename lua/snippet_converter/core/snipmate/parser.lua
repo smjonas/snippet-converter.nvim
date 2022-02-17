@@ -25,8 +25,7 @@ local store_snippet =
 M.parse = function(path, parsed_snippets_ptr, parser_errors_ptr)
   local lines = M.get_lines(path)
   local cur_snippet
-  local prev_count = #parsed_snippets_ptr
-  local pos = prev_count + 1
+  local pos =  #parsed_snippets_ptr + 1
 
   for line_nr, line in ipairs(lines) do
     local header = M.get_header(line)
@@ -56,9 +55,8 @@ M.parse = function(path, parsed_snippets_ptr, parser_errors_ptr)
     end
   end
 
-  -- Return the new number of snippets that were parsed
-  -- TODO: remove prev_count variable
-  return (pos - 1) - prev_count
+  -- Return the new total number of snippets that were parsed
+  return pos - 1
 end
 
 function M.get_header(line)

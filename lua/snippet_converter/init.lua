@@ -60,12 +60,7 @@ local parse_snippets = function(model, snippet_paths, sources)
         snippets[source_format][filetype] = {}
       end
       for _, path in ipairs(paths) do
-        local num_new_snippets = parser.parse(
-          path,
-          snippets[source_format][filetype],
-          parser_errors
-        )
-        num_snippets = num_snippets + num_new_snippets
+        num_snippets = parser.parse(path, snippets[source_format][filetype], parser_errors)
       end
       num_files = num_files + #paths
     end

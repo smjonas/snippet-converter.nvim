@@ -15,8 +15,7 @@ M.parse = function(path, parsed_snippets_ptr, parser_errors_ptr)
   local lines = M.get_lines(path)
   local cur_snippet
   local found_snippet_header = false
-  local prev_count = #parsed_snippets_ptr
-  local pos = prev_count + 1
+  local pos = #parsed_snippets_ptr + 1
 
   for line_nr, line in ipairs(lines) do
     if not found_snippet_header then
@@ -44,8 +43,8 @@ M.parse = function(path, parsed_snippets_ptr, parser_errors_ptr)
       table.insert(cur_snippet.body, line)
     end
   end
-  -- Return the number of snippets that have been parsed
-  return (pos - 1) - prev_count
+  -- Return the new total number of snippets that were parsed
+  return pos - 1
 end
 
 M.parse_header = function(line)

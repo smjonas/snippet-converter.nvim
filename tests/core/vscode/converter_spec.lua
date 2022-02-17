@@ -25,12 +25,12 @@ describe("VSCode converter", function()
   "fn": {
     "prefix": "fn",
     "description": "function",
-    "body": ["local ${1:name} = function($2)"]
+    "body": "local ${1:name} = function($2)"
   }]]
       assert.are_same(expected, actual)
     end)
 
-    it("(missing description)", function()
+    it("(missing description with multiple lines)", function()
       local snippet = {
         trigger = "fn",
         -- "local ${1:name} = function($2)"
@@ -44,13 +44,14 @@ describe("VSCode converter", function()
           { type = NodeType.TEXT, text = " = function(" },
           { type = NodeType.TABSTOP, int = "2" },
           { type = NodeType.TEXT, text = ")" },
+          { type = NodeType.TEXT, text = "\nnewline" },
         },
       }
       local actual = converter.convert(snippet)
       local expected = [[
   "fn": {
     "prefix": "fn",
-    "body": ["local ${1:name} = function($2)"]
+    "body": ["local ${1:name} = function($2)", "newline"]
   }]]
       assert.are_same(expected, actual)
     end)
