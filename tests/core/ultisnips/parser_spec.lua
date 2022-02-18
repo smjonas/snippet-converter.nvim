@@ -51,6 +51,48 @@ endsnippet]],
     end
   end)
 
+  it("should parse global python code and provide it as context", function()
+    local lines = vim.split(
+      [[
+global !p
+def join(a, b):
+  return a + b
+endglobal
+
+hey
+snippet for
+for ${1:i}=${2:1},${3:10} do
+	${0:print(i)}
+end
+endsnippet
+
+global !p
+def join2(a, b):
+  return a + b
+endglobal]],
+      "\n"
+    )
+    parser.get_lines = function(_)
+      return lines
+    end
+
+    local num_new_snippets, context = parser.parse(
+      "/some/snippet/path.snippets",
+      parsed_snippets,
+      parser_errors
+    )
+    assert.are_same(1, num_new_snippets)
+    assert.are_same("for", parsed_snippets[1].trigger)
+    assert.are_same({}, parser_errors)
+    local expected_context = {
+      global_code = {
+        { "def join(a, b):", "  return a + b" },
+        { "def join2(a, b):", "  return a + b" },
+      },
+    }
+    assert.are_same(expected_context, context)
+  end)
+
   it("should return correct info on parse failure", function()
     local lines = vim.split(
       [[

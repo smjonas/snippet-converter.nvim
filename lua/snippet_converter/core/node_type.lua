@@ -12,7 +12,7 @@ local NodeType = {
   VISUAL_PLACEHOLDER = 8,
   PYTHON_CODE = 9,
   SHELL_CODE = 10,
-  -- UltiSnips / vsnip
+  -- UltiSnips / SnipMate / vsnip
   VIMSCRIPT_CODE = 11,
 }
 

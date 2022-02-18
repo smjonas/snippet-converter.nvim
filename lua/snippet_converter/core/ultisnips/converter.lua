@@ -4,7 +4,7 @@ local export_utils = require("snippet_converter.utils.export_utils")
 
 local M = {}
 
-M.convert = function(snippet, _)
+M.convert = function(snippet, source_format)
   local trigger = snippet.trigger
   -- Literal " in trigger
   if trigger:match([["]]) then
@@ -18,8 +18,15 @@ M.convert = function(snippet, _)
   if snippet.description then
     description = string.format([[ "%s"]], snippet.description)
   end
-  local body = base_converter.convert_ast(snippet.body, base_converter.visit_node)
-  return string.format("snippet %s%s\n%s\nendsnippet", trigger, description, body)
+
+  local options = ""
+  if source_format == "ultisnips" then
+    if snippet.options then
+      options = " " .. snippet.options
+    end
+  end
+  local body = base_converter.convert_ast(snippet.body, base_converter.visit_node())
+  return string.format("snippet %s%s%s\n%s\nendsnippet", trigger, description, options, body)
 end
 
 local HEADER_STRING =
@@ -30,13 +37,21 @@ local HEADER_STRING =
 -- @param converted_snippets string[] @A list of strings where each item is a snippet string to be exported
 -- @param filetype string @The filetype of the snippets
 -- @param output_dir string @The absolute path to the directory (or file) to write the snippets to
-M.export = function(converted_snippets, filetype, output_path)
-  local snippet_lines = export_utils.snippet_strings_to_lines(
-    converted_snippets,
-    "\n",
-    HEADER_STRING,
-    nil
-  )
+-- @param context []? @A table of additional snippet contexts optionally provided the source parser (example: global code)
+M.export = function(converted_snippets, filetype, output_path, context)
+  local header = HEADER_STRING
+  if context then
+    print(1)
+    local context_string = table.concat(
+      vim.tbl_map(function(ctx)
+        return ctx.global_code
+      end, context),
+      "\n"
+    )
+    print(context_string)
+    header = ("%s\n%s"):format(header, context_string)
+  end
+  local snippet_lines = export_utils.snippet_strings_to_lines(converted_snippets, "\n", header, nil)
   output_path = export_utils.get_output_path(output_path, filetype, "snippets")
   io.write_file(snippet_lines, output_path)
 end

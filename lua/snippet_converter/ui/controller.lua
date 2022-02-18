@@ -7,6 +7,7 @@ Controller.new = function()
 end
 
 function Controller:create_view(model, settings)
+  print(2)
   if self.view ~= nil then
     self.view:destroy()
   end

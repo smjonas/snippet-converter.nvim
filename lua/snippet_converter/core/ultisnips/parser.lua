@@ -10,11 +10,15 @@ M.get_lines = function(path)
 end
 
 -- TODO: docs for return values and params
--- TODO: change first parameter to take lines instead of path
-M.parse = function(path, parsed_snippets_ptr, parser_errors_ptr)
+M.parse = function(path, parsed_snippets_ptr, parser_errors_ptr, context_ptr)
   local lines = M.get_lines(path)
   local cur_snippet
   local found_snippet_header = false
+
+  local found_global_python_code = false
+  local cur_global_code = {}
+  local global_code = {}
+
   local pos = #parsed_snippets_ptr + 1
 
   for line_nr, line in ipairs(lines) do
@@ -26,9 +30,16 @@ M.parse = function(path, parsed_snippets_ptr, parser_errors_ptr)
         cur_snippet.line_nr = line_nr
         cur_snippet.body = {}
         found_snippet_header = true
+      elseif line:match("^global !p") then
+        found_global_python_code = true
+      elseif line:match("^endglobal") then
+        table.insert(global_code, cur_global_code)
+        cur_global_code = {}
+        found_global_python_code = false
+      elseif found_global_python_code then
+        table.insert(cur_global_code, line)
       end
-    -- TODO: change
-    elseif vim.startswith(line, "endsnippet") then
+    elseif line:match("^endsnippet") then
       local ok, result = pcall(body_parser.parse, table.concat(cur_snippet.body, "\n"))
       if ok then
         cur_snippet.body = result
@@ -36,14 +47,23 @@ M.parse = function(path, parsed_snippets_ptr, parser_errors_ptr)
         pos = pos + 1
       else
         local start_line_nr = line_nr - #cur_snippet.body
-        parser_errors_ptr[#parser_errors_ptr + 1] = err.new_parser_error(path, start_line_nr, result)
+        parser_errors_ptr[#parser_errors_ptr + 1] = err.new_parser_error(
+          path,
+          start_line_nr,
+          result
+        )
       end
       found_snippet_header = false
     else
       table.insert(cur_snippet.body, line)
     end
   end
-  -- Return the new total number of snippets that were parsed
+
+  if #global_code > 0 then
+    context_ptr[#context_ptr + 1] = {
+      global_code = global_code,
+    }
+  end
   return pos - 1
 end
 

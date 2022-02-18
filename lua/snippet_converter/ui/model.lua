@@ -19,7 +19,6 @@ function Model:submit_task(source_format, num_snippets, num_input_files, parser_
 end
 
 function Model:complete_task(source_format, target_format, num_output_files, converter_errors)
-  -- TODO: set the model data in the model, not in the controller
   local source_label = snippet_engines[source_format].label
   local target_label = snippet_engines[target_format].label
 

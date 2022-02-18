@@ -48,6 +48,7 @@ end
 
 local parse_snippets = function(model, snippet_paths, sources)
   local snippets = {}
+  local context = {}
   for source_format, _ in pairs(sources) do
     snippets[source_format] = {}
     local num_snippets = 0
@@ -60,13 +61,13 @@ local parse_snippets = function(model, snippet_paths, sources)
         snippets[source_format][filetype] = {}
       end
       for _, path in ipairs(paths) do
-        num_snippets = parser.parse(path, snippets[source_format][filetype], parser_errors)
+        num_snippets = parser.parse(path, snippets[source_format][filetype], parser_errors, context)
       end
       num_files = num_files + #paths
     end
     model:submit_task(source_format, num_snippets, num_files, parser_errors)
   end
-  return snippets
+  return snippets, context
 end
 
 local handle_snippet_transformation = function(transformation, snippet, source_format)
@@ -82,7 +83,7 @@ local handle_snippet_transformation = function(transformation, snippet, source_f
   return skip, converted_snippet
 end
 
-local convert_snippets = function(model, snippets, output)
+local convert_snippets = function(model, snippets, context, output)
   for source_format, snippets_for_format in pairs(snippets) do
     local converter_errors = {}
     for target_format, output_paths in pairs(output) do
@@ -121,7 +122,7 @@ local convert_snippets = function(model, snippets, output)
           if filetype == snippet_engines[source_format].all_filename then
             filetype = snippet_engines[target_format].all_filename
           end
-          converter.export(converted_snippets, filetype, output_path)
+          converter.export(converted_snippets, filetype, output_path, context)
         end
       end
       model:complete_task(source_format, target_format, #output_paths, converter_errors)
@@ -144,8 +145,9 @@ M.convert_snippets = function()
   vim.schedule(function()
     local template = M.config.templates[1]
     local snippet_paths = load_snippets(template.sources)
-    local snippets = parse_snippets(model, snippet_paths, template.sources)
-    convert_snippets(model, snippets, template.output)
+    local snippets, context = parse_snippets(model, snippet_paths, template.sources)
+    print(vim.inspect(context))
+    convert_snippets(model, snippets, context, template.output)
     controller:finalize()
   end)
   return model
