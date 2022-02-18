@@ -17,9 +17,9 @@ M.parse = function(path, parsed_snippets_ptr, parser_errors_ptr, context_ptr)
 
   local found_global_python_code = false
   local cur_global_code = {}
-  local global_code = {}
 
-  local pos = #parsed_snippets_ptr + 1
+  local start_pos = #parsed_snippets_ptr + 1
+  local pos = start_pos
 
   for line_nr, line in ipairs(lines) do
     if not found_snippet_header then
@@ -33,11 +33,23 @@ M.parse = function(path, parsed_snippets_ptr, parser_errors_ptr, context_ptr)
       elseif line:match("^global !p") then
         found_global_python_code = true
       elseif line:match("^endglobal") then
-        table.insert(global_code, cur_global_code)
+        table.insert(context_ptr.global_code, cur_global_code)
         cur_global_code = {}
         found_global_python_code = false
       elseif found_global_python_code then
         table.insert(cur_global_code, line)
+      else
+        local priority = line:match("^priority (-?%d+)")
+        if priority then
+          local key = (pos == start_pos and -1) or #parsed_snippets_ptr
+          context_ptr.priorities[key] = priority
+        elseif line:match("^priority") then
+          parser_errors_ptr[#parser_errors_ptr + 1] = err.new_parser_error(
+            path,
+            line_nr,
+            ([[invalid priority "%s"]]):format(line)
+          )
+        end
       end
     elseif line:match("^endsnippet") then
       local ok, result = pcall(body_parser.parse, table.concat(cur_snippet.body, "\n"))
@@ -57,12 +69,6 @@ M.parse = function(path, parsed_snippets_ptr, parser_errors_ptr, context_ptr)
     else
       table.insert(cur_snippet.body, line)
     end
-  end
-
-  if #global_code > 0 then
-    context_ptr[#context_ptr + 1] = {
-      global_code = global_code,
-    }
   end
   return pos - 1
 end

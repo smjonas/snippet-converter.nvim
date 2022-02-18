@@ -48,7 +48,10 @@ end
 
 local parse_snippets = function(model, snippet_paths, sources)
   local snippets = {}
-  local context = {}
+  local context = {
+    global_code = {},
+    priorities = {},
+  }
   for source_format, _ in pairs(sources) do
     snippets[source_format] = {}
     local num_snippets = 0
@@ -146,7 +149,6 @@ M.convert_snippets = function()
     local template = M.config.templates[1]
     local snippet_paths = load_snippets(template.sources)
     local snippets, context = parse_snippets(model, snippet_paths, template.sources)
-    print(vim.inspect(context))
     convert_snippets(model, snippets, context, template.output)
     controller:finalize()
   end)

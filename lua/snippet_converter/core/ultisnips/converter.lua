@@ -39,19 +39,30 @@ local HEADER_STRING =
 -- @param output_dir string @The absolute path to the directory (or file) to write the snippets to
 -- @param context []? @A table of additional snippet contexts optionally provided the source parser (example: global code)
 M.export = function(converted_snippets, filetype, output_path, context)
-  local header = HEADER_STRING
   if context then
-    print(1)
-    local context_string = table.concat(
-      vim.tbl_map(function(ctx)
-        return ctx.global_code
-      end, context),
-      "\n"
-    )
-    print(context_string)
-    header = ("%s\n%s"):format(header, context_string)
+    for i, code in ipairs(context.global_code) do
+      local lines = ("global !p\n%s\nendglobal"):format(table.concat(code, "\n"))
+      -- Add global python code at the beginning of the output file
+      table.insert(converted_snippets, i, lines)
+    end
+    for i, priority in pairs(context.priorities) do
+      local line = "priority " .. priority
+      if i == -1 then
+        -- The priority applies to all snippets in the file
+        table.insert(converted_snippets, -1, line)
+      else
+        -- Add priorities right before the next snippet
+        converted_snippets[i + 1] = ("%s\n%s"):format(line, converted_snippets[i + 1])
+      end
+    end
   end
-  local snippet_lines = export_utils.snippet_strings_to_lines(converted_snippets, "\n", header, nil)
+
+  local snippet_lines = export_utils.snippet_strings_to_lines(
+    converted_snippets,
+    "\n",
+    HEADER_STRING,
+    nil
+  )
   output_path = export_utils.get_output_path(output_path, filetype, "snippets")
   io.write_file(snippet_lines, output_path)
 end
