@@ -45,14 +45,14 @@ M.export = function(converted_snippets, filetype, output_path, context)
       -- Add global python code at the beginning of the output file
       table.insert(converted_snippets, i, lines)
     end
-    for i, priority in pairs(context.priorities) do
+    for snippet_nr, priority in pairs(context.priorities) do
       local line = "priority " .. priority
-      if i == -1 then
+      if snippet_nr == -1 then
         -- The priority applies to all snippets in the file
         table.insert(converted_snippets, -1, line)
       else
         -- Add priorities right before the next snippet
-        converted_snippets[i + 1] = ("%s\n%s"):format(line, converted_snippets[i + 1])
+        converted_snippets[snippet_nr + 1] = ("%s\n%s"):format(line, converted_snippets[snippet_nr + 1])
       end
     end
   end

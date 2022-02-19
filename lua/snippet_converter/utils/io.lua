@@ -9,7 +9,8 @@ M.is_file = function(path)
 end
 
 M.read_file = function(path)
-  -- Replace this with an async implementation (libuv)?
+  -- Replace this with libuv's uv.read_file? However, in that case we only get the raw
+  -- buffer content and would need to split the string it to get the lines.
   return vim.fn.readfile(path)
 end
 
