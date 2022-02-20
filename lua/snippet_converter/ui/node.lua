@@ -87,7 +87,7 @@ end
 Style.LeftTruncated = function(padding)
   return {
     type = Style.LEFT_TRUNCATED,
-    padding = padding
+    padding = padding,
   }
 end
 

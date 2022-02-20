@@ -16,9 +16,13 @@ View.new = function(settings)
   }
   local global_keymaps = {
     ["q"] = self._window.close,
-    ["<Esc>"] = self._window.close,
+    ["<esc>"] = self._window.close,
     ["?"] = function()
       self:toggle_help()
+    end,
+    ["<c-q>"] = function()
+      -- no-op: disable potential user keymap to avoid issues
+      -- when <c-q> is remapped to toggle the quickfix list
     end,
   }
   display.register_global_keymaps(global_keymaps)
@@ -40,7 +44,7 @@ function View:toggle_help()
   self:draw(self.model, true)
 end
 
-function View:get_node_icons(is_expanded)
+function View:get_node_icon(is_expanded)
   if self.settings.ui.use_nerdfont_icons then
     if is_expanded then
       return "  "
@@ -79,11 +83,14 @@ end
 
 function View:create_failure_node(failures, num_failures)
   local texts = {
-    self:get_node_icons(false),
-    tostring(num_failures) .. " snippets could not be converted. ",
-    "Press enter to view details",
+    self:get_node_icon(false),
+    ("The following %d snippets could not be converted:"):format(num_failures),
   }
-  local failure_nodes = { Node.NewLine() }
+  local open_qflist_callback = function()
+    self._window.close()
+    show_failures_in_qflist(failures)
+  end
+  local failure_nodes = { Node.KeymapNode(Node.NewLine(), "<c-q>", open_qflist_callback) }
   for i, failure in ipairs(failures) do
     local detail_texts = {
       ("%s:%s ("):format(failure.snippet.path, failure.snippet.line_nr),
@@ -95,25 +102,52 @@ function View:create_failure_node(failures, num_failures)
       "Special",
       "",
     }, Node.Style.LeftTruncated(5))
-    failure_nodes[i + 1] = Node.KeymapNode(failure_node, "<c-q>", function()
-      self._window.close()
-      show_failures_in_qflist(failures)
-    end)
+    failure_nodes[i + 1] = Node.KeymapNode(failure_node, "<c-q>", open_qflist_callback)
   end
   return Node.ExpandableNode(
-    Node.MultiHlTextNode(texts, { "", "", "Comment" }, Node.Style.Padding(4)),
+    Node.KeymapNode(
+      Node.MultiHlTextNode(texts, { "", "" }, Node.Style.Padding(4)),
+      "<c-q>",
+      open_qflist_callback
+    ),
     Node.RootNode(failure_nodes),
     function(is_expanded)
-      texts[1] = self:get_node_icons(is_expanded)
+      texts[1] = self:get_node_icon(is_expanded)
       -- Redraw view as the layout has changed
       self:draw(self.model, true)
     end
   )
 end
 
+local header_nodes = {}
+function View:get_header_nodes(scene, is_converting)
+  if not header_nodes[scene] then
+    local header_title = Node.HlTextNode("snippet-converter.nvim", "Title", Node.Style.Centered())
+    local header_url = Node.HlTextNode(
+      "https://github.com/smjonas/snippet-converter.nvim",
+      "Comment",
+      Node.Style.Centered()
+    )
+    local header_text = scene == Scene.Main and " to view keyboard shortcuts" or " to go back"
+    local header_toggle_keymaps = Node.MultiHlTextNode(
+      { "Press ", "?", header_text },
+      { "Comment", "Title", "Comment" },
+      Node.Style.Centered()
+    )
+    header_nodes[scene] = {
+      header_title,
+      header_url,
+      header_toggle_keymaps,
+      Node.NewLine(),
+    }
+  end
+  header_nodes[scene][5] = is_converting and Node.HlTextNode("  Converting snippets...", "") or nil
+  return header_nodes[scene]
+end
+
 function View:create_task_node(task, source_format)
   local texts = {
-    self:get_node_icons(true),
+    self:get_node_icon(true),
     source_format,
     ": successfully converted ",
     tostring(task.num_snippets - self.model.max_num_failures),
@@ -153,7 +187,7 @@ function View:create_task_node(task, source_format)
     Node.MultiHlTextNode(texts, { "", "Statement", "", "Special", "", "Special", "", "Comment" }),
     Node.RootNode(child_nodes),
     function(is_expanded)
-      texts[1] = self:get_node_icons(is_expanded)
+      texts[1] = self:get_node_icon(is_expanded)
       -- Redraw view as the has layout changed
       self:draw(self.model, true)
     end,
@@ -161,42 +195,10 @@ function View:create_task_node(task, source_format)
   )
 end
 
-local header_nodes = {}
-function View:get_header_nodes(scene, is_converting)
-  if not header_nodes[scene] then
-    local header_title = Node.HlTextNode("snippet-converter.nvim", "Title", Node.Style.Centered())
-    local header_url = Node.HlTextNode(
-      "https://github.com/smjonas/snippet-converter.nvim",
-      "Comment",
-      Node.Style.Centered()
-    )
-    local header_text = scene == Scene.Main and " to view keyboard shortcuts" or " to go back"
-    local header_toggle_keymaps = Node.MultiHlTextNode(
-      { "Press ", "?", header_text },
-      { "Comment", "Title", "Comment" },
-      Node.Style.Centered()
-    )
-    header_nodes[scene] = {
-      header_title,
-      header_url,
-      header_toggle_keymaps,
-      Node.NewLine(),
-    }
-  end
-  header_nodes[scene][5] = is_converting and Node.HlTextNode("  Converting snippets...", "") or nil
-  return header_nodes[scene]
-end
-
-function View:draw(model, persist_view_state)
-  self.model = model
+function View:create_task_nodes(scene)
   local nodes = self:get_header_nodes(self.current_scene, self.model.is_converting)
-  if self.current_scene == Scene.Main then
-    if not persist_view_state then
-      self.state = {
-        task_nodes = {},
-      }
-    end
-    for source_format, task in pairs(model.tasks or {}) do
+  if scene == Scene.Main then
+    for source_format, task in pairs(self.model.tasks or {}) do
       local task_node = self.state.task_nodes[source_format]
       -- Create new task only if it has not been persisted across redraws
       if not task_node then
@@ -205,7 +207,33 @@ function View:draw(model, persist_view_state)
       end
       nodes[#nodes + 1] = task_node
     end
+  elseif scene == Scene.Help then
+    local expand_node = Node.MultiHlTextNode({
+      "<cr> (enter)",
+      ("  toggle a%snode"):format(self:get_node_icon(false)),
+    }, { "Statement", "" }, Node.Style.Padding(2))
+    local qflist_node = Node.MultiHlTextNode({
+      "<c-q>",
+      "         send the errors under the cursor to the quickfix list and close the window",
+    }, { "Statement", "" }, Node.Style.Padding(2))
+    local close_node = Node.MultiHlTextNode(
+      { "<esc> / q", "     close this window" },
+      { "Statement", "" },
+      Node.Style.Padding(2)
+    )
+    nodes[#nodes + 1] = Node.RootNode { expand_node, qflist_node, close_node }
   end
+  return nodes
+end
+
+function View:draw(model, persist_view_state)
+  self.model = model
+  if not persist_view_state then
+    self.state = {
+      task_nodes = {},
+    }
+  end
+  local nodes = self:create_task_nodes(self.current_scene)
   self._window.draw(Node.RootNode(nodes))
 end
 
