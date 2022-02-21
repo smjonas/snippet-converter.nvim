@@ -53,6 +53,47 @@ endsnippet]],
     end
   end)
 
+  it("should parse snippet with transformation", function()
+    local lines = vim.split(
+      [[
+snippet fig "Figure environment" b
+\begin{figure}[${1:htpb}]
+	\centering
+	${2:\includegraphics[width=0.8\textwidth]{$3}}
+	\caption{${4:$3}}
+	\label{fig:${5:${3/\W+/-/g}}}
+\end{figure}
+endsnippet]],
+      "\n"
+    )
+    parser.get_lines = function(_)
+      return lines
+    end
+
+    local num_new_snippets = parser.parse(
+      "/some/snippet/path.snippets",
+      parsed_snippets,
+      parser_errors,
+      context
+    )
+    assert.are_same(1, num_new_snippets)
+    assert.are_same({}, parser_errors)
+
+    -- The pairs function does not specify the order in which the snippets will be traversed in,
+    -- so we need to check both of the two possibilities. We don't check the actual
+    -- contents of the AST because that is tested in vscode/body_parser.
+    if parsed_snippets[1].trigger == "fn" then
+      assert.are_same("function", parsed_snippets[1].description)
+      assert.are_same(7, #parsed_snippets[1].body)
+    elseif parsed_snippets[1].trigger == "for" then
+      assert.is_nil(parsed_snippets[1].description)
+      assert.are_same(9, #parsed_snippets[1].body)
+    else
+      -- This should never happen unless the parser fails.
+      assert.is_false(true)
+    end
+  end)
+
   -- TODO: fix, also fail on invalid header
   it("should return correct info on parse failure", function()
     local lines = vim.split(
@@ -127,6 +168,7 @@ endglobal]],
     }
     assert.are_same(expected_context, context)
   end)
+
   it("should parse priorities and provide them as context", function()
     local lines = vim.split(
       [[

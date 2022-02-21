@@ -61,25 +61,29 @@ body
 endsnippet]]
       assert.are_same(expected, actual)
     end)
-  end)
 
-  describe("cannot convert to other format", function()
-    it("if body contains interpolation code", function()
+    it("with transform", function()
       local snippet = {
-        trigger = "indent",
-        body = { [[Indent is: `v! indent(".")`]] },
+        trigger = "fn",
+        body = {
+          {
+            int = "1",
+            transform = {
+              regex = [[\w+\s*]],
+              replacement = [[\u$0]],
+              options = "",
+              type = NodeType.TRANSFORM,
+            },
+            type = NodeType.TABSTOP,
+          },
+        },
       }
-      assert.is_false(converter.can_convert(snippet, "any engine"))
-    end)
-  end)
-
-  describe("can convert to other format", function()
-    it("if body does not contain interpolation code", function()
-      local snippet = {
-        trigger = "test",
-        body = { "`hey" },
-      }
-      assert.is_true(converter.can_convert(snippet, "any engine"))
+      local actual = converter.convert(snippet)
+      local expected = [[
+snippet !some "quotes" !
+body
+endsnippet]]
+      assert.are_same(expected, actual)
     end)
   end)
 

@@ -54,7 +54,8 @@ M.visit_node = function(custom_node_visitor)
   default = setmetatable({
     [NodeType.TABSTOP] = function(node)
       if node.transform then
-        return string.format("${%s%s}", node.int, node.transform)
+        -- This should be handled inside the format-specific node visitor
+        error("could not convert transform node inside tabstop")
       end
       return "$" .. node.int
     end,

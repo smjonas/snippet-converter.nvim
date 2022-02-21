@@ -1,8 +1,39 @@
+local M = {}
+
+local NodeType = require("snippet_converter.core.node_type")
 local base_converter = require("snippet_converter.core.converter")
 local io = require("snippet_converter.utils.io")
 local export_utils = require("snippet_converter.utils.export_utils")
 
-local M = {}
+M.visit_node = setmetatable({
+  [NodeType.TABSTOP] = function(node)
+    if node.transform then
+      return ("${%s%s}"):format(node.int, M.visit_node[NodeType.TRANSFORM](node.transform))
+    end
+    return "$" .. node.int
+  end,
+  [NodeType.TRANSFORM] = function(node)
+    return ("/%s/%s/%s"):format(node.regex, node.replacement, node.options)
+  end,
+  [NodeType.VISUAL_PLACEHOLDER] = function(node)
+    assert(false)
+    if not node.text then
+      return "${VISUAL}"
+    else
+      -- TODO: visual_placeholder #3
+      return ("${VISUAL:%s}"):format(node.text)
+    end
+  end,
+  [NodeType.PYTHON_CODE] = function(node)
+    return ("`!p %s`"):format(node.code)
+  end,
+  [NodeType.SHELL_CODE] = function(node)
+    return ("`%s`"):format(node.code)
+  end,
+  [NodeType.VIMSCRIPT_CODE] = function(node)
+    return ("`!v %s`"):format(node.code)
+  end,
+}, { __index = base_converter.visit_node(M.visit_node) })
 
 M.convert = function(snippet, source_format)
   local trigger = snippet.trigger
@@ -13,20 +44,21 @@ M.convert = function(snippet, source_format)
   elseif trigger:match("%s") then
     trigger = string.format([["%s"]], trigger)
   end
-  local description = ""
   -- Description must be quoted
-  if snippet.description then
-    description = string.format([[ "%s"]], snippet.description)
-  end
+  local description = snippet.description and string.format([[ "%s"]], snippet.description) or ""
 
-  local options = ""
-  if source_format == "ultisnips" then
-    if snippet.options then
-      options = " " .. snippet.options
-    end
-  end
-  local body = base_converter.convert_ast(snippet.body, base_converter.visit_node())
-  return string.format("snippet %s%s%s\n%s\nendsnippet", trigger, description, options, body)
+  local options = snippet.options and " " .. snippet.options or ""
+  local body = base_converter.convert_ast(snippet.body, M.visit_node)
+  local priority = snippet.priority and ("priority %s\n"):format(snippet.priority) or ""
+
+  return string.format(
+    "%ssnippet %s%s%s\n%s\nendsnippet",
+    priority,
+    trigger,
+    description,
+    options,
+    body
+  )
 end
 
 local HEADER_STRING =
@@ -39,26 +71,23 @@ local HEADER_STRING =
 -- @param output_dir string @The absolute path to the directory (or file) to write the snippets to
 -- @param context []? @A table of additional snippet contexts optionally provided the source parser (example: global code)
 M.export = function(converted_snippets, filetype, output_path, context)
+  local output_strings = {}
   if context then
     for i, code in ipairs(context.global_code) do
       local lines = ("global !p\n%s\nendglobal"):format(table.concat(code, "\n"))
       -- Add global python code at the beginning of the output file
-      table.insert(converted_snippets, i, lines)
+      output_strings[i] = lines
     end
-    for snippet_nr, priority in pairs(context.priorities) do
-      local line = "priority " .. priority
-      if snippet_nr == -1 then
-        -- The priority applies to all snippets in the file
-        table.insert(converted_snippets, -1, line)
-      else
-        -- Add priorities right before the next snippet
-        converted_snippets[snippet_nr + 1] = ("%s\n%s"):format(line, converted_snippets[snippet_nr + 1])
-      end
+    local offset = #output_strings
+    for i, snippet in ipairs(converted_snippets) do
+      output_strings[i + offset] = snippet
     end
+  else
+    output_strings = converted_snippets
   end
 
   local snippet_lines = export_utils.snippet_strings_to_lines(
-    converted_snippets,
+    output_strings,
     "\n",
     HEADER_STRING,
     nil

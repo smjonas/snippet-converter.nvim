@@ -50,7 +50,6 @@ local parse_snippets = function(model, snippet_paths, sources)
   local snippets = {}
   local context = {
     global_code = {},
-    priorities = {},
   }
   for source_format, _ in pairs(sources) do
     snippets[source_format] = {}

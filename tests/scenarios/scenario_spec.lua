@@ -16,7 +16,7 @@ describe("Scenario", function()
     local template = {
       sources = {
         ultisnips = {
-          "tests/scenarios/input.snippets",
+          "tests/scenarios/ultisnips.snippets",
         },
       },
       output = {
@@ -49,7 +49,9 @@ describe("Scenario", function()
       fn()
     end
     local actual_output = vim.fn.readfile("tests/scenarios/output.snippets")
-    snippet_converter.convert_snippets()
+    local model = snippet_converter.convert_snippets()
+    print(vim.inspect(model))
     assert.are_same(expected_output_ultisnips, actual_output)
+
   end)
 end)

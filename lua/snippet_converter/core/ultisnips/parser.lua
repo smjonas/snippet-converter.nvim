@@ -17,6 +17,7 @@ M.parse = function(path, parsed_snippets_ptr, parser_errors_ptr, context_ptr)
 
   local found_global_python_code = false
   local cur_global_code = {}
+  local cur_priority
 
   local start_pos = #parsed_snippets_ptr + 1
   local pos = start_pos
@@ -41,8 +42,7 @@ M.parse = function(path, parsed_snippets_ptr, parser_errors_ptr, context_ptr)
       else
         local priority = line:match("^priority (-?%d+)")
         if priority then
-          local key = (pos == start_pos and -1) or #parsed_snippets_ptr
-          context_ptr.priorities[key] = priority
+          cur_priority = priority
         elseif line:match("^priority") then
           parser_errors_ptr[#parser_errors_ptr + 1] = err.new_parser_error(
             path,
@@ -54,6 +54,10 @@ M.parse = function(path, parsed_snippets_ptr, parser_errors_ptr, context_ptr)
     elseif line:match("^endsnippet") then
       local ok, result = pcall(body_parser.parse, table.concat(cur_snippet.body, "\n"))
       if ok then
+        if cur_priority then
+          cur_snippet.priority = cur_priority
+          cur_priority = nil
+        end
         cur_snippet.body = result
         parsed_snippets_ptr[pos] = cur_snippet
         pos = pos + 1
