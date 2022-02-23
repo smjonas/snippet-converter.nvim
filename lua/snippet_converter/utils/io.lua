@@ -1,17 +1,15 @@
 local M = {}
 
-M.file_exists = function(path)
-  return vim.fn.filereadable(vim.fn.expand(path)) == 1
-end
+local uv = vim.loop
 
-M.is_file = function(path)
-  return vim.fn.fnamemodify(path, ":e") ~= "" or M.file_exists(path)
+M.file_exists = function(path, mode)
+  return uv.fs_access(vim.fn.expand(path), mode or "R")
 end
 
 M.read_file = function(path)
   -- Replace this with libuv's uv.read_file? However, in that case we only get the raw
   -- buffer content and would need to split the string it to get the lines.
-  return vim.fn.readfile(path)
+  return vim.fn.readfile(vim.fn.expand(path))
 end
 
 M.write_file = function(object, path)

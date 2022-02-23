@@ -4,21 +4,10 @@ local NodeType = require("snippet_converter.core.node_type")
 local Variable = require("snippet_converter.core.vscode.body_parser").Variable
 local err = require("snippet_converter.utils.error")
 
-M.convert_node_recursive = function(node, node_visitor)
-  local result = {}
-  local is_non_terminal_node = node.type ~= nil
-  if is_non_terminal_node then
-    result[#result + 1] = node_visitor[node.type](node)
-  else
-    error("node.type is nil " .. vim.inspect(node))
-  end
-  return table.concat(result)
-end
-
 M.convert_ast = function(ast, node_visitor)
   local result = {}
   for _, node in ipairs(ast) do
-    result[#result + 1] = M.convert_node_recursive(node, node_visitor)
+    result[#result + 1] = node_visitor[node.type](node)
   end
   return table.concat(result)
 end
@@ -60,6 +49,7 @@ M.visit_node = function(custom_node_visitor)
       return "$" .. node.int
     end,
     [NodeType.PLACEHOLDER] = function(node)
+      assert(custom_node_visitor)
       return string.format(
         "${%s:%s}",
         node.int,
@@ -71,13 +61,16 @@ M.visit_node = function(custom_node_visitor)
       local text_string = table.concat(node.text, ",")
       return string.format("${%s|%s|}", node.int, text_string)
     end,
+    -- [NodeType.VISUAL_PLACEHOLDER] = function(node)
+    --   print(vim.inspect(node))
+    -- end,
     [NodeType.VARIABLE] = function(node)
       if node.transform then
         err.raise_converter_error("transform")
       end
       local var = convert_variable[node.var]
       if node.any then
-        local any = M.convert_node_recursive(node.any, M.visit_node)
+        local any = M.convert_ast(node.any, custom_node_visitor or default)
         return string.format("${%s:%s}", var, any)
       end
       return var

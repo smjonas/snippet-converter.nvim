@@ -138,4 +138,7 @@ endsnippet]],
       )
     end)
   end)
+
+  -- TODO: add complex test with priorities, context etc.
+
 end)

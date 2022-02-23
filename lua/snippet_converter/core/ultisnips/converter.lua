@@ -5,7 +5,7 @@ local base_converter = require("snippet_converter.core.converter")
 local io = require("snippet_converter.utils.io")
 local export_utils = require("snippet_converter.utils.export_utils")
 
-M.visit_node = setmetatable({
+local node_visitor = {
   [NodeType.TABSTOP] = function(node)
     if node.transform then
       return ("${%s%s}"):format(node.int, M.visit_node[NodeType.TRANSFORM](node.transform))
@@ -16,7 +16,6 @@ M.visit_node = setmetatable({
     return ("/%s/%s/%s"):format(node.regex, node.replacement, node.options)
   end,
   [NodeType.VISUAL_PLACEHOLDER] = function(node)
-    assert(false)
     if not node.text then
       return "${VISUAL}"
     else
@@ -33,7 +32,10 @@ M.visit_node = setmetatable({
   [NodeType.VIMSCRIPT_CODE] = function(node)
     return ("`!v %s`"):format(node.code)
   end,
-}, { __index = base_converter.visit_node(M.visit_node) })
+}
+M.visit_node = setmetatable(node_visitor, {
+  __index = base_converter.visit_node(node_visitor),
+})
 
 M.convert = function(snippet, source_format)
   local trigger = snippet.trigger
@@ -50,10 +52,13 @@ M.convert = function(snippet, source_format)
   local options = snippet.options and " " .. snippet.options or ""
   local body = base_converter.convert_ast(snippet.body, M.visit_node)
   local priority = snippet.priority and ("priority %s\n"):format(snippet.priority) or ""
+  print(('context "%s"\n'):format(snippet.custom_context))
+  local custom_context = snippet.custom_context and ('context "%s"\n'):format(snippet.custom_context) or ""
 
   return string.format(
-    "%ssnippet %s%s%s\n%s\nendsnippet",
+    "%s%ssnippet %s%s%s\n%s\nendsnippet",
     priority,
+    custom_context,
     trigger,
     description,
     options,

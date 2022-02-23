@@ -52,7 +52,7 @@ describe("UltiSnips body parser", function()
 
   it("should parse visual placeholder with default text", function()
     local input = [[${VISUAL:default}]]
-    local expected = { { default_text = "default", type = NodeType.VISUAL_PLACEHOLDER } }
+    local expected = { { text = "default", type = NodeType.VISUAL_PLACEHOLDER } }
     assert.are_same(expected, parser.parse(input))
   end)
 

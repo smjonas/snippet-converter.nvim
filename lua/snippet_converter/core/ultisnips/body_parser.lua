@@ -128,7 +128,7 @@ parse_any = function(state)
         local default_text = p.parse_escaped_text(state, "[/}]")
         if p.peek(state, "}") then
           -- visual placeholder 2
-          return p.new_inner_node(NodeType.VISUAL_PLACEHOLDER, { default_text = default_text })
+          return p.new_inner_node(NodeType.VISUAL_PLACEHOLDER, { text = default_text })
         end
         -- TODO: visual placeholder 3
       end

@@ -12,7 +12,15 @@ local function matches_snippet(_, arguments)
   local same_path = expected.path == actual.path
   local same_line_nr = (options and options.ignore_line_nr and true)
     or expected.line_nr == actual.line_nr
-  return same_trigger and same_description and same_body_length and same_path and same_line_nr
+  local same_priority = expected.priority == actual.priority
+  local same_custom_context = expected.custom_context == actual.custom_context
+  return same_trigger
+    and same_description
+    and same_body_length
+    and same_path
+    and same_line_nr
+    and same_priority
+    and same_custom_context
 end
 
 M.register = function(assert)

@@ -1,6 +1,11 @@
+local assertions = require("tests.custom_assertions")
 local parser = require("snippet_converter.core.ultisnips.parser")
 
 describe("UltiSnips parser", function()
+  setup(function()
+    assertions.register(assert)
+  end)
+
   local parsed_snippets, parser_errors, context
   before_each(function()
     parsed_snippets = {}
@@ -169,7 +174,7 @@ endglobal]],
     assert.are_same(expected_context, context)
   end)
 
-  it("should parse priorities and provide them as context", function()
+  it("should parse priorities and store them in snippet definition", function()
     local lines = vim.split(
       [[
 priority 100
@@ -259,4 +264,72 @@ endsnippet]],
     }
     assert.are_same(expected_errors, parser_errors)
   end)
+
+  it("should parse custom context and store them in snippet definition", function()
+    local lines = vim.split(
+      [[
+context "ctx"
+
+snippet fn "function" bA
+function ${1:name}($2)
+	${3:-- code}
+end
+endsnippet
+
+context "math()"
+snippet for
+for ${1:i}=${2:1},${3:10} do
+	${0:print(i)}
+end
+endsnippet
+context "1"]],
+      "\n"
+    )
+    parser.get_lines = function(_)
+      return lines
+    end
+
+    local expected_fn = {
+      trigger = "fn",
+      description = "function",
+      body_length = 7,
+      context = "ctx",
+      path = "/some/snippet/path.snippets",
+      line_nr = 3,
+    }
+
+    local expected_for = {
+      trigger = "for",
+      body_length = 9,
+      description = nil,
+      context = "math()",
+      path = "/some/snippet/path.snippets",
+      line_nr = 10,
+    }
+
+    context.priorities = {}
+    local num_new_snippets = parser.parse(
+      "/some/snippet/path.snippets",
+      parsed_snippets,
+      parser_errors,
+      context
+    )
+
+    assert.are_same(2, num_new_snippets)
+    assert.are_same({}, parser_errors)
+
+    if parsed_snippets[1].trigger == "fn" then
+      assert.matches_snippet(expected_fn, parsed_snippets[1])
+      assert.matches_snippet(expected_for, parsed_snippets[2])
+    elseif parsed_snippets[1].trigger == "for" then
+      assert.matches_snippet(expected_for, parsed_snippets[1])
+      assert.matches_snippet(expected_fn, parsed_snippets[2])
+    else
+      -- This should never happen unless the parser fails.
+      assert.is_false(true)
+    end
+  end)
+
+  -- TODO: invalid context test
+
 end)

@@ -9,7 +9,7 @@ local export_utils = require("snippet_converter.utils.export_utils")
 M.visit_ultisnips_node = setmetatable({
   [NodeType.TABSTOP] = function(node)
     if not node.transform then
-      return base_converter.visit_node(M.visit_ultisnips_node)[NodeType.TABSTOP](node)
+      return "$" .. node.int
     end
     local options = node.transform.options
     -- ASCII conversion option
