@@ -67,7 +67,13 @@ local parse_snippets = function(model, snippet_paths, sources)
       end
       num_files = num_files + #paths
     end
-    model:submit_task(source_format, num_snippets, num_files, parser_errors)
+    if num_files == 0 then
+      model:skip_task(source_format, model.Reason.NO_INPUT_FILES)
+    elseif num_snippets == 0 then
+      model:skip_task(source_format, model.Reason.NO_INPUT_SNIPPETS)
+    else
+      model:submit_task(source_format, num_snippets, num_files, parser_errors)
+    end
   end
   return snippets, context
 end
@@ -87,47 +93,49 @@ end
 
 local convert_snippets = function(model, snippets, context, output)
   for source_format, snippets_for_format in pairs(snippets) do
-    local converter_errors = {}
-    for target_format, output_paths in pairs(output) do
-      local converter = require(snippet_engines[target_format].converter)
-      local converted_snippets = {}
-      local pos = 1
-      for filetype, _snippets in pairs(snippets_for_format) do
-        for _, snippet in ipairs(_snippets) do
-          local skip, converted_snippet
-          -- TODO: fix for more than 1 template
-          if M.config.templates[1].transform_snippets then
-            skip, converted_snippet = handle_snippet_transformation(
-              M.config.templates[1].transform_snippets,
-              snippet,
-              source_format
-            )
-          end
-          if not skip then
-            local ok = true
-            if not converted_snippet then
-              ok, converted_snippet = pcall(converter.convert, snippet, source_format)
-              if not ok then
-                converter_errors[#converter_errors + 1] = {
-                  msg = converted_snippet,
-                  snippet = snippet,
-                }
+    if not model:skipped_task(source_format) then
+      local converter_errors = {}
+      for target_format, output_paths in pairs(output) do
+        local converter = require(snippet_engines[target_format].converter)
+        local converted_snippets = {}
+        local pos = 1
+        for filetype, _snippets in pairs(snippets_for_format) do
+          for _, snippet in ipairs(_snippets) do
+            local skip_snippet, converted_snippet
+            -- TODO: fix for more than 1 template
+            if M.config.templates[1].transform_snippets then
+              skip_snippet, converted_snippet = handle_snippet_transformation(
+                M.config.templates[1].transform_snippets,
+                snippet,
+                source_format
+              )
+            end
+            if not skip_snippet then
+              local ok = true
+              if not converted_snippet then
+                ok, converted_snippet = pcall(converter.convert, snippet, source_format)
+                if not ok then
+                  converter_errors[#converter_errors + 1] = {
+                    msg = converted_snippet,
+                    snippet = snippet,
+                  }
+                end
+              end
+              if ok then
+                converted_snippets[pos] = converted_snippet
+                pos = pos + 1
               end
             end
-            if ok then
-              converted_snippets[pos] = converted_snippet
-              pos = pos + 1
+          end
+          for _, output_path in ipairs(output_paths) do
+            if filetype == snippet_engines[source_format].all_filename then
+              filetype = snippet_engines[target_format].all_filename
             end
+            converter.export(converted_snippets, filetype, output_path, context)
           end
         end
-        for _, output_path in ipairs(output_paths) do
-          if filetype == snippet_engines[source_format].all_filename then
-            filetype = snippet_engines[target_format].all_filename
-          end
-          converter.export(converted_snippets, filetype, output_path, context)
-        end
+        model:complete_task(source_format, target_format, #output_paths, converter_errors)
       end
-      model:complete_task(source_format, target_format, #output_paths, converter_errors)
     end
   end
 end

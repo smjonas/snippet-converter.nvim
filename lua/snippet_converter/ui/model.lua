@@ -1,12 +1,25 @@
 local snippet_engines = require("snippet_converter.snippet_engines")
 
-local Model = {}
+local M = {}
 
-Model.new = function()
-  return setmetatable({ tasks = {}, is_converting = true }, { __index = Model })
+M.Reason = {
+  NO_INPUT_FILES = 1,
+  NO_INPUT_SNIPPETS = 2,
+}
+
+M.new = function()
+  return setmetatable({ tasks = {}, skipped_tasks = {}, is_converting = true }, { __index = M })
 end
 
-function Model:submit_task(source_format, num_snippets, num_input_files, parser_errors)
+function M:skip_task(source_format, reason)
+  self.skipped_tasks[snippet_engines[source_format].label] = reason
+end
+
+function M:skipped_task(source_format)
+  return self.skipped_tasks[snippet_engines[source_format].label]
+end
+
+function M:submit_task(source_format, num_snippets, num_input_files, parser_errors)
   self.tasks[snippet_engines[source_format].label] = {
     num_snippets = num_snippets,
     num_input_files = num_input_files,
@@ -16,7 +29,7 @@ function Model:submit_task(source_format, num_snippets, num_input_files, parser_
   }
 end
 
-function Model:complete_task(source_format, target_format, num_output_files, converter_errors)
+function M:complete_task(source_format, target_format, num_output_files, converter_errors)
   local source_label = snippet_engines[source_format].label
   local target_label = snippet_engines[target_format].label
 
@@ -25,4 +38,4 @@ function Model:complete_task(source_format, target_format, num_output_files, con
   self.max_num_failures = math.max(self.max_num_failures or 0, #converter_errors)
 end
 
-return Model
+return M

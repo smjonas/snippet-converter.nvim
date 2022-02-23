@@ -72,7 +72,7 @@ local show_failures_in_qflist = function(failures)
   local qf_entries = {}
   for i, failure in ipairs(failures) do
     qf_entries[i] = {
-      filename = failure.snippet.path,
+      filename = vim.fn.expand(failure.snippet.path),
       lnum = failure.snippet.line_nr,
       text = failure.msg,
     }
@@ -84,7 +84,7 @@ end
 function View:create_failure_node(failures, num_failures)
   local texts = {
     self:get_node_icon(false),
-    ("The following %d snippets could not be converted:"):format(num_failures),
+    ("%d snippets could not be converted:"):format(num_failures),
   }
   local open_qflist_callback = function()
     self._window.close()
@@ -195,10 +195,27 @@ function View:create_task_node(task, source_format)
   )
 end
 
+function View:create_skipped_task_node(reason, source_format)
+  local text
+  if reason == self.model.Reason.NO_INPUT_FILES then
+    text = "No input files found"
+  elseif reason == self.model.Reason.NO_INPUT_SNIPPETS then
+    text = "No valid input snippets found"
+  end
+  return Node.MultiHlTextNode(
+    { source_format, " - ", text },
+    { "Statement", "", "Error" },
+    Node.Style.Padding(2)
+  )
+end
+
 function View:create_task_nodes(scene)
   local nodes = self:get_header_nodes(self.current_scene, self.model.is_converting)
   if scene == Scene.Main then
-    for source_format, task in pairs(self.model.tasks or {}) do
+    for source_format, reason in pairs(self.model.skipped_tasks) do
+      nodes[#nodes + 1] = self:create_skipped_task_node(reason, source_format)
+    end
+    for source_format, task in pairs(self.model.tasks) do
       local task_node = self.state.task_nodes[source_format]
       -- Create new task only if it has not been persisted across redraws
       if not task_node then
