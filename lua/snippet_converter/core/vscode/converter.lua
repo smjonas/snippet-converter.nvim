@@ -25,6 +25,10 @@ M.visit_ultisnips_node = setmetatable({
       converted_options
     )
   end,
+  [NodeType.TEXT] = function(node)
+    -- Escape backslashes
+    return node.text:gsub("\\[^t]+", "\\%1")
+  end
 }, {
   __index = base_converter.visit_node(M.visit_ultisnips_node),
 })
@@ -70,7 +74,7 @@ end
 -- @param filetype string @The filetype of the snippets
 -- @param output_dir string @The absolute path to the directory to write the snippets to
 M.export = function(converted_snippets, filetype, output_path)
-  local snippet_lines = export_utils.snippet_strings_to_lines(converted_snippets, ",", "{", "}")
+  local snippet_lines = export_utils.snippet_strings_to_lines(converted_snippets, ",", { "{" }, "}")
   output_path = export_utils.get_output_path(output_path, filetype, "json")
   io.write_file(snippet_lines, output_path)
 end

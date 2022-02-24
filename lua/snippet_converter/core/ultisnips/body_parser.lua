@@ -173,10 +173,14 @@ local backtrack = function(ast, state, prev_input)
       state.input = prev
     end
   end
-  -- Merge neighboring text nodes
-  if ast[#ast].type == NodeType.TEXT and ast[#ast - 1].type == NodeType.TEXT then
-    ast[#ast - 1].text = ast[#ast - 1].text .. ast[#ast].text
-    ast[#ast] = nil
+  local i = #ast
+  while i >= 2 do
+    -- Merge adjacent text nodes from the right
+    if ast[i - 1].type == NodeType.TEXT and ast[i].type == NodeType.TEXT then
+      ast[i - 1].text = ast[i - 1].text .. ast[i].text
+      ast[i] = nil
+    end
+    i = i - 1
   end
 end
 

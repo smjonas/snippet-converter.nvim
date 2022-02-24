@@ -28,7 +28,7 @@ M.export = function(converted_snippets, filetype, output_path)
   local snippet_lines = export_utils.snippet_strings_to_lines(
     converted_snippets,
     "\n",
-    HEADER_STRING,
+    { HEADER_STRING },
     nil
   )
   output_path = export_utils.get_output_path(output_path, filetype, "snippets")

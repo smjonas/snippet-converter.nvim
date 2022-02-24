@@ -2,7 +2,7 @@ local M = {}
 
 local io = require("snippet_converter.utils.io")
 
-M.snippet_strings_to_lines = function(snippets_ptr, sep_chars, header, footer, snippet_lines_ptr)
+M.snippet_strings_to_lines = function(snippets_ptr, sep_chars, headers, footer, snippet_lines_ptr)
   local len = #snippets_ptr
   local total_len = 0
 
@@ -22,10 +22,10 @@ M.snippet_strings_to_lines = function(snippets_ptr, sep_chars, header, footer, s
     total_len = total_len + cur_len
   end
 
-  if header ~= nil then
-    table.insert(snippet_lines, 1, header)
-    -- Insert a new line after the header
-    table.insert(snippet_lines, 2, "")
+  if headers ~= nil then
+    for i, header in ipairs(headers) do
+      table.insert(snippet_lines, i, header)
+    end
     total_len = total_len + 1
   end
 

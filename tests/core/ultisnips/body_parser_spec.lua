@@ -32,6 +32,20 @@ describe("UltiSnips body parser", function()
     assert.are_same(expected, parser.parse(input))
   end)
 
+  it("should parse multiple lines starting with backslash", function()
+    local input = [[
+\pdfminorversion=7
+\usepackage{pdfpages}
+\usepackage{transparent}]]
+    local expected = {
+      {
+        text = "\\pdfminorversion=7\n\\usepackage{pdfpages}\n\\usepackage{transparent}",
+        type = NodeType.TEXT,
+      },
+    }
+    assert.are_same(expected, parser.parse(input))
+  end)
+
   it("should parse unambiguous unescaped chars", function()
     local input = [[${\cup}$]]
     local expected = {

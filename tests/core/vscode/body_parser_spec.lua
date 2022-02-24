@@ -68,10 +68,5 @@ describe("VSCode body parser", function()
     end)
   end)
 
-  -- TODO?
-  -- it("should handle unescaped $ and \\ characters", function()
-  --   local input = [[$\cup$]]
-  --   local result = parser.parse(input)
-  --   assert(result, "a")
-  -- end)
+
 end)

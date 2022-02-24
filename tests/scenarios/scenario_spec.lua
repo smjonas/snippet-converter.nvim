@@ -1,5 +1,5 @@
 describe("Scenario", function()
-  local expected_output_ultisnips
+  local expected_output_ultisnips, expected_output_vscode
   setup(function()
     local controller = require("snippet_converter.ui.controller")
     controller.create_view = function()
@@ -9,6 +9,7 @@ describe("Scenario", function()
       --no-op
     end
     expected_output_ultisnips = vim.fn.readfile("tests/scenarios/expected_output_ultisnips.snippets")
+    expected_output_vscode = vim.fn.readfile("tests/scenarios/expected_output_vscode.json")
   end)
 
   it("UltiSnips to VSCode", function()
@@ -28,7 +29,9 @@ describe("Scenario", function()
     vim.schedule = function(fn)
       fn()
     end
-    local model = snippet_converter.convert_snippets()
+    local actual_output = vim.fn.readfile("tests/scenarios/output.json")
+    snippet_converter.convert_snippets()
+    assert.are_same(expected_output_vscode, actual_output)
   end)
 
   it("UltiSnips to UltiSnips", function()
