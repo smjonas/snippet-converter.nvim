@@ -288,7 +288,7 @@ describe("parser for", function()
       local expected = {
         trigger = "iff",
         description = "iff",
-        options = "Ai"
+        options = "Ai",
       }
       assert.are_same(expected, result)
     end)

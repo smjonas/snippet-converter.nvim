@@ -56,7 +56,7 @@ Support for the following formats is planned for a future version:
 		<tr>
 			<td rowspan="3"><i>Source</br>format</i></td>
 			<td>UltiSnips</td>
-			<td>–</td>
+			<td>✓</td>
 			<td>(✓)<sup>1</sup></td>
 			<td>✓</td>
 		</tr>

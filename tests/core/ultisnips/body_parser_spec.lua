@@ -56,6 +56,25 @@ describe("UltiSnips body parser", function()
     assert.are_same(expected, parser.parse(input))
   end)
 
+  it("should parse tabstop inside literal {$...$} text block", function()
+    local input = [[{$${1}$}]]
+    local expected = {
+      {
+        text = "{$",
+        type = NodeType.TEXT,
+      },
+      {
+        int = "1",
+        type = NodeType.TABSTOP,
+      },
+      {
+        text = "$}",
+        type = NodeType.TEXT,
+      },
+    }
+    assert.are_same(expected, parser.parse(input))
+  end)
+
   it("should parse transformation", function()
     local input = [[${1/\w+\s*/\u$0/}]]
     local expected = {

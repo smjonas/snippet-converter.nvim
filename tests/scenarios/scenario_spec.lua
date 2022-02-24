@@ -49,7 +49,7 @@ describe("Scenario", function()
       fn()
     end
     local actual_output = vim.fn.readfile("tests/scenarios/output.snippets")
-    local model = snippet_converter.convert_snippets()
+    snippet_converter.convert_snippets()
     assert.are_same(expected_output_ultisnips, actual_output)
   end)
 end)

@@ -108,7 +108,7 @@ snippet iff "iff" Ai
 endsnippet
 
 snippet mk "Math" wA
-\$${1}\$`!p
+$$1$`!p
 if t[2] and t[2][0] not in [',', '.', '?', '-', ' ']:
 	snip.rv = ' '
 else:
@@ -130,21 +130,21 @@ endsnippet
 
 context "math()"
 snippet // "Fraction" iA
-\\frac{$1}{$2}$0
+\frac{$1}{$2}$0
 endsnippet
 
 snippet / "Fraction" i
-\\frac{${VISUAL}}{$1}$0
+\frac{${VISUAL}}{$1}$0
 endsnippet
 
 context "math()"
-snippet '((\d+)|(\d*)(\\)?([A-Za-z]+)((\^|_)(\{\d+\}|\d))*)/' "symbol frac" wrA
-\\frac{`!p snip.rv = match.group(1)`}{$1}$0
+snippet "((\d+)|(\d*)(\\)?([A-Za-z]+)((\^|_)(\{\d+\}|\d))*)/" "symbol frac" wrA
+\frac{`!p snip.rv = match.group(1)`}{$1}$0
 endsnippet
 
 priority 1000
 context "math()"
-snippet '^.*\)/' "() frac" wrA
+snippet "^.*\)/" "() frac" wrA
 `!p
 stripped = match.string[:-1]
 depth = 0
@@ -159,12 +159,12 @@ snip.rv = stripped[0:i] + "\\frac{" + stripped[i+1:-1] + "}"
 endsnippet
 
 context "math()"
-snippet '([A-Za-z])(\d)' "auto subscript" wrA
+snippet "([A-Za-z])(\d)" "auto subscript" wrA
 `!p snip.rv = match.group(1)`_`!p snip.rv = match.group(2)`
 endsnippet
 
 context "math()"
-snippet '([A-Za-z])_(\d\d)' "auto subscript2" wrA
+snippet "([A-Za-z])_(\d\d)" "auto subscript2" wrA
 `!p snip.rv = match.group(1)`_{`!p snip.rv = match.group(2)`}
 endsnippet
 
@@ -173,7 +173,7 @@ sympy $1 sympy$0
 endsnippet
 
 priority 10000
-snippet 'sympy(.*)sympy' "sympy" wr
+snippet "sympy(.*)sympy" "sympy" wr
 `!p
 from sympy import *
 x, y, z, t = symbols('x y z t')
@@ -190,7 +190,7 @@ math $1 math$0
 endsnippet
 
 priority 10000
-snippet 'math(.*)math' "math" wr
+snippet "math(.*)math" "math" wr
 `!p
 import subprocess
 code = match.group(1)
@@ -243,11 +243,11 @@ snippet lr| "left| right|" i
 endsnippet
 
 snippet lr{ "left\{ right\}" i
-\left\\{ ${1:${VISUAL}} \right\\} $0
+\left\{ ${1:${VISUAL}} \right\} $0
 endsnippet
 
 snippet lrb "left\{ right\}" i
-\left\\{ ${1:${VISUAL}} \right\\} $0
+\left\{ ${1:${VISUAL}} \right\} $0
 endsnippet
 
 snippet lr[ "left[ right]" i
@@ -321,7 +321,7 @@ snippet ooo "\infty" iA
 endsnippet
 
 snippet rij "mrij" i
-(${1:x}_${2:n})_{${3:$2}\\in${4:\\N}}$0
+(${1:x}_${2:n})_{${3:$2}\in${4:\N}}$0
 endsnippet
 
 snippet <= "leq" iA
@@ -383,7 +383,7 @@ x_{m}
 endsnippet
 
 snippet R0+ "R0+" iA
-\\R_0^+
+\R_0^+
 endsnippet
 
 snippet plot "Plot" w
@@ -404,7 +404,7 @@ snippet plot "Plot" w
 endsnippet
 
 snippet nn "Tikz node" w
-\node[$5] (${1/[^0-9a-zA-Z]//g}${2}) ${3:at (${4:0,0}) }{$${1}$};
+\node[$5] (${1/[^0-9a-zA-Z]//g}$2) ${3:at (${4:0,0}) }{$$1$};
 $0
 endsnippet
 
@@ -439,8 +439,8 @@ endsnippet
 
 priority 100
 context "math()"
-snippet '(?<!\\)(sin|cos|arccot|cot|csc|ln|log|exp|star|perp)' "ln" rwA
-\\`!p snip.rv = match.group(1)`
+snippet "(?<!\\)(sin|cos|arccot|cot|csc|ln|log|exp|star|perp)" "ln" rwA
+\`!p snip.rv = match.group(1)`
 endsnippet
 
 priority 300
@@ -451,8 +451,8 @@ endsnippet
 
 priority 200
 context "math()"
-snippet '(?<!\\)(arcsin|arccos|arctan|arccot|arccsc|arcsec|pi|zeta|int)' "ln" rwA
-\\`!p snip.rv = match.group(1)`
+snippet "(?<!\\)(arcsin|arccos|arctan|arccot|arccsc|arcsec|pi|zeta|int)" "ln" rwA
+\`!p snip.rv = match.group(1)`
 endsnippet
 
 priority 100
@@ -501,7 +501,7 @@ endsnippet
 
 context "math()"
 snippet set "set" wA
-\\{$1\\} $0
+\{$1\} $0
 endsnippet
 
 snippet || "mid" iA
@@ -567,7 +567,7 @@ snippet <> "hokje" iA
 endsnippet
 
 context "math()"
-snippet '(?<!i)sts' "text subscript" irA
+snippet "(?<!i)sts" "text subscript" irA
 _\text{$1} $0
 endsnippet
 
@@ -623,7 +623,7 @@ snippet "([a-zA-Z])hat" "hat" riA
 endsnippet
 
 snippet letw "let omega" iA
-Let \$\Omega \subset \C\$ be open.
+Let $\Omega \subset \C$ be open.
 endsnippet
 
 snippet HH "H" iA

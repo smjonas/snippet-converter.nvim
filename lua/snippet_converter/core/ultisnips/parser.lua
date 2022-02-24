@@ -74,7 +74,6 @@ M.parse = function(path, parsed_snippets_ptr, parser_errors_ptr, context_ptr)
           cur_priority = nil
         end
         if cur_context then
-          print(cur_context)
           cur_snippet.custom_context = cur_context
           cur_context = nil
         end

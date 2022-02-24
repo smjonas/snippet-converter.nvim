@@ -61,9 +61,6 @@ M.visit_node = function(custom_node_visitor)
       local text_string = table.concat(node.text, ",")
       return string.format("${%s|%s|}", node.int, text_string)
     end,
-    -- [NodeType.VISUAL_PLACEHOLDER] = function(node)
-    --   print(vim.inspect(node))
-    -- end,
     [NodeType.VARIABLE] = function(node)
       if node.transform then
         err.raise_converter_error("transform")
