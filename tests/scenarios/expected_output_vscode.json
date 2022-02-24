@@ -244,8 +244,8 @@
     "description": "complement",
     "body": "^{c}"
   },
-  "\\\": {
-    "prefix": "\\\",
+  "\\\\\\": {
+    "prefix": "\\\\\\",
     "description": "setminus",
     "body": "\\setminus"
   },
@@ -368,4 +368,5 @@
     "prefix": "DD",
     "description": "D",
     "body": "\\mathbb{D}"
+  }
 }

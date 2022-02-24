@@ -8,7 +8,9 @@ describe("Scenario", function()
     controller.finalize = function()
       --no-op
     end
-    expected_output_ultisnips = vim.fn.readfile("tests/scenarios/expected_output_ultisnips.snippets")
+    expected_output_ultisnips = vim.fn.readfile(
+      "tests/scenarios/expected_output_ultisnips.snippets"
+    )
     expected_output_vscode = vim.fn.readfile("tests/scenarios/expected_output_vscode.json")
   end)
 
@@ -52,7 +54,31 @@ describe("Scenario", function()
       fn()
     end
     local actual_output = vim.fn.readfile("tests/scenarios/output.snippets")
-    snippet_converter.convert_snippets()
+    local model = snippet_converter.convert_snippets()
+    print(vim.inspect(model))
     assert.are_same(expected_output_ultisnips, actual_output)
+  end)
+
+  it("#xxx VSCode to VSCode", function()
+    local snippet_converter = require("snippet_converter")
+    local template = {
+      sources = {
+        vscode = {
+          "tests/scenarios/expected_output_vscode.json",
+        },
+      },
+      output = {
+        vscode = { "tests/scenarios/output.json" },
+      },
+    }
+    snippet_converter.setup { templates = { template } }
+    -- Mock vim.schedule
+    vim.schedule = function(fn)
+      fn()
+    end
+    local actual_output = vim.fn.readfile("tests/scenarios/output.json")
+    local model = snippet_converter.convert_snippets()
+    print(vim.inspect(model))
+    -- assert.are_same(expected_output_vscode, actual_output)
   end)
 end)

@@ -30,9 +30,9 @@ local verify_snippet_format = function(snippet_name, snippet_info, errors_ptr)
       end,
     },
     {
-      predicate = type(snippet_info.body) == "table",
+      predicate = type(snippet_info.body) == "table" or type(snippet_info.body) == "string",
       msg = function()
-        return "body must be list, got " .. type(snippet_info.body)
+        return "body must be list or string, got " .. type(snippet_info.body)
       end,
     },
   }
@@ -40,7 +40,8 @@ local verify_snippet_format = function(snippet_name, snippet_info, errors_ptr)
 end
 
 local create_snippet = function(snippet_name, trigger, snippet_info, parser_errors_ptr)
-  local ok, result = pcall(body_parser.parse, table.concat(snippet_info.body, "\n"))
+  local body = type(snippet_info.body) == "string" and { snippet_info.body } or snippet_info.body
+  local ok, result = pcall(body_parser.parse, table.concat(body, "\n"))
   if not ok then
     parser_errors_ptr[#parser_errors_ptr + 1] = result
     return nil
@@ -49,7 +50,7 @@ local create_snippet = function(snippet_name, trigger, snippet_info, parser_erro
     name = snippet_name,
     trigger = trigger,
     description = snippet_info.description,
-    body = body_parser.parse(table.concat(snippet_info.body, "\n")),
+    body = result,
   }
 end
 
@@ -61,6 +62,7 @@ M.parse = function(path, parsed_snippets_ptr, parser_errors_ptr)
   local prev_count = #parsed_snippets_ptr
   local pos = prev_count + 1
   for snippet_name, snippet_info in pairs(snippet_data) do
+    print(snippet_name)
     if verify_snippet_format(snippet_name, snippet_info, parser_errors_ptr) then
       -- The snippet has multiple prefixes.
       if type(snippet_info.prefix) == "table" then

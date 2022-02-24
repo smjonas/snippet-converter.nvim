@@ -142,18 +142,18 @@ describe("VSCode parser", function()
       assert.are_same({ "description must be string or nil, got table" }, parser_errors)
     end)
 
-    it("when body is not table", function()
+    it("when body is not table or string", function()
       local data = {
         ["fn"] = {
           prefix = "fn",
-          body = "for ${1:i}=${2:1},${3:10} do",
+          body = 999,
         },
       }
       parser.get_lines = function() return data end
       local num_snippets = parser.parse("some/path", parsed_snippets, parser_errors)
       assert.are_same(0, num_snippets)
       assert.are_same(parsed_snippets, {})
-      assert.are_same({ "body must be list, got string" }, parser_errors)
+      assert.are_same({ "body must be list or string, got number" }, parser_errors)
     end)
 
     it("when snippet syntax is invalid", function()
