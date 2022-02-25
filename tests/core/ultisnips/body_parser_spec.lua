@@ -129,4 +129,13 @@ describe("UltiSnips body parser", function()
     }
     assert.are_same(expected, parser.parse(input))
   end)
+
+  it("should not throw invalid index error when merging", function()
+    local input = [[
+\begin{$1}
+  x
+\end{$1}]]
+    local ok, _ = pcall(parser.parse, input)
+    assert.is_true(ok)
+  end)
 end)

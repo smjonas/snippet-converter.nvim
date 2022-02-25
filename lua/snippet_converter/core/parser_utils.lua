@@ -1,5 +1,7 @@
 local M = {}
 
+local NodeType = require("snippet_converter.core.node_type")
+
 M.new_inner_node = function(type, node)
   node.type = type
   return node
@@ -103,6 +105,40 @@ M.parse_escaped_text = function(state, escape_pattern, break_pattern)
   end
   state.input = input:sub(i)
   return table.concat(parsed_text)
+end
+
+M.backtrack = function(ast, state, prev_input, parse_any_ptr)
+  state.input = prev_input
+  local chars = {}
+  local ok, result
+  while not ok do
+    -- Parse the next chars as a text node, then try from that position
+    if state.input == "" then
+      ast[#ast + 1] = M.new_inner_node(NodeType.TEXT, { text = prev_input })
+      break
+    end
+    chars[#chars + 1] = state.input:sub(1, 1)
+    state.input = state.input:sub(2)
+    local prev = state.input
+    ok, result = pcall(parse_any_ptr, state)
+    if ok then
+      ast[#ast + 1] = M.new_inner_node(NodeType.TEXT, { text = table.concat(chars) })
+      ast[#ast + 1] = result
+      break
+    else
+      state.input = prev
+    end
+  end
+  local i = #ast
+  while i >= 2 do
+    -- Merge adjacent text nodes from the right
+    if ast[i - 1].type == NodeType.TEXT and ast[i].type == NodeType.TEXT then
+      ast[i - 1].text = ast[i - 1].text .. ast[i].text
+      table.remove(ast, i)
+    end
+    i = i - 1
+  end
+  return ast
 end
 
 return M

@@ -36,7 +36,7 @@ describe("Scenario", function()
     assert.are_same(expected_output_vscode, actual_output)
   end)
 
-  it("UltiSnips to UltiSnips", function()
+  it("#xxx UltiSnips to UltiSnips", function()
     local snippet_converter = require("snippet_converter")
     local template = {
       sources = {
@@ -59,7 +59,7 @@ describe("Scenario", function()
     assert.are_same(expected_output_ultisnips, actual_output)
   end)
 
-  it("#xxx VSCode to VSCode", function()
+  it("VSCode to VSCode", function()
     local snippet_converter = require("snippet_converter")
     local template = {
       sources = {

@@ -9,13 +9,17 @@ local function matches_snippet(_, arguments)
   local same_trigger = expected.trigger == actual.trigger
   local same_description = expected.description == actual.description
   local same_body_length = expected.body_length == #actual.body
+  local same_options = expected.options == actual.options
+
   local same_path = expected.path == actual.path
   local same_line_nr = (options and options.ignore_line_nr and true)
     or expected.line_nr == actual.line_nr
   local same_priority = expected.priority == actual.priority
   local same_custom_context = expected.custom_context == actual.custom_context
+
   return same_trigger
     and same_description
+    and same_options
     and same_body_length
     and same_path
     and same_line_nr

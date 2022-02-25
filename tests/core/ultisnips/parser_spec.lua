@@ -81,8 +81,8 @@ endsnippet]],
       parser_errors,
       context
     )
-    assert.are_same(1, num_new_snippets)
     assert.are_same({}, parser_errors)
+    assert.are_same(1, num_new_snippets)
 
     -- The pairs function does not specify the order in which the snippets will be traversed in,
     -- so we need to check both of the two possibilities. We don't check the actual
@@ -100,10 +100,10 @@ endsnippet]],
   end)
 
   -- TODO: fix, also fail on invalid header
-  it("should return correct info on parse failure", function()
+  it("should return correct info on header parse failure", function()
     local lines = vim.split(
       [[
-snippet fn "function"
+snippet a b c d
 function ${1:name}($2)
 endsnippet
 
@@ -120,6 +120,7 @@ endsnippet]],
     end
 
     local num_snippets = parser.parse("the_snippet_path", parsed_snippets, parser_errors)
+    assert.are_same({ priorities = {} }, context)
     assert.are_same(1, num_snippets)
     assert.are_same({
       {
@@ -198,23 +199,44 @@ priority 50]],
       return lines
     end
 
-    context.priorities = {}
+    local expected_fn = {
+      trigger = "fn",
+      description = "function",
+      options = "bA",
+      body_length = 7,
+      priority = "100",
+      path = "/some/snippet/path.snippets",
+      line_nr = 3,
+    }
+
+    local expected_for = {
+      trigger = "for",
+      body_length = 9,
+      priority = "-50",
+      path = "/some/snippet/path.snippets",
+      line_nr = 10,
+    }
+
     local num_new_snippets = parser.parse(
       "/some/snippet/path.snippets",
       parsed_snippets,
       parser_errors,
       context
     )
+
     assert.are_same(2, num_new_snippets)
     assert.are_same({}, parser_errors)
-    local expected_context = {
-      priorities = {
-        [-1] = "100",
-        [1] = "-50",
-        [2] = "50",
-      },
-    }
-    assert.are_same(expected_context, context)
+
+    if parsed_snippets[1].trigger == "fn" then
+      assert.matches_snippet(expected_fn, parsed_snippets[1])
+      assert.matches_snippet(expected_for, parsed_snippets[2])
+    elseif parsed_snippets[1].trigger == "for" then
+      assert.matches_snippet(expected_for, parsed_snippets[1])
+      assert.matches_snippet(expected_fn, parsed_snippets[2])
+    else
+      -- This should never happen unless the parser fails.
+      assert.is_false(true)
+    end
   end)
 
   it("should return errors for invalid priorities", function()
@@ -240,7 +262,6 @@ endsnippet]],
       return lines
     end
 
-    context.priorities = {}
     local num_new_snippets = parser.parse(
       "/some/snippet/path.snippets",
       parsed_snippets,
@@ -248,7 +269,6 @@ endsnippet]],
       context
     )
     assert.are_same(2, num_new_snippets)
-    assert.are_same({ priorities = {} }, context)
 
     local expected_errors = {
       {
@@ -292,8 +312,9 @@ context "1"]],
     local expected_fn = {
       trigger = "fn",
       description = "function",
+      options = "bA",
       body_length = 7,
-      context = "ctx",
+      custom_context = "ctx",
       path = "/some/snippet/path.snippets",
       line_nr = 3,
     }
@@ -301,8 +322,7 @@ context "1"]],
     local expected_for = {
       trigger = "for",
       body_length = 9,
-      description = nil,
-      context = "math()",
+      custom_context = "math()",
       path = "/some/snippet/path.snippets",
       line_nr = 10,
     }
@@ -319,6 +339,7 @@ context "1"]],
     assert.are_same({}, parser_errors)
 
     if parsed_snippets[1].trigger == "fn" then
+      print(vim.inspect(parsed_snippets[1]))
       assert.matches_snippet(expected_fn, parsed_snippets[1])
       assert.matches_snippet(expected_for, parsed_snippets[2])
     elseif parsed_snippets[1].trigger == "for" then
@@ -331,5 +352,4 @@ context "1"]],
   end)
 
   -- TODO: invalid context test
-
 end)

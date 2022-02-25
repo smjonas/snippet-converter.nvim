@@ -141,7 +141,6 @@ parse_any = function(state)
     local text = parse_text(state)
     -- This happens if parse_text could not parse anything because the next char was not escaped.
     if state.input == prev_input then
-      -- state.input = ""
       p.raise_parse_error(state, "unescaped char")
     else
       return p.new_inner_node(NodeType.TEXT, { text = text })
@@ -150,39 +149,6 @@ parse_any = function(state)
 end
 
 local parser = {}
-
-local backtrack = function(ast, state, prev_input)
-  state.input = prev_input
-  local chars = {}
-  local ok, result
-  while not ok do
-    -- Parse the next chars as a text node, then try from that position
-    if state.input == "" then
-      ast[#ast + 1] = p.new_inner_node(NodeType.TEXT, { text = prev_input })
-      break
-    end
-    chars[#chars + 1] = state.input:sub(1, 1)
-    state.input = state.input:sub(2)
-    local prev = state.input
-    ok, result = pcall(parse_any, state)
-    if ok then
-      ast[#ast + 1] = p.new_inner_node(NodeType.TEXT, { text = table.concat(chars) })
-      ast[#ast + 1] = result
-      break
-    else
-      state.input = prev
-    end
-  end
-  local i = #ast
-  while i >= 2 do
-    -- Merge adjacent text nodes from the right
-    if ast[i - 1].type == NodeType.TEXT and ast[i].type == NodeType.TEXT then
-      ast[i - 1].text = ast[i - 1].text .. ast[i].text
-      ast[i] = nil
-    end
-    i = i - 1
-  end
-end
 
 parser.parse = function(input)
   local state = {
@@ -196,7 +162,7 @@ parser.parse = function(input)
     if ok then
       ast[#ast + 1] = result
     else
-      backtrack(ast, state, prev_input)
+      ast = p.backtrack(ast, state, prev_input)
     end
   end
   return ast

@@ -1,12 +1,4 @@
-local parser = {}
-
-local function iterator_to_table(iterator)
-  local result = {}
-  for x in iterator do
-    table.insert(result, x)
-  end
-  return result
-end
+local M = {}
 
 local function remove_surrounding_chars(string, tbl, tbl_index)
   local valid = string:sub(1, 1) == string:sub(-1, -1)
@@ -17,7 +9,7 @@ local function remove_surrounding_chars(string, tbl, tbl_index)
   return valid
 end
 
-parser.handle_terminal_symbol = function(symbol, input)
+M.handle_terminal_symbol = function(symbol, input)
   local start_idx, end_idx, capture = input:find(symbol)
   if start_idx ~= nil then
     local match = capture or input:sub(start_idx, end_idx)
@@ -27,14 +19,13 @@ parser.handle_terminal_symbol = function(symbol, input)
   return nil
 end
 
-parser.handle_non_terminal_symbol = function(production_name, grammar, input, force_parse_to_end)
+M.handle_non_terminal_symbol = function(production_name, grammar, input, force_parse_to_end)
   local production = grammar.productions[production_name]
   for _, rule in ipairs(production.rhs) do
     local matches = {}
     local cur_input = input
 
-    -- TODO: replace with vim.split
-    local symbols = iterator_to_table(rule:gmatch("%S+"))
+    local symbols = vim.split(rule, "%s")
     if vim.tbl_isempty(symbols) then
       symbols = { rule }
     end
@@ -44,20 +35,20 @@ parser.handle_non_terminal_symbol = function(production_name, grammar, input, fo
 
       local result
       if is_terminal_symbol then
-        result = parser.handle_terminal_symbol(symbol, cur_input)
+        result = M.handle_terminal_symbol(symbol, cur_input)
       else
-        result = parser.handle_non_terminal_symbol(symbol, grammar, cur_input)
+        result = M.handle_non_terminal_symbol(symbol, grammar, cur_input)
       end
 
       if result ~= nil then
-        -- Flatten table returned by handler.
+        -- Flatten table returned by handler
         if #result.matches == 1 then
           result.matches = result.matches[1]
         end
         table.insert(matches, result.matches)
         cur_input = result.remaining
       end
-      -- The rule was successfully applied to the input string.
+      -- The rule was successfully applied to the input string
       if #matches == #symbols then
         if
           production_name ~= grammar.start_symbol or (not force_parse_to_end or cur_input == "")
@@ -80,11 +71,11 @@ parser.handle_non_terminal_symbol = function(production_name, grammar, input, fo
   return nil
 end
 
-parser._parse = function(input, grammar, force_parse_to_end)
-  return parser.handle_non_terminal_symbol(grammar.start_symbol, grammar, input, force_parse_to_end)
+M._parse = function(input, grammar, force_parse_to_end)
+  return M.handle_non_terminal_symbol(grammar.start_symbol, grammar, input, force_parse_to_end)
 end
 
-parser.parse = function(input)
+M.parse = function(input)
   local result = {}
   local productions = {
     S = {
@@ -132,9 +123,12 @@ parser.parse = function(input)
     },
   }
   local grammar = { start_symbol = "S", productions = productions }
-  -- reverse the string since we need to parse from right to left
-  parser._parse(input:reverse(), grammar, true)
+  -- Reverse the string since we need to parse from right to left
+  M._parse(input:reverse(), grammar, true)
+  if not next(result) then
+    error("invalid snippet header", 0)
+  end
   return result
 end
 
-return parser
+return M
