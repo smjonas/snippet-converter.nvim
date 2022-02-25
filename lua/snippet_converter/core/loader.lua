@@ -13,7 +13,7 @@ local function find_matching_snippet_files_in_rtp(
   local file_pattern = source_path:gsub("([^%w%*])", "%%%1"):gsub("%*", ".-")
 
   local extension = snippet_engines[source_format].extension
-  local rtp_files = vim.api.nvim_get_runtime_file("*/*" .. extension, true)
+  local rtp_files = vim.api.nvim_get_runtime_file("*" .. extension, true)
 
   for _, file in pairs(rtp_files) do
     if file:match(file_pattern) then

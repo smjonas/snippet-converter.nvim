@@ -15,14 +15,6 @@ local node_visitor = {
   [NodeType.TRANSFORM] = function(node)
     return ("/%s/%s/%s"):format(node.regex, node.replacement, node.options)
   end,
-  [NodeType.VISUAL_PLACEHOLDER] = function(node)
-    if not node.text then
-      return "${VISUAL}"
-    else
-      -- TODO: visual_placeholder #3
-      return ("${VISUAL:%s}"):format(node.text)
-    end
-  end,
   [NodeType.PYTHON_CODE] = function(node)
     return ("`!p %s`"):format(node.code)
   end,
@@ -38,6 +30,7 @@ local node_visitor = {
     return node.text:gsub([[\\]], [[\\\\]])
   end,
 }
+
 M.visit_node = setmetatable(node_visitor, {
   __index = base_converter.visit_node(node_visitor),
 })
@@ -103,7 +96,8 @@ M.export = function(converted_snippets, filetype, output_path, context)
     { HEADER_STRING, "" },
     nil
   )
-  output_path = export_utils.get_output_path(output_path, filetype, "snippets")
+  output_path = export_utils.get_output_file_path(output_path, filetype, "snippets")
+  print(output_path)
   io.write_file(snippet_lines, output_path)
 end
 

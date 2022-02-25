@@ -39,6 +39,7 @@ local convert_variable = setmetatable({
 })
 
 M.visit_node = function(custom_node_visitor)
+  assert(custom_node_visitor)
   local default
   default = setmetatable({
     [NodeType.TABSTOP] = function(node)
@@ -56,6 +57,14 @@ M.visit_node = function(custom_node_visitor)
         -- The 'any' node consists of a variable number of subnodes
         M.convert_ast(node.any, custom_node_visitor or default)
       )
+    end,
+    [NodeType.VISUAL_PLACEHOLDER] = function(node)
+      if not node.text then
+        return "${VISUAL}"
+      else
+        -- TODO: visual_placeholder #3
+        return ("${VISUAL:%s}"):format(node.text)
+      end
     end,
     [NodeType.CHOICE] = function(node)
       local text_string = table.concat(node.text, ",")

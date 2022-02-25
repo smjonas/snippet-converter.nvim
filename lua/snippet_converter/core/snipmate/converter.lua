@@ -31,7 +31,7 @@ M.export = function(converted_snippets, filetype, output_path)
     { HEADER_STRING },
     nil
   )
-  output_path = export_utils.get_output_path(output_path, filetype, "snippets")
+  output_path = export_utils.get_output_file_path(output_path, filetype, "snippets")
   io.write_file(snippet_lines, output_path)
 end
 

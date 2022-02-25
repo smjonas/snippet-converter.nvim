@@ -13,7 +13,7 @@ M.read_file = function(path)
 end
 
 M.write_file = function(object, path)
-  local dir_name = vim.fn.fnamemodify(path, ":p:h")
+  local dir_name = path:match("(.*)(%..+)$")
   -- Create missing directories (if any)
   if vim.fn.isdirectory(dir_name) ~= 1 then
     vim.fn.mkdir(dir_name, "p")

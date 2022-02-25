@@ -28,7 +28,7 @@ end
 M.handle_line_keymap = function(win_id, hex_lhs)
   local line = vim.api.nvim_win_get_cursor(win_id)[1]
   local lhs = from_hex(hex_lhs)
-  if line_keymaps[line][lhs] then
+  if line_keymaps[line] and line_keymaps[line][lhs] then
     line_keymaps[line][lhs]()
   end
 end

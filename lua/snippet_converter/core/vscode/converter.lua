@@ -6,7 +6,7 @@ local err = require("snippet_converter.utils.error")
 local io = require("snippet_converter.utils.io")
 local export_utils = require("snippet_converter.utils.export_utils")
 
-M.visit_ultisnips_node = setmetatable({
+local ultisnips_visitor = {
   [NodeType.TABSTOP] = function(node)
     if not node.transform then
       return "$" .. node.int
@@ -28,9 +28,11 @@ M.visit_ultisnips_node = setmetatable({
   [NodeType.TEXT] = function(node)
     -- Escape backslashes
     return node.text:gsub("\\[^t]+", "\\%1")
-  end
-}, {
-  __index = base_converter.visit_node(M.visit_ultisnips_node),
+  end,
+}
+
+M.visit_ultisnips_node = setmetatable(ultisnips_visitor, {
+  __index = base_converter.visit_node(ultisnips_visitor),
 })
 
 local list_to_json_string = function(list)
@@ -75,7 +77,7 @@ end
 -- @param output_dir string @The absolute path to the directory to write the snippets to
 M.export = function(converted_snippets, filetype, output_path)
   local snippet_lines = export_utils.snippet_strings_to_lines(converted_snippets, ",", { "{" }, "}")
-  output_path = export_utils.get_output_path(output_path, filetype, "json")
+  output_path = export_utils.get_output_file_path(output_path, filetype, "json")
   io.write_file(snippet_lines, output_path)
 end
 

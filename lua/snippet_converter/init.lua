@@ -94,8 +94,8 @@ end
 local convert_snippets = function(model, snippets, context, output)
   for source_format, snippets_for_format in pairs(snippets) do
     if not model:skipped_task(source_format) then
-      local converter_errors = {}
       for target_format, output_paths in pairs(output) do
+        local converter_errors = {}
         local converter = require(snippet_engines[target_format].converter)
         local converted_snippets = {}
         local pos = 1
