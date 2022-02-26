@@ -25,7 +25,7 @@ M.parse = function(path, parsed_snippets_ptr, parser_errors_ptr, context_ptr)
 
   for line_nr, line in ipairs(lines) do
     if not found_snippet_header then
-      local header = M.parse_header(line)
+      local header = M.parse_header(path, line, line_nr, parser_errors_ptr)
       if header then
         cur_snippet = header
         cur_snippet.path = path
@@ -96,11 +96,15 @@ M.parse = function(path, parsed_snippets_ptr, parser_errors_ptr, context_ptr)
   return pos - 1
 end
 
-M.parse_header = function(line)
+M.parse_header = function(path, line, line_nr, parser_errors_ptr)
   local stripped_header = line:match("^%s*snippet%s+(.-)%s*$")
-  if stripped_header ~= nil then
-    local header = header_parser.parse(stripped_header)
-    return not vim.tbl_isempty(header) and header
+  if stripped_header then
+    local ok, header = pcall(header_parser.parse, stripped_header)
+    if not ok then
+      parser_errors_ptr[#parser_errors_ptr + 1] = err.new_parser_error(path, line_nr, header)
+      return nil
+    end
+    return header
   end
 end
 

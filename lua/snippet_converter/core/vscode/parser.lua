@@ -62,7 +62,6 @@ M.parse = function(path, parsed_snippets_ptr, parser_errors_ptr)
   local prev_count = #parsed_snippets_ptr
   local pos = prev_count + 1
   for snippet_name, snippet_info in pairs(snippet_data) do
-    print(snippet_name)
     if verify_snippet_format(snippet_name, snippet_info, parser_errors_ptr) then
       -- The snippet has multiple prefixes.
       if type(snippet_info.prefix) == "table" then

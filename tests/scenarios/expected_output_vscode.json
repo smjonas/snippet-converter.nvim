@@ -14,6 +14,11 @@
     "description": "ldots",
     "body": "\\ldots"
   },
+  "fig": {
+    "prefix": "fig",
+    "description": "Figure environment",
+    "body": ["\\begin{figure}[${1:htpb}]", "\t\\centering", "\t${2:\\includegraphics[width=0.8\textwidth]{$3}}", "\t\\caption{${4:$3}}", "\t\\label{fig:${5:${3/\\W+/-/g}}}", "\\end{figure}"]
+  },
   "enum": {
     "prefix": "enum",
     "description": "Enumerate",
@@ -28,6 +33,11 @@
     "prefix": "desc",
     "description": "Description",
     "body": ["\\begin{description}", "\t\\item[$1] $0", "\\end{description}"]
+  },
+  "pac": {
+    "prefix": "pac",
+    "description": "Package",
+    "body": "\\usepackage[${1:options}]{${2:package}}$0"
   },
   "=>": {
     "prefix": "=>",
@@ -67,7 +77,7 @@
   "!=": {
     "prefix": "!=",
     "description": "equals",
-    "body": "\neq"
+    "body": "\\neq"
   },
   "ceil": {
     "prefix": "ceil",
@@ -93,6 +103,31 @@
     "prefix": "conj",
     "description": "conjugate",
     "body": "\\overline{$1}$0"
+  },
+  "sum": {
+    "prefix": "sum",
+    "description": "sum",
+    "body": "\\sum_{n=${1:1}}^{${2:\\infty}} ${3:a_n z^n}"
+  },
+  "taylor": {
+    "prefix": "taylor",
+    "description": "taylor",
+    "body": "\\sum_{${1:k}=${2:0}}^{${3:\\infty}} ${4:c_$1} (x-a)^$1 $0"
+  },
+  "lim": {
+    "prefix": "lim",
+    "description": "limit",
+    "body": "\\lim_{${1:n} \to ${2:\\infty}}"
+  },
+  "limsup": {
+    "prefix": "limsup",
+    "description": "limsup",
+    "body": "\\limsup_{${1:n} \to ${2:\\infty}}"
+  },
+  "part": {
+    "prefix": "part",
+    "description": "d/dx",
+    "body": "\\frac{\\partial ${1:V}}{\\partial ${2:x}} $0"
   },
   "sr": {
     "prefix": "sr",
@@ -123,6 +158,11 @@
     "prefix": "ooo",
     "description": "\\infty",
     "body": "\\infty"
+  },
+  "rij": {
+    "prefix": "rij",
+    "description": "mrij",
+    "body": "(${1:x}_${2:n})_{${3:$2}\\in${4:\\N}}$0"
   },
   "<=": {
     "prefix": "<=",
@@ -188,6 +228,16 @@
     "prefix": "R0+",
     "description": "R0+",
     "body": "\\R_0^+"
+  },
+  "plot": {
+    "prefix": "plot",
+    "description": "Plot",
+    "body": ["\\begin{figure}[$1]", "\t\\centering", "\t\\begin{tikzpicture}", "\t\t\\begin{axis}[", "\t\t\txmin= ${2:-10}, xmax= ${3:10},", "\t\t\tymin= ${4:-10}, ymax = ${5:10},", "\t\t\taxis lines = middle,", "\t\t]", "\t\t\t\\addplot[domain=$2:$3, samples=${6:100}]{$7};", "\t\t\\end{axis}", "\t\\end{tikzpicture}", "\t\\caption{$8}", "\t\\label{${9:$8}}", "\\end{figure}"]
+  },
+  "nn": {
+    "prefix": "nn",
+    "description": "Tikz node",
+    "body": ["\\node[$5] (${1/[^0-9a-zA-Z]//g}$2) ${3:at (${4:0,0}) }{$${1}$};", "$0"]
   },
   "mcal": {
     "prefix": "mcal",
@@ -304,6 +354,16 @@
     "description": "cup",
     "body": "\\cup"
   },
+  "uuu": {
+    "prefix": "uuu",
+    "description": "bigcup",
+    "body": "\\bigcup_{${1:i \\in ${2: I}}} $0"
+  },
+  "nnn": {
+    "prefix": "nnn",
+    "description": "bigcap",
+    "body": "\\bigcap_{${1:i \\in ${2: I}}} $0"
+  },
   "OO": {
     "prefix": "OO",
     "description": "emptyset",
@@ -353,6 +413,11 @@
     "prefix": "bigfun",
     "description": "Big function",
     "body": ["\\begin{align*}", "\t$1: $2 &\\longrightarrow $3 \\\\", "\t$4 &\\longmapsto $1($4) = $0", ".\\end{align*}"]
+  },
+  "cvec": {
+    "prefix": "cvec",
+    "description": "column vector",
+    "body": "\\begin{pmatrix} ${1:x}_${2:1}\\\\ \\vdots\\\\ $1_${2:n} \\end{pmatrix}"
   },
   "letw": {
     "prefix": "letw",

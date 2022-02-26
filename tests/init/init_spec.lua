@@ -90,7 +90,8 @@ describe("Snippet converter", function()
     }
     snippet_converter.setup { templates = { template } }
     local stubbed_converter = stub.new(require("tests.init.converter_mock"), "export")
-    snippet_converter._convert_snippets(model, snippets, template.output)
+    local context = {}
+    snippet_converter._convert_snippets(model, snippets, context, template.output)
 
     assert.stub(stubbed_converter).was.called_with(
       match.is_same {
@@ -101,7 +102,8 @@ describe("Snippet converter", function()
         -- Can delete snippet
       },
       match.is_same("lua"),
-      match.is_same("/some/path/lua.json")
+      match.is_same("/some/path/lua.json"),
+      match.is_same {}
     )
   end)
 end)

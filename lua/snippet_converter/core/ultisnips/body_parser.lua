@@ -162,7 +162,7 @@ parser.parse = function(input)
     if ok then
       ast[#ast + 1] = result
     else
-      ast = p.backtrack(ast, state, prev_input)
+      ast = p.backtrack(ast, state, prev_input, parse_any)
     end
   end
   return ast

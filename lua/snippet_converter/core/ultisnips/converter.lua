@@ -41,7 +41,7 @@ M.convert = function(snippet, source_format)
   if trigger:match([["]]) then
     trigger = string.format("!%s!", trigger)
     -- Multi-word or regex trigger
-  elseif trigger:match("%s") or snippet.options:match("r") then
+  elseif trigger:match("%s") or snippet.options and snippet.options:match("r") then
     trigger = string.format([["%s"]], trigger)
   end
   -- Description must be quoted

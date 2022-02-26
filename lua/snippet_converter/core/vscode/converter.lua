@@ -25,9 +25,12 @@ local ultisnips_visitor = {
       converted_options
     )
   end,
+  [NodeType.VISUAL_PLACEHOLDER] = function(_)
+    err.raise_converter_error(NodeType.to_string(NodeType.VISUAL_PLACEHOLDER))
+  end,
   [NodeType.TEXT] = function(node)
     -- Escape backslashes
-    return node.text:gsub("\\[^t]+", "\\%1")
+    return node.text:gsub("\\[^t\\]+", "\\%1")
   end,
 }
 
@@ -58,6 +61,11 @@ M.convert = function(snippet, source_format)
     err.raise_converter_error("regex trigger")
   end
   local body = list_to_json_string(base_converter.convert_ast(snippet.body, M.visit_ultisnips_node))
+  if snippet.trigger == "template" then
+    print(vim.inspect(snippet.body))
+    print(body)
+    -- error("1111")
+  end
 
   local description_string
   if snippet.description then

@@ -67,10 +67,12 @@ local format_modifier_tokens = {
 }
 
 local var_pattern = "[_a-zA-Z][_a-zA-Z0-9]*"
+-- TODO: move
 local options_pattern = "[^}]*"
 local parse_int = p.pattern("[0-9]+")
 
 local parse_text = function(state)
+  -- TODO: reword
   -- '%', '$' and '\' must be escaped; '}' signals the end of the text
   return p.parse_escaped_text(state, "[%$}\\]")
 end
@@ -136,7 +138,7 @@ local parse_format_or_text = function(state)
   if p.peek(state, "$") then
     return parse_format(state)
   else
-    return parse_text(state)
+    return p.parse_escaped_text(state, "[%$}\\]", "/")
   end
 end
 
@@ -237,7 +239,7 @@ parse_any = function(state)
     local prev_input = state.input
     local text = parse_text(state)
     if state.input == prev_input then
-      state.input = ""
+      p.raise_parse_error(state, "unescaped char")
     else
       return p.new_inner_node(NodeType.TEXT, { text = text })
     end
@@ -254,8 +256,14 @@ parser.parse = function(input)
     source = input,
   }
   local ast = {}
-  while state.input ~= nil and state.input ~= "" do
-    ast[#ast + 1] = parse_any(state)
+  while state.input ~= "" do
+    local prev_input = state.input
+    local ok, result = pcall(parse_any, state)
+    if ok then
+      ast[#ast + 1] = result
+    else
+      ast = p.backtrack(ast, state, prev_input)
+    end
   end
   return ast
 end

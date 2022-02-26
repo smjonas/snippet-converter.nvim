@@ -251,18 +251,23 @@ describe("parser for", function()
         trigger = "trigger",
       }
       assert.are_same(expected, result)
-      -- failure case
-      assert.are_same({}, parser.parse([[trigger "d" "expr" br]]))
+      -- Failure case
+      local ok
+      ok, result = pcall(parser.parse, [[trigger "d" "expr" br]])
+      assert.is_false(ok)
+      assert.are_same("invalid snippet header", result)
     end)
 
     it("should not match invalid multiword tab-trigger", function()
-      local result = parser.parse([[invalid multiword-trigger "description"]])
-      assert.are_same({}, result)
+      local ok, result = pcall(parser.parse, [[invalid multiword-trigger "description"]])
+      assert.is_false(ok)
+      assert.are_same("invalid snippet header", result)
     end)
 
-    it("should not cause exception for snippet with trailing spaces", function()
-      local result = parser.parse([[func "Function Header" ]])
-      assert.are_same({}, result)
+    it("should not match snippet with trailing spaces", function()
+      local ok, result = pcall(parser.parse, [[func "Function Header" i ]])
+      assert.is_false(ok)
+      assert.are_same("invalid snippet header", result)
     end)
 
     it("should match tab-trigger containing dot", function()

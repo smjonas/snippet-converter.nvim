@@ -79,9 +79,10 @@ endsnippet]]
         },
       }
       local actual = converter.convert(snippet)
+      -- TODO: UltiSnips -> VSCode: correctly convert regex
       local expected = [[
-snippet !some "quotes" !
-body
+snippet fn
+${1/\w+\s*/\u$0/}
 endsnippet]]
       assert.are_same(expected, actual)
     end)
@@ -138,7 +139,4 @@ endsnippet]],
       )
     end)
   end)
-
-  -- TODO: add complex test with priorities, context etc.
-
 end)

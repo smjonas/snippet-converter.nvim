@@ -30,6 +30,24 @@ describe("VSCode converter", function()
       assert.are_same(expected, actual)
     end)
 
+    it("and escape backslashes in text node correctly", function()
+      local snippet = {
+        trigger = "test",
+        body = {
+          {
+            type = NodeType.TEXT,
+            text = "\\pdfminorversion=7\n\t\\usepackage{pdfpages}\n\\usepackage{transparent}",
+          },
+        },
+      }
+      local expected = [[
+  "test": {
+    "prefix": "test",
+    "body": ["\\pdfminorversion=7", "\t\\usepackage{pdfpages}", "\\usepackage{transparent}"]
+  }]]
+      assert.are_same(expected, converter.convert(snippet))
+    end)
+
     it("(missing description with multiple lines)", function()
       local snippet = {
         trigger = "fn",
@@ -43,8 +61,7 @@ describe("VSCode converter", function()
           },
           { type = NodeType.TEXT, text = " = function(" },
           { type = NodeType.TABSTOP, int = "2" },
-          { type = NodeType.TEXT, text = ")" },
-          { type = NodeType.TEXT, text = "\nnewline" },
+          { type = NodeType.TEXT, text = ")\nnewline" },
         },
       }
       local actual = converter.convert(snippet)

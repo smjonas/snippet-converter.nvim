@@ -58,47 +58,6 @@ endsnippet]],
     end
   end)
 
-  it("should parse snippet with transformation", function()
-    local lines = vim.split(
-      [[
-snippet fig "Figure environment" b
-\begin{figure}[${1:htpb}]
-	\centering
-	${2:\includegraphics[width=0.8\textwidth]{$3}}
-	\caption{${4:$3}}
-	\label{fig:${5:${3/\W+/-/g}}}
-\end{figure}
-endsnippet]],
-      "\n"
-    )
-    parser.get_lines = function(_)
-      return lines
-    end
-
-    local num_new_snippets = parser.parse(
-      "/some/snippet/path.snippets",
-      parsed_snippets,
-      parser_errors,
-      context
-    )
-    assert.are_same({}, parser_errors)
-    assert.are_same(1, num_new_snippets)
-
-    -- The pairs function does not specify the order in which the snippets will be traversed in,
-    -- so we need to check both of the two possibilities. We don't check the actual
-    -- contents of the AST because that is tested in vscode/body_parser.
-    if parsed_snippets[1].trigger == "fn" then
-      assert.are_same("function", parsed_snippets[1].description)
-      assert.are_same(7, #parsed_snippets[1].body)
-    elseif parsed_snippets[1].trigger == "for" then
-      assert.is_nil(parsed_snippets[1].description)
-      assert.are_same(9, #parsed_snippets[1].body)
-    else
-      -- This should never happen unless the parser fails.
-      assert.is_false(true)
-    end
-  end)
-
   -- TODO: fix, also fail on invalid header
   it("should return correct info on header parse failure", function()
     local lines = vim.split(
@@ -120,15 +79,15 @@ endsnippet]],
     end
 
     local num_snippets = parser.parse("the_snippet_path", parsed_snippets, parser_errors)
-    assert.are_same({ priorities = {} }, context)
-    assert.are_same(1, num_snippets)
     assert.are_same({
       {
-        msg = [[unescaped char at '{' (input string: 'line 7: if($1) {...')]],
+        msg = "invalid snippet header",
         path = "the_snippet_path",
-        line_nr = 7,
+        line_nr = 1,
       },
     }, parser_errors)
+    assert.are_same({}, context)
+    assert.are_same(1, num_snippets)
   end)
 
   it("should parse global python code and provide it as context", function()
@@ -339,7 +298,6 @@ context "1"]],
     assert.are_same({}, parser_errors)
 
     if parsed_snippets[1].trigger == "fn" then
-      print(vim.inspect(parsed_snippets[1]))
       assert.matches_snippet(expected_fn, parsed_snippets[1])
       assert.matches_snippet(expected_for, parsed_snippets[2])
     elseif parsed_snippets[1].trigger == "for" then

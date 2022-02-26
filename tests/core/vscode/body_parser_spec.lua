@@ -61,12 +61,23 @@ describe("VSCode body parser", function()
     assert.are_same(expected, parser.parse(input))
   end)
 
-  it("should not run into infinite loop but cause error", function()
-    local input = [[${0|\|||}]]
-    assert.has.errors(function()
-      parser.parse(input)
-    end)
+  it("should parse unambiguous unescaped chars", function()
+    local input = [[${\cup}$]]
+    local expected = {
+      {
+        -- $ does not need to be escaped because it does not mark the beginning of a tabstop
+        text = [[${\cup}$]],
+        type = NodeType.TEXT,
+      },
+    }
+    assert.are_same(expected, parser.parse(input))
   end)
 
-
+  it("should parse incomplete transform", function()
+    local input = [[${1/abc/xyz}]]
+    local expected = {
+      { text = "${1/abc/xyz}", type = NodeType.TEXT },
+    }
+    assert.are_same(expected, parser.parse(input))
+  end)
 end)

@@ -155,23 +155,5 @@ describe("VSCode parser", function()
       assert.are_same(parsed_snippets, {})
       assert.are_same({ "body must be list or string, got number" }, parser_errors)
     end)
-
-    it("when snippet syntax is invalid", function()
-      local data = {
-        ["fn"] = {
-          prefix = "fn",
-          body = { "for ${}" },
-        },
-      }
-      parser.get_lines = function() return data end
-      local num_snippets = parser.parse("some/path", parsed_snippets, parser_errors)
-      assert.are_same(0, num_snippets)
-      assert.are_same(parsed_snippets, {})
-      assert.ends_with(
-        "pattern [_a-zA-Z][_a-zA-Z0-9]* not matched at '}' (input string: 'for ${}')",
-        parser_errors[1]
-      )
-      assert.are_same(1, #parser_errors)
-    end)
   end)
 end)
