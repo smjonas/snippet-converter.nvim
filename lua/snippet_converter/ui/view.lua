@@ -1,6 +1,7 @@
 local display = require("snippet_converter.ui.display")
 local Node = require("snippet_converter.ui.node")
 local Model = require("snippet_converter.ui.model")
+local make_default_table = require("snippet_converter.utils.default_table").new
 
 local View = {}
 
@@ -207,6 +208,7 @@ function View:create_task_node(task, template, source_format)
       texts[1] = self:get_node_icon(is_expanded)
       -- Redraw view as the has layout changed
       self:draw(model, true)
+      print("redrawn")
     end,
     true
   )
@@ -234,17 +236,13 @@ function View:create_task_nodes(scene)
       for source_format, reason in pairs(model.skipped_tasks[template.name] or {}) do
         nodes[#nodes + 1] = self:create_skipped_task_node(reason, source_format)
       end
+      local task_nodes = make_default_table(self.state.task_nodes, template.name)
       for source_format, task in pairs(model.tasks[template.name]) do
-        local task_node = self.state.task_nodes[template.name]
-          and self.state.task_nodes[template.name][source_format]
+        local task_node = task_nodes[source_format]
         -- Create new task only if it has not been persisted across redraws
         if not task_node then
           task_node = self:create_task_node(task, template, source_format)
-          -- TODO: refactor table nil checks (default table)
-          if not self.state.task_nodes[template.name] then
-            self.state.task_nodes[template.name] = {}
-          end
-          self.state.task_nodes[template.name][source_format] = task_node
+          task_nodes[source_format] = task_node
         end
         nodes[#nodes + 1] = task_node
       end

@@ -2,6 +2,8 @@ local M = {
   config = nil,
 }
 
+local make_default_table = require("snippet_converter.utils.default_table").new
+
 local snippet_engines, loader, Model
 local controller
 
@@ -59,9 +61,7 @@ local parse_snippets = function(model, snippet_paths, template)
     local parser = require(snippet_engines[source_format].parser)
     local parser_errors = {}
     for filetype, paths in pairs(snippet_paths[source_format]) do
-      if snippets[source_format][filetype] == nil then
-        snippets[source_format][filetype] = {}
-      end
+      make_default_table(snippets[source_format], filetype)
       for _, path in ipairs(paths) do
         num_snippets = parser.parse(path, snippets[source_format][filetype], parser_errors, context)
       end
@@ -102,7 +102,6 @@ local convert_snippets = function(model, snippets, context, template)
         for filetype, _snippets in pairs(snippets_for_format) do
           for _, snippet in ipairs(_snippets) do
             local skip_snippet, converted_snippet
-            -- TODO: fix for more than 1 template
             if template.transform_snippets then
               skip_snippet, converted_snippet = handle_snippet_transformation(
                 template.transform_snippets,

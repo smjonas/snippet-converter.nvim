@@ -1,4 +1,5 @@
 local snippet_engines = require("snippet_converter.snippet_engines")
+local make_default_table = require("snippet_converter.utils.default_table").new
 
 local M = {}
 
@@ -21,10 +22,8 @@ M.new = function()
 end
 
 function M:skip_task(template, source_format, reason)
-  if not self.skipped_tasks[template.name] then
-    self.skipped_tasks[template.name] = {}
-  end
-  self.skipped_tasks[template.name][snippet_engines[source_format].label] = reason
+  make_default_table(self.skipped_tasks, template.name)[snippet_engines[source_format].label] =
+    reason
 end
 
 function M:did_skip_task(template, source_format)
@@ -33,13 +32,8 @@ function M:did_skip_task(template, source_format)
 end
 
 function M:submit_task(template, source_format, num_snippets, num_input_files, parser_errors)
-  if not self.templates[template] then
-    self.templates[#self.templates + 1] = template
-  end
-  if not self.tasks[template.name] then
-    self.tasks[template.name] = {}
-  end
-  self.tasks[template.name][snippet_engines[source_format].label] = {
+  self.templates[#self.templates + 1] = template
+  make_default_table(self.tasks, template.name)[snippet_engines[source_format].label] = {
     num_snippets = num_snippets,
     num_input_files = num_input_files,
     num_output_files = {},
