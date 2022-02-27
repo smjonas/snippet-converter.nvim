@@ -36,14 +36,14 @@ describe("VSCode converter", function()
         body = {
           {
             type = NodeType.TEXT,
-            text = "\\pdfminorversion=7\n\t\\usepackage{pdfpages}\n\\usepackage{transparent}",
+            text = "\\pdfminorversion=7\n\t\\usepackage{\\\\pdfpages}\n\\usepackage{transparent}",
           },
         },
       }
       local expected = [[
   "test": {
     "prefix": "test",
-    "body": ["\\pdfminorversion=7", "\t\\usepackage{pdfpages}", "\\usepackage{transparent}"]
+    "body": ["\\pdfminorversion=7", "\t\\usepackage{\\\\pdfpages}", "\\usepackage{transparent}"]
   }]]
       assert.are_same(expected, converter.convert(snippet))
     end)

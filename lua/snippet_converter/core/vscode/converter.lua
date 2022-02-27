@@ -62,8 +62,8 @@ M.convert = function(snippet, source_format)
   end
   local body = list_to_json_string(base_converter.convert_ast(snippet.body, M.visit_ultisnips_node))
   if snippet.trigger == "template" then
-    print(vim.inspect(snippet.body))
-    print(body)
+    -- print(vim.inspect(snippet.body))
+    -- print(body)
     -- error("1111")
   end
 

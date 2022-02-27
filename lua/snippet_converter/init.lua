@@ -46,12 +46,12 @@ local load_snippets = function(sources)
   return snippet_paths
 end
 
-local parse_snippets = function(model, snippet_paths, sources)
+local parse_snippets = function(model, snippet_paths, template)
   local snippets = {}
   local context = {
     global_code = {},
   }
-  for source_format, _ in pairs(sources) do
+  for source_format, _ in pairs(template.sources) do
     snippets[source_format] = {}
     local num_snippets = 0
     local num_files = 0
@@ -68,11 +68,11 @@ local parse_snippets = function(model, snippet_paths, sources)
       num_files = num_files + #paths
     end
     if num_files == 0 then
-      model:skip_task(source_format, model.Reason.NO_INPUT_FILES)
+      model:skip_task(template, source_format, model.Reason.NO_INPUT_FILES)
     elseif num_snippets == 0 then
-      model:skip_task(source_format, model.Reason.NO_INPUT_SNIPPETS)
+      model:skip_task(template, source_format, model.Reason.NO_INPUT_SNIPPETS)
     else
-      model:submit_task(source_format, num_snippets, num_files, parser_errors)
+      model:submit_task(template, source_format, num_snippets, num_files, parser_errors)
     end
   end
   return snippets, context
@@ -91,10 +91,10 @@ local handle_snippet_transformation = function(transformation, snippet, source_f
   return skip, converted_snippet
 end
 
-local convert_snippets = function(model, snippets, context, output)
+local convert_snippets = function(model, snippets, context, template)
   for source_format, snippets_for_format in pairs(snippets) do
-    if not model:skipped_task(source_format) then
-      for target_format, output_paths in pairs(output) do
+    if not model:did_skip_task(template, source_format) then
+      for target_format, output_paths in pairs(template.output) do
         local converter_errors = {}
         local converter = require(snippet_engines[target_format].converter)
         local converted_snippets = {}
@@ -103,9 +103,9 @@ local convert_snippets = function(model, snippets, context, output)
           for _, snippet in ipairs(_snippets) do
             local skip_snippet, converted_snippet
             -- TODO: fix for more than 1 template
-            if M.config.templates[1].transform_snippets then
+            if template.transform_snippets then
               skip_snippet, converted_snippet = handle_snippet_transformation(
-                M.config.templates[1].transform_snippets,
+                template.transform_snippets,
                 snippet,
                 source_format
               )
@@ -134,7 +134,8 @@ local convert_snippets = function(model, snippets, context, output)
             converter.export(converted_snippets, filetype, output_path, context)
           end
         end
-        model:complete_task(source_format, target_format, #output_paths, converter_errors)
+        print("Complete task", template.name)
+        model:complete_task(template, source_format, target_format, #output_paths, converter_errors)
       end
     end
   end
@@ -153,10 +154,14 @@ M.convert_snippets = function()
   -- Make sure the window shows up before any potential long-running operations
   controller:create_view(model, M.config.settings)
   vim.schedule(function()
-    local template = M.config.templates[1]
-    local snippet_paths = load_snippets(template.sources)
-    local snippets, context = parse_snippets(model, snippet_paths, template.sources)
-    convert_snippets(model, snippets, context, template.output)
+    for i, template in ipairs(M.config.templates) do
+      if not template.name then
+        template.name = i
+      end
+      local snippet_paths = load_snippets(template.sources)
+      local snippets, context = parse_snippets(model, snippet_paths, template)
+      convert_snippets(model, snippets, context, template)
+    end
     controller:finalize()
   end)
   return model

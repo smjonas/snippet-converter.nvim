@@ -97,7 +97,6 @@ M.export = function(converted_snippets, filetype, output_path, context)
     nil
   )
   output_path = export_utils.get_output_file_path(output_path, filetype, "snippets")
-  print(output_path)
   io.write_file(snippet_lines, output_path)
 end
 

@@ -157,7 +157,7 @@ function View:get_header_nodes(scene, is_converting)
   return header_nodes[scene]
 end
 
-function View:create_task_node(task, source_format)
+function View:create_task_node(task, template, source_format)
   local model = self.model
   local texts = {
     self:get_node_icon(true),
@@ -175,7 +175,7 @@ function View:create_task_node(task, source_format)
 
   local child_nodes = {}
   for target_format, failures in pairs(task.converter_errors) do
-    local status = model.tasks[source_format].conversion_status[target_format]
+    local status = model.tasks[template.name][source_format].conversion_status[target_format]
 
     local failure_nodes
     if status ~= Model.Status.Success then
@@ -230,17 +230,24 @@ function View:create_task_nodes(scene)
   local model = self.model
   local nodes = self:get_header_nodes(self.current_scene, model.is_converting)
   if scene == Scene.Main then
-    for source_format, reason in pairs(model.skipped_tasks) do
-      nodes[#nodes + 1] = self:create_skipped_task_node(reason, source_format)
-    end
-    for source_format, task in pairs(model.tasks) do
-      local task_node = self.state.task_nodes[source_format]
-      -- Create new task only if it has not been persisted across redraws
-      if not task_node then
-        task_node = self:create_task_node(task, source_format)
-        self.state.task_nodes[source_format] = task_node
+    for _, template in ipairs(self.model.templates) do
+      for source_format, reason in pairs(model.skipped_tasks[template.name] or {}) do
+        nodes[#nodes + 1] = self:create_skipped_task_node(reason, source_format)
       end
-      nodes[#nodes + 1] = task_node
+      for source_format, task in pairs(model.tasks[template.name]) do
+        local task_node = self.state.task_nodes[template.name]
+          and self.state.task_nodes[template.name][source_format]
+        -- Create new task only if it has not been persisted across redraws
+        if not task_node then
+          task_node = self:create_task_node(task, template, source_format)
+          -- TODO: refactor table nil checks (default table)
+          if not self.state.task_nodes[template.name] then
+            self.state.task_nodes[template.name] = {}
+          end
+          self.state.task_nodes[template.name][source_format] = task_node
+        end
+        nodes[#nodes + 1] = task_node
+      end
     end
   elseif scene == Scene.Help then
     local expand_node = Node.MultiHlTextNode({

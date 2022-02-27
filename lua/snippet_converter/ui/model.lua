@@ -14,19 +14,32 @@ M.Reason = {
 }
 
 M.new = function()
-  return setmetatable({ tasks = {}, skipped_tasks = {}, is_converting = true }, { __index = M })
+  return setmetatable(
+    { templates = {}, tasks = {}, skipped_tasks = {}, is_converting = true },
+    { __index = M }
+  )
 end
 
-function M:skip_task(source_format, reason)
-  self.skipped_tasks[snippet_engines[source_format].label] = reason
+function M:skip_task(template, source_format, reason)
+  if not self.skipped_tasks[template.name] then
+    self.skipped_tasks[template.name] = {}
+  end
+  self.skipped_tasks[template.name][snippet_engines[source_format].label] = reason
 end
 
-function M:skipped_task(source_format)
-  return self.skipped_tasks[snippet_engines[source_format].label]
+function M:did_skip_task(template, source_format)
+  return self.skipped_tasks[template.name]
+    and self.skipped_tasks[template.name][snippet_engines[source_format].label]
 end
 
-function M:submit_task(source_format, num_snippets, num_input_files, parser_errors)
-  self.tasks[snippet_engines[source_format].label] = {
+function M:submit_task(template, source_format, num_snippets, num_input_files, parser_errors)
+  if not self.templates[template] then
+    self.templates[#self.templates + 1] = template
+  end
+  if not self.tasks[template.name] then
+    self.tasks[template.name] = {}
+  end
+  self.tasks[template.name][snippet_engines[source_format].label] = {
     num_snippets = num_snippets,
     num_input_files = num_input_files,
     num_output_files = {},
@@ -36,23 +49,23 @@ function M:submit_task(source_format, num_snippets, num_input_files, parser_erro
   }
 end
 
-function M:complete_task(source_format, target_format, num_output_files, converter_errors)
+function M:complete_task(template, source_format, target_format, num_output_files, converter_errors)
   local source_label = snippet_engines[source_format].label
   local target_label = snippet_engines[target_format].label
+  local tasks = self.tasks[template.name][source_label]
 
-  self.tasks[source_label].converter_errors[target_label] = converter_errors
+  tasks.converter_errors[target_label] = converter_errors
   local num_failures = #converter_errors
   local status
   if num_failures == 0 then
     status = M.Status.Success
-  elseif num_failures == self.tasks[source_label].num_snippets then
+  elseif num_failures == tasks.num_snippets then
     status = M.Status.Error
   else
     status = M.Status.Warning
   end
-  self.tasks[source_label].conversion_status[target_label] = status
-
-  self.tasks[source_label].num_output_files[target_label] = num_output_files
+  tasks.conversion_status[target_label] = status
+  tasks.num_output_files[target_label] = num_output_files
   self.max_num_failures = math.max(self.max_num_failures or 0, #converter_errors)
 end
 

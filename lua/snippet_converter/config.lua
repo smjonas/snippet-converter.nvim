@@ -47,6 +47,14 @@ end
 
 local validate_template = function(template)
   validate_table("template", template)
+  -- Optional template name
+  vim.validate {
+    ["template.name"] = {
+      template.name,
+      "string",
+      true
+    },
+  }
   validate_paths("template.sources", template.sources, "source.format", "source.path")
   validate_paths("template.output", template.output, "output.format", "output.path")
 end
@@ -66,7 +74,7 @@ local validate_settings = function(settings)
   validate_table("settings.ui", settings.ui, true)
   if settings.ui then
     vim.validate {
-      use_nerdfont_icons = {
+      ["settings.ui.use_nerdfont_icons"] = {
         settings.ui.use_nerdfont_icons,
         "boolean",
         true,
