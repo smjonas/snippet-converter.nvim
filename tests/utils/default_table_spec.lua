@@ -1,4 +1,4 @@
-local make_default_table = require("snippet_converter.utils.default_table").new
+local make_default_table = require("snippet_converter.utils.table").make_default_table
 
 describe("Default table", function()
   it("should set to empty table if key does not exist", function()

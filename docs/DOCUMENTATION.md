@@ -61,7 +61,14 @@ In order to convert snippets from one supported format to another
 In order to convert snippets from one supported format to another
 
 ## Sorting snippets
-
+```lua
+sort = function(snippet)
+  return snippet.trigger
+end,
+compare = function(first, second)
+  return first < second (default)
+end
+```
 
 ## Customization
 

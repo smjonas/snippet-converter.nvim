@@ -1,7 +1,7 @@
 local display = require("snippet_converter.ui.display")
 local Node = require("snippet_converter.ui.node")
 local Model = require("snippet_converter.ui.model")
-local make_default_table = require("snippet_converter.utils.default_table").new
+local make_default_table = require("snippet_converter.utils.table").make_default_table
 
 local View = {}
 

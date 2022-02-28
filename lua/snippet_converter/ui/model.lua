@@ -1,5 +1,5 @@
 local snippet_engines = require("snippet_converter.snippet_engines")
-local make_default_table = require("snippet_converter.utils.default_table").new
+local make_default_table = require("snippet_converter.utils.table").make_default_table
 
 local M = {}
 
@@ -31,6 +31,7 @@ function M:did_skip_task(template, source_format)
     and self.skipped_tasks[template.name][snippet_engines[source_format].label]
 end
 
+-- template.name must be non nil
 function M:submit_task(template, source_format, num_snippets, num_input_files, parser_errors)
   self.templates[#self.templates + 1] = template
   make_default_table(self.tasks, template.name)[snippet_engines[source_format].label] = {

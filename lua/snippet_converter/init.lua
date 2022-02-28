@@ -2,7 +2,7 @@ local M = {
   config = nil,
 }
 
-local make_default_table = require("snippet_converter.utils.default_table").new
+local tbl = require("snippet_converter.utils.table")
 
 local snippet_engines, loader, Model
 local controller
@@ -12,6 +12,12 @@ M.setup = function(user_config)
   local cfg = require("snippet_converter.config")
   M.config = cfg.merge_config(user_config)
   cfg.validate(M.config)
+  -- Template names are optional, in that case use an integer
+  for i, template in ipairs(M.config.templates) do
+    if not template.name then
+      template.name = i
+    end
+  end
   -- Load modules and create controller
   snippet_engines = require("snippet_converter.snippet_engines")
   loader = require("snippet_converter.core.loader")
@@ -61,7 +67,7 @@ local parse_snippets = function(model, snippet_paths, template)
     local parser = require(snippet_engines[source_format].parser)
     local parser_errors = {}
     for filetype, paths in pairs(snippet_paths[source_format]) do
-      make_default_table(snippets[source_format], filetype)
+      tbl.make_default_table(snippets[source_format], filetype)
       for _, path in ipairs(paths) do
         num_snippets = parser.parse(path, snippets[source_format][filetype], parser_errors, context)
       end
@@ -78,21 +84,32 @@ local parse_snippets = function(model, snippet_paths, template)
   return snippets, context
 end
 
-local handle_snippet_transformation = function(transformation, snippet, source_format)
-  local skip, converted_snippet
-  local result = transformation(snippet, source_format)
-  if result == nil then
-    skip = true
-  elseif type(result) == "table" then -- overwrites the snippet to be converted
+local transform_snippets = function(transformation, snippet, helper)
+  local delete
+  local result = transformation(snippet, helper)
+  if result == nil then -- delete the snippet
+    delete = true
+  elseif type(result) == "table" then -- overwrite the snippet to be converted
     snippet = result
-  elseif type(result) == "string" then -- overwrites the conversion result
-    converted_snippet = result
+    -- elseif type(result) == "string" then -- overwrite the conversion result
+    --   converted_snippet = result
   end
-  return skip, converted_snippet
+  return delete
+end
+
+local sort_snippets = function(template, snippets)
+  if template.sort_by then
+    table.sort(snippets, function(a, b)
+      return template.compare(template.sort_by(a), template.sort_by(b))
+    end)
+  end
 end
 
 local convert_snippets = function(model, snippets, context, template)
+  local transform_helper = {}
   for source_format, snippets_for_format in pairs(snippets) do
+    transform_helper.source_format = source_format
+    -- TODO: add parser to transform_helper
     if not model:did_skip_task(template, source_format) then
       for target_format, output_paths in pairs(template.output) do
         local converter_errors = {}
@@ -100,32 +117,50 @@ local convert_snippets = function(model, snippets, context, template)
         local converted_snippets = {}
         local pos = 1
         for filetype, _snippets in pairs(snippets_for_format) do
-          for _, snippet in ipairs(_snippets) do
-            local skip_snippet, converted_snippet
-            if template.transform_snippets then
-              skip_snippet, converted_snippet = handle_snippet_transformation(
+          local skip_snippet = {}
+          -- Apply transformation
+          if template.transform_snippets then
+            for i, snippet in ipairs(_snippets) do
+              skip_snippet[i] = transform_snippets(
                 template.transform_snippets,
                 snippet,
-                source_format
+                transform_helper
               )
             end
-            if not skip_snippet then
-              local ok = true
-              if not converted_snippet then
-                ok, converted_snippet = pcall(converter.convert, snippet, source_format)
-                if not ok then
-                  converter_errors[#converter_errors + 1] = {
-                    msg = converted_snippet,
-                    snippet = snippet,
-                  }
-                end
-              end
-              if ok then
+          end
+
+          -- Remove skipped snippets
+          tbl.compact(_snippets, skip_snippet)
+
+          -- local offset = 0
+          -- for i = 1, #_snippets do
+          --   if skip_snippet[i] then
+          --     local gap_size = 1
+          --     while skip_snippet[i + gap_size] do
+          --       gap_size = gap_size + 1
+          --     end
+          --     offset = offset + gap_size
+          --   end
+          --   _snippets[i] = not skip_snippet[i + offset] and _snippets[i + offset]
+          -- end
+
+          sort_snippets(template, _snippets)
+
+          for _, snippet in ipairs(_snippets) do
+            if not skip_snippet[snippet] then
+              local ok, converted_snippet = pcall(converter.convert, snippet, source_format)
+              if not ok then
+                converter_errors[#converter_errors + 1] = {
+                  msg = converted_snippet,
+                  snippet = snippet,
+                }
+              else
                 converted_snippets[pos] = converted_snippet
                 pos = pos + 1
               end
             end
           end
+
           for _, output_path in ipairs(output_paths) do
             if filetype == snippet_engines[source_format].all_filename then
               filetype = snippet_engines[target_format].all_filename
@@ -133,7 +168,6 @@ local convert_snippets = function(model, snippets, context, template)
             converter.export(converted_snippets, filetype, output_path, context)
           end
         end
-        print("Complete task", template.name)
         model:complete_task(template, source_format, target_format, #output_paths, converter_errors)
       end
     end
@@ -153,10 +187,7 @@ M.convert_snippets = function()
   -- Make sure the window shows up before any potential long-running operations
   controller:create_view(model, M.config.settings)
   vim.schedule(function()
-    for i, template in ipairs(M.config.templates) do
-      if not template.name then
-        template.name = i
-      end
+    for _, template in ipairs(M.config.templates) do
       local snippet_paths = load_snippets(template.sources)
       local snippets, context = parse_snippets(model, snippet_paths, template)
       convert_snippets(model, snippets, context, template)
