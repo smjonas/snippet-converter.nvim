@@ -36,14 +36,35 @@ describe("VSCode converter", function()
         body = {
           {
             type = NodeType.TEXT,
-            text = "\\pdfminorversion=7\n\t\\usepackage{\\\\pdfpages}\n\\usepackage{transparent}",
+            -- "bdf" is intentional to test that \b is correctly escaped
+            text = "\\bdfminorversion=7\n\t\\usepackage{\\\\pdfpages}\n\\usepackage{transparent}",
           },
         },
       }
       local expected = [[
   "test": {
     "prefix": "test",
-    "body": ["\\pdfminorversion=7", "\t\\usepackage{\\\\pdfpages}", "\\usepackage{transparent}"]
+    "body": ["\\bdfminorversion=7", "\t\\usepackage{\\\\pdfpages}", "\\usepackage{transparent}"]
+  }]]
+      assert.are_same(expected, converter.convert(snippet))
+    end)
+
+    it("and escape backslashes + quotes in trigger and description correctly", function()
+      local snippet = {
+        trigger = "\\test",
+        description = [["a" \test]],
+        body = {
+          {
+            type = NodeType.TEXT,
+            text = "...",
+          },
+        },
+      }
+      local expected = [[
+  "\\test": {
+    "prefix": "\\test",
+    "description": "\"a\" \\test",
+    "body": "..."
   }]]
       assert.are_same(expected, converter.convert(snippet))
     end)

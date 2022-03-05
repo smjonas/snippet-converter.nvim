@@ -17,6 +17,7 @@ M.setup = function(user_config)
     if not template.name then
       template.name = i
     end
+    M.config.templates[i] = cfg.merge_template_config(template)
   end
   -- Load modules and create controller
   snippet_engines = require("snippet_converter.snippet_engines")
@@ -97,10 +98,18 @@ local transform_snippets = function(transformation, snippet, helper)
   return delete
 end
 
-local sort_snippets = function(template, snippets)
-  if template.sort_by then
+local sort_snippets = function(format, template, snippets)
+  local sort_by = template.sort_by
+  local compare
+  if not sort_by then
+    sort_by = snippet_engines[format].default_sort_by
+    compare = snippet_engines[format].default_compare
+  else
+    compare = template.compare
+  end
+  if sort_by then
     table.sort(snippets, function(a, b)
-      return template.compare(template.sort_by(a), template.sort_by(b))
+      return compare(sort_by(a), sort_by(b))
     end)
   end
 end
@@ -144,7 +153,7 @@ local convert_snippets = function(model, snippets, context, template)
           --   _snippets[i] = not skip_snippet[i + offset] and _snippets[i + offset]
           -- end
 
-          sort_snippets(template, _snippets)
+          sort_snippets(source_format, template, _snippets)
 
           for _, snippet in ipairs(_snippets) do
             if not skip_snippet[snippet] then

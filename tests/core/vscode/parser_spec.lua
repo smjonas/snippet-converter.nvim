@@ -26,7 +26,9 @@ describe("VSCode parser", function()
         },
       }
       parsed_snippets = {}
-      parser.get_lines = function() return data end
+      parser.get_lines = function()
+        return data
+      end
       local num_new_snippets = parser.parse("/some/path.json", parsed_snippets, parser_errors)
       assert.is_true(type(parsed_snippets) == "table")
 
@@ -73,7 +75,9 @@ describe("VSCode parser", function()
         },
       }
       parsed_snippets = {}
-      parser.get_lines = function() return data end
+      parser.get_lines = function()
+        return data
+      end
       local num_new_snippets = parser.parse("some/path", parsed_snippets, parser_errors)
       assert.are_same({}, parser_errors)
       assert.are_same(2, num_new_snippets)
@@ -94,7 +98,9 @@ describe("VSCode parser", function()
   describe("should fail to parse", function()
     it("empty json", function()
       local data = {}
-      parser.get_lines = function() return data end
+      parser.get_lines = function()
+        return data
+      end
       local num_snippets = parser.parse("some/path", parsed_snippets, parser_errors)
       assert.are_same(0, num_snippets)
       assert.are_same({}, parsed_snippets)
@@ -108,7 +114,9 @@ describe("VSCode parser", function()
           body = "function ${1:name}($2)\n\t${3:-- code}\nend",
         },
       }
-      parser.get_lines = function() return data end
+      parser.get_lines = function()
+        return data
+      end
       local num_snippets = parser.parse("some/path", parsed_snippets, parser_errors)
       assert.are_same(0, num_snippets)
       assert.are_same(parsed_snippets, {})
@@ -121,7 +129,9 @@ describe("VSCode parser", function()
           body = "function ${1:name}($2)\n\t${3:-- code}\nend",
         },
       }
-      parser.get_lines = function() return data end
+      parser.get_lines = function()
+        return data
+      end
       local num_snippets = parser.parse("some/path", parsed_snippets, parser_errors)
       assert.are_same(0, num_snippets)
       assert.are_same(parsed_snippets, {})
@@ -135,7 +145,9 @@ describe("VSCode parser", function()
           description = { "some", "words" },
         },
       }
-      parser.get_lines = function() return data end
+      parser.get_lines = function()
+        return data
+      end
       local num_snippets = parser.parse("some/path", parsed_snippets, parser_errors)
       assert.are_same(0, num_snippets)
       assert.are_same(parsed_snippets, {})
@@ -149,7 +161,9 @@ describe("VSCode parser", function()
           body = 999,
         },
       }
-      parser.get_lines = function() return data end
+      parser.get_lines = function()
+        return data
+      end
       local num_snippets = parser.parse("some/path", parsed_snippets, parser_errors)
       assert.are_same(0, num_snippets)
       assert.are_same(parsed_snippets, {})

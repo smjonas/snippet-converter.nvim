@@ -10,6 +10,12 @@ M.DEFAULT_CONFIG = {
   },
 }
 
+M.DEFAULT_TEMPLATE_CONFIG = {
+  compare = function(first, second)
+    return first:upper() < second:upper()
+  end,
+}
+
 local validate_table = function(name, tbl, is_optional)
   vim.validate {
     [name] = {
@@ -47,16 +53,29 @@ end
 
 local validate_template = function(template)
   validate_table("template", template)
-  -- Optional template name
   vim.validate {
     ["template.name"] = {
       template.name,
       "string",
-      true
+      true,
     },
   }
   validate_paths("template.sources", template.sources, "source.format", "source.path")
   validate_paths("template.output", template.output, "output.format", "output.path")
+  vim.validate {
+    ["template.sort_by"] = {
+      template.sort_by,
+      "function",
+      true,
+    },
+  }
+  vim.validate {
+    ["template.compare"] = {
+      template.compare,
+      "function",
+      true,
+    },
+  }
 end
 
 local validate_templates = function(templates)
@@ -98,6 +117,10 @@ end
 
 M.merge_config = function(user_config)
   return vim.tbl_deep_extend("force", M.DEFAULT_CONFIG, user_config)
+end
+
+M.merge_template_config = function(user_template)
+  return vim.tbl_deep_extend("force", M.DEFAULT_TEMPLATE_CONFIG, user_template)
 end
 
 return M

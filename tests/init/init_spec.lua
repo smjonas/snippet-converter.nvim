@@ -1,5 +1,4 @@
 local snippet_converter = require("snippet_converter")
--- TODO: maybe move model to a different module?
 local Model = require("snippet_converter.ui.model")
 
 local snippet_engines = require("snippet_converter.snippet_engines")

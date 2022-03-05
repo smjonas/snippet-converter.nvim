@@ -28,27 +28,38 @@ local ultisnips_visitor = {
   [NodeType.VISUAL_PLACEHOLDER] = function(_)
     err.raise_converter_error(NodeType.to_string(NodeType.VISUAL_PLACEHOLDER))
   end,
-  [NodeType.TEXT] = function(node)
-    -- Escape backslashes
-    return node.text:gsub("\\[^t\\]+", "\\%1")
-  end,
 }
 
 M.visit_ultisnips_node = setmetatable(ultisnips_visitor, {
   __index = base_converter.visit_node(ultisnips_visitor),
 })
 
+local escape_chars = function(str)
+  -- Escape backslashes (I couldn't get this to work with gsub / regexes)
+  local chars = {}
+  for i = 1, #str do
+    local cur_char = str:sub(i, i)
+    if cur_char == "\\" then
+      chars[#chars + 1] = "\\"
+    end
+    chars[#chars + 1] = cur_char
+  end
+
+  local item = table.concat(chars)
+  -- Surround with quotes and escape whitespace + quote characters
+  return ('"%s"'):format(item:gsub('[\t\r\a\b"]', {
+    ["\t"] = "\\t",
+    ["\r"] = "\\r",
+    ["\a"] = "\\a",
+    ["\b"] = "\\b",
+    ['"'] = '\\"',
+  }))
+end
+
 local list_to_json_string = function(list)
   local lines = vim.split(list, "\n", true)
-  local list_items = vim.tbl_map(function(x)
-    -- Surround with quotes and escape whitespace characters
-    return ('"%s"'):format(x:gsub("[\t\r\a\b]", {
-      ["\t"] = "\\t",
-      ["\r"] = "\\r",
-      ["\a"] = "\\a",
-      ["\b"] = "\\b",
-    }))
-  end, lines)
+  local list_items = vim.tbl_map(escape_chars, lines)
+
   -- Single list item => output a string
   if not list_items[2] then
     return ("%s"):format(list_items[1])
@@ -61,21 +72,17 @@ M.convert = function(snippet, source_format)
     err.raise_converter_error("regex trigger")
   end
   local body = list_to_json_string(base_converter.convert_ast(snippet.body, M.visit_ultisnips_node))
-  if snippet.trigger == "template" then
-    -- print(vim.inspect(snippet.body))
-    -- print(body)
-    -- error("1111")
-  end
 
   local description_string
   if snippet.description then
-    description_string = ('\n    "description": "%s",'):format(snippet.description)
+    description_string = ('\n    "description": %s,'):format(escape_chars(snippet.description))
   end
+  local trigger = escape_chars(snippet.trigger)
   return ([[
-  "%s": {
-    "prefix": "%s",%s
+  %s: {
+    "prefix": %s,%s
     "body": %s
-  }]]):format(snippet.trigger, snippet.trigger, description_string or "", body)
+  }]]):format(trigger, trigger, description_string or "", body)
 end
 
 -- Takes a list of converted snippets for a particular filetype and exports them to a JSON

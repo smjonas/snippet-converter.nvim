@@ -33,6 +33,8 @@ end
 
 -- template.name must be non nil
 function M:submit_task(template, source_format, num_snippets, num_input_files, parser_errors)
+  -- TODO: remove
+  assert(template.name)
   self.templates[#self.templates + 1] = template
   make_default_table(self.tasks, template.name)[snippet_engines[source_format].label] = {
     num_snippets = num_snippets,

@@ -48,10 +48,6 @@ M.peek_pattern = function(state, pattern)
 end
 
 M.parse_pattern = function(state, pattern)
-  -- TODO: can this be assumed to be non-nil?
-  if not state.input then
-    error("parse_pattern: input is nil")
-  end
   local match = state.input:match("^" .. pattern)
   if not match then
     M.raise_parse_error(state, string.format("pattern %s not matched", pattern))

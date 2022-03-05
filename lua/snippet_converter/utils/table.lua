@@ -1,6 +1,9 @@
 local M = {}
 
 M.make_default_table = function(tbl, key)
+  if key == nil then
+    error("table.make_default_table: key is nil for table " .. vim.inspect(tbl))
+  end
   return setmetatable(tbl, {
     __index = function(_, actual_key)
       if key == actual_key then
