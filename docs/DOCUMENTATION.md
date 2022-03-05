@@ -2,6 +2,7 @@
 - [Supported snippet formats](#supported-snippet-formats)
 - [Converting snippets](#converting-snippets)
 - [Transforming snippets](#transforming-snippets)
+  - [Examples](#examples)
 - [Sorting snippets](#sorting-snippets)
 - [Customization](#customization)
 - [Examples](#examples)
@@ -51,14 +52,73 @@ The following table shows which snippets can be converted to a different format:
 <sup>✓: All snippets can be converted - no exceptions.</sup>\
 <sup>(✓)<sup>1</sup>: Except snippets with python / vimscript / shell code.</sup>
 
-Note that source and target format can be the same.
-This is useful if you only want to filter certain snippets or apply any transformations to them.
+> :bulb: Note that source and target format can be the same.
+> This is useful if you only want to filter certain snippets or apply transformations on them.
 
 ## Converting snippets
 In order to convert snippets from one supported format to another
 
 ## Transforming snippets
-In order to convert snippets from one supported format to another
+Before snippets are converted, it is possible to apply a transformation on them. Transformations can be used to either discard specific snippets or modify them arbitrarily.
+They can be specified per template or globally.
+
+The transformation function takes as parameters the `snippet` itself and a `helper` table that provides additional utilities for transforming the snippet.
+If `nil` is returned, the current snippet is discarded, otherwise the snippet is replaced with the returned table.
+
+The available keys in the snippet table are listed below. Optional keys can be nil.
+
+| Key             | Type   | Supported formats   | Optional? |
+|-----------------|--------|---------------------|-----------|
+| trigger         | string | All               | No        |
+| description     | string | All               | Yes       |
+| body            | table  | All               | No        |
+| path            | string | All               | No        |
+| line\_nr        | int    | All except VSCode | No        |
+| options         | string | UltiSnips         | Yes       |
+| custom\_context | string | UltiSnips         | Yes       |
+| priority        | string | UltiSnips         | Yes       |
+
+The `helper` table contains the following entries:
+
+| Key            | Type     | Explanation                                                                                     |
+|----------------|----------|-------------------------------------------------------------------------------------------------|
+| source\_format | string   | The input format of the snippet.                                                                |
+| parse          | function | A function that takes a single string as an argument and returns the parsed snippet as a table. This is useful if you don't want to work on the AST directly. |
+
+### Examples
+
+Modify a specific UltiSnips snippet (this effectively reverts [this](https://github.com/honza/vim-snippets/commit/2502f24) vim-snippets commit - see the related issue [#1396](https://github.com/honza/vim-snippets/issues/1396)):
+```lua
+transform_snippets = function(snippet, helper)
+  if snippet.path:match("vim-snippets/UltiSnips/tex.snippets") and snippet.trigger == "$$" then
+    return helper.parse([[
+snippet im "Inline Math" w
+$${1}$
+endsnippet]])
+  end
+  return snippet
+end
+```
+
+Delete all snippets with a specific trigger:
+```lua
+transform_snippets = function(snippet, helper)
+  if snippet.trigger == "..." then
+    return nil
+  end
+  return snippet
+end
+```
+
+Remove all auto-triggers from UltiSnips snippets:
+```lua
+transform_snippets = function(snippet, helper)
+  if snippet.options and snippet.options:match("A") then
+    snippet.options = snippet.options:gsub("A", "")
+  end
+  return snippet
+end
+```
 
 ## Sorting snippets
 ```lua
@@ -69,6 +129,8 @@ compare = function(first, second)
   return first < second (default)
 end
 ```
+
+### Examples
 
 ## Customization
 
@@ -98,26 +160,3 @@ Specifies whether [Nerd Fonts](https://github.com/ryanoasis/nerd-fonts) icons sh
 
 **Default:** `true`
 
-## Examples
-Modify a specific UltiSnips snippet (this effectively reverts [this](https://github.com/honza/vim-snippets/commit/2502f24) vim-snippets commit - see the related issue [#1396](https://github.com/honza/vim-snippets/issues/1396)):
-```lua
-transform_snippets = function(snippet, _, _)
-  if snippet.path:match("vim-snippets/UltiSnips/tex.snippets") and snippet.trigger == "$$" then
-    return [[
-snippet im "Inline Math" w
-$${1}$
-endsnippet]]
-  end
-  return snippet
-end
-```
-
-Remove all auto-triggers from UltiSnips snippets:
-```lua
-transform_snippets = function(snippet, _, _)
-  if snippet.options and snippet.options:match("A") then
-    snippet.options = snippet.options:gsub("A", "")
-  end
-  return snippet
-end
-```
