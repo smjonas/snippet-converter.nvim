@@ -58,6 +58,11 @@ local Variable = {
 }
 local variable_tokens = vim.tbl_values(Variable)
 
+local M = {
+  Variable = Variable,
+  variable_tokens = variable_tokens,
+}
+
 local format_modifier_tokens = {
   "upcase",
   "downcase",
@@ -178,10 +183,11 @@ local parse_choice_text = function(state)
   return text
 end
 
+-- Expose to subclasses.
 -- Starts at char after '$', or after '{' if got_bracket is true
-local parse_variable = function(state, got_bracket)
+M.parse_variable = function(state, got_bracket, var_tokens)
   local var = p.parse_pattern(state, var_pattern)
-  if not vim.tbl_contains(variable_tokens, var) then
+  if not vim.tbl_contains(var_tokens or M.variable_tokens, var) then
     error("parse_variable: invalid token " .. var)
   end
   if not got_bracket or p.peek(state, "}") then
@@ -231,7 +237,7 @@ parse_any = function(state)
         return p.new_inner_node(NodeType.TABSTOP, { int = int, transform = transform })
       end
     else
-      return parse_variable(state, got_bracket)
+      return M.parse_variable(state, got_bracket)
     end
     p.raise_parse_error(state, "[any node]: expected int after '${' characters")
   else
@@ -246,11 +252,7 @@ parse_any = function(state)
   end
 end
 
-local parser = {
-  Variable = Variable,
-}
-
-parser.parse = function(input)
+M.parse = function(input)
   local state = {
     input = input,
     source = input,
@@ -268,4 +270,4 @@ parser.parse = function(input)
   return ast
 end
 
-return parser
+return M

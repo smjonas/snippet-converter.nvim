@@ -12,6 +12,7 @@ M.convert_ast = function(ast, node_visitor)
   return table.concat(result)
 end
 
+-- TODO: make SnipMate a subclass of UltiSnips
 -- Converts a VSCode variable to equivalent VimScript code
 local convert_variable = setmetatable({
   [Variable.TM_FILENAME] = [[`!v expand('%:t')`]],
@@ -70,6 +71,7 @@ M.visit_node = function(custom_node_visitor)
       local text_string = table.concat(node.text, ",")
       return string.format("${%s|%s|}", node.int, text_string)
     end,
+    -- TODO: move to UltiSnips converter
     [NodeType.VARIABLE] = function(node)
       if node.transform then
         err.raise_converter_error("transform")

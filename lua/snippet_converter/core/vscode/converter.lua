@@ -6,7 +6,7 @@ local err = require("snippet_converter.utils.error")
 local io = require("snippet_converter.utils.io")
 local export_utils = require("snippet_converter.utils.export_utils")
 
-local ultisnips_visitor = {
+local node_visitor = {
   [NodeType.TABSTOP] = function(node)
     if not node.transform then
       return "$" .. node.int
@@ -30,8 +30,8 @@ local ultisnips_visitor = {
   end,
 }
 
-M.visit_ultisnips_node = setmetatable(ultisnips_visitor, {
-  __index = base_converter.visit_node(ultisnips_visitor),
+M.visit_node = setmetatable(node_visitor, {
+  __index = base_converter.visit_node(node_visitor),
 })
 
 local escape_chars = function(str)
@@ -67,22 +67,25 @@ local list_to_json_string = function(list)
   return ("[%s]"):format(table.concat(list_items, ", "))
 end
 
-M.convert = function(snippet, source_format)
+M.convert = function(snippet, _, visit_node)
   if snippet.options and snippet.options:match("r") then
     err.raise_converter_error("regex trigger")
   end
-  local body = list_to_json_string(base_converter.convert_ast(snippet.body, M.visit_ultisnips_node))
+  local body = list_to_json_string(
+    base_converter.convert_ast(snippet.body, visit_node or M.visit_node)
+  )
 
   local description_string
   if snippet.description then
     description_string = ('\n    "description": %s,'):format(escape_chars(snippet.description))
   end
   local trigger = escape_chars(snippet.trigger)
+  local name = (snippet.name and escape_chars(snippet.name)) or trigger
   return ([[
   %s: {
     "prefix": %s,%s
     "body": %s
-  }]]):format(trigger, trigger, description_string or "", body)
+  }]]):format(name, trigger, description_string or "", body)
 end
 
 -- Takes a list of converted snippets for a particular filetype and exports them to a JSON

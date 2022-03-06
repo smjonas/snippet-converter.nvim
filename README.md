@@ -38,6 +38,7 @@ Other reasons may include:
 ### Supported snippet engines
 SnippetConverter can convert snippets between the following formats:
 - [VSCode](https://code.visualstudio.com/docs/editor/userdefinedsnippets) (supported by [vim-vsnip](https://github.com/hrsh7th/vim-vsnip), [LuaSnip](https://github.com/L3MON4D3/LuaSnip))
+- [vsnip](https://github.com/hrsh7th/vim-vsnip) (a superset of VSCode snippets)
 - [UltiSnips](https://github.com/SirVer/ultisnips)
 - [SnipMate](https://github.com/garbas/vim-snipmate)
 
@@ -89,8 +90,8 @@ output locations and formats.
 
 ## Documentation
 
-For detailed instructions on customization, check out the
+For more detailed instructions, info about customization and examples check out the
 [documentation](docs/DOCUMENTATION.md).
 
 ## Acknowledgements
-I want to thank [@williamboman](https://github.com/williamboman) for his plugin [nvim-lsp-installer](https://github.com/williamboman/nvim-lsp-installer) - his code inspired me tremendously while designing the UI for this plugin and helped me to get started with Neovim's window API.
+I want to thank [williamboman](https://github.com/williamboman) for his plugin [nvim-lsp-installer](https://github.com/williamboman/nvim-lsp-installer). The UI for SnippetConverter was heavily inspired by his plugin, his code helped me get started with Neovim's window API.

@@ -39,9 +39,9 @@ local verify_snippet_format = function(snippet_name, snippet_info, errors_ptr)
   return err.assert_all(assertions, errors_ptr)
 end
 
-local create_snippet = function(snippet_name, trigger, snippet_info, parser_errors_ptr)
+local create_snippet = function(snippet_name, trigger, snippet_info, parser, parser_errors_ptr)
   local body = type(snippet_info.body) == "string" and { snippet_info.body } or snippet_info.body
-  local ok, result = pcall(body_parser.parse, table.concat(body, "\n"))
+  local ok, result = pcall((parser or body_parser).parse, table.concat(body, "\n"))
   if not ok then
     parser_errors_ptr[#parser_errors_ptr + 1] = result
     return nil
@@ -54,7 +54,7 @@ local create_snippet = function(snippet_name, trigger, snippet_info, parser_erro
   }
 end
 
-M.parse = function(path, parsed_snippets_ptr, parser_errors_ptr)
+M.parse = function(path, parsed_snippets_ptr, parser_errors_ptr, parser)
   local snippet_data = M.get_lines(path)
   if vim.tbl_isempty(snippet_data) then
     return #parsed_snippets_ptr
@@ -66,7 +66,13 @@ M.parse = function(path, parsed_snippets_ptr, parser_errors_ptr)
       -- The snippet has multiple prefixes.
       if type(snippet_info.prefix) == "table" then
         for _, trigger in ipairs(snippet_info.prefix) do
-          local snippet = create_snippet(snippet_name, trigger, snippet_info, parser_errors_ptr)
+          local snippet = create_snippet(
+            snippet_name,
+            trigger,
+            snippet_info,
+            parser,
+            parser_errors_ptr
+          )
           if snippet then
             snippet.path = path
             parsed_snippets_ptr[pos] = snippet
@@ -78,6 +84,7 @@ M.parse = function(path, parsed_snippets_ptr, parser_errors_ptr)
           snippet_name,
           snippet_info.prefix,
           snippet_info,
+          parser,
           parser_errors_ptr
         )
         if snippet then

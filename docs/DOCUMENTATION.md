@@ -4,13 +4,14 @@
 - [Transforming snippets](#transforming-snippets)
   - [Examples](#examples)
 - [Sorting snippets](#sorting-snippets)
-- [Customization](#customization)
+- [Configuration](#configuration)
 - [Examples](#examples)
 
 ## Supported snippet formats
 
 SnippetConverter can convert snippets between the following formats:
 - [VSCode](https://code.visualstudio.com/docs/editor/userdefinedsnippets) (supported by [vim-vsnip](https://github.com/hrsh7th/vim-vsnip), [LuaSnip](https://github.com/L3MON4D3/LuaSnip))
+- [vsnip](https://github.com/hrsh7th/vim-vsnip) (a superset of VSCode snippets)
 - [UltiSnips](https://github.com/SirVer/ultisnips)
 - [SnipMate](https://github.com/garbas/vim-snipmate)
 
@@ -20,40 +21,53 @@ The following table shows which snippets can be converted to a different format:
 	<tbody>
 		<tr>
 			<td colspan="2" rowspan="2">Conversion between snippet formats</td>
-			<td colspan="4"><i>Target format</i></td>
+			<td colspan="5"><i>Target format</i></td>
 		</tr>
 		<tr>
 			<td>UltiSnips</td>
 			<td>VSCode</td>
+			<td>vsnip</td>
 			<td>SnipMate</td>
 		</tr>
 		<tr>
-			<td rowspan="3"><i>Source</br>format</i></td>
+			<td rowspan="4"><i>Source</br>format</i></td>
 			<td>UltiSnips</td>
 			<td>✓</td>
 			<td>(✓)<sup>1</sup></td>
+			<td>(✓)<sup>2</sup></td>
 			<td>✓</td>
 		</tr>
 		<tr>
 			<td>VSCode</td>
 			<td>✓</td>
-			<td>–</td>
+			<td>✓</td>
+			<td>✓</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td>vsnip</td>
+			<td>✓</td>
+			<td>(✓)<sup>3</sup></td>
+			<td>✓</td>
 			<td></td>
 		</tr>
 		<tr>
 			<td>SnipMate</td>
 			<td>✓</td>
 			<td>✓</td>
-			<td>–</td>
+			<td>✓</td>
+			<td>✓</td>
 		</tr>
 	</tbody>
 </table>
 
 <sup>✓: All snippets can be converted - no exceptions.</sup>\
-<sup>(✓)<sup>1</sup>: Except snippets with python / vimscript / shell code.</sup>
+<sup>(✓)<sup>1</sup>: Except snippets with python / vimscript / shell code or regular expression triggers.</sup>\
+<sup>(✓)<sup>2</sup>: Except snippets with python / shell code or regular expression triggers / transformations.</sup>\
+<sup>(✓)<sup>3</sup>: Except snippets with vimscript code.</sup>
 
 > :bulb: Note that source and target format can be the same.
-> This is useful if you only want to filter certain snippets or apply transformations on them.
+> This is useful if you only want to filter certain snippets or apply transformations on them without converting them to a different format.
 
 ## Converting snippets
 In order to convert snippets from one supported format to another
@@ -132,7 +146,7 @@ end
 
 ### Examples
 
-## Customization
+## Configuration
 
 Default config:
 ```lua

@@ -31,4 +31,19 @@ snippet_engines.vscode = {
   end,
 }
 
+snippet_engines.vsnip = {
+  label = "vsnip",
+  extension = "json",
+  parser = "snippet_converter.core.vscode.vsnip.parser",
+  converter = "snippet_converter.core.vscode.vsnip.converter",
+  -- When reading the JSON data into a table, the order is not guaranteed.
+  -- In order to avoid indeterminism, sort by the snippet name by default.
+  default_sort_by = function(snippet)
+    return snippet.name
+  end,
+  default_compare = function(first, second)
+    return first:upper() < second:upper()
+  end,
+}
+
 return snippet_engines

@@ -36,19 +36,19 @@ describe("VSCode parser", function()
       assert.are_same(2, num_new_snippets)
 
       local expected_fn = {
+        name = "a function",
         trigger = "fn",
         description = "function",
         body_length = 7,
         path = "/some/path.json",
-        line_nr = 1,
       }
 
       local expected_for = {
+        name = "for",
         trigger = "for",
         description = nil,
         body_length = 9,
         path = "/some/path.json",
-        line_nr = 7,
       }
 
       -- The pairs function does not specify the order in which the snippets will be traversed in,

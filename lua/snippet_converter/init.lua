@@ -117,7 +117,6 @@ end
 local convert_snippets = function(model, snippets, context, template)
   local transform_helper = {}
   for source_format, snippets_for_format in pairs(snippets) do
-    transform_helper.source_format = source_format
     -- TODO: add parser to transform_helper
     if not model:did_skip_task(template, source_format) then
       for target_format, output_paths in pairs(template.output) do

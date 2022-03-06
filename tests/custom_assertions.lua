@@ -6,6 +6,7 @@ end
 
 local function matches_snippet(_, arguments)
   local expected, actual, options = arguments[1], arguments[2], arguments[3]
+  local same_name = expected.name == actual.name
   local same_trigger = expected.trigger == actual.trigger
   local same_description = expected.description == actual.description
   local same_body_length = expected.body_length == #actual.body
@@ -17,7 +18,8 @@ local function matches_snippet(_, arguments)
   local same_priority = expected.priority == actual.priority
   local same_custom_context = expected.custom_context == actual.custom_context
 
-  return same_trigger
+  return same_name
+    and same_trigger
     and same_description
     and same_options
     and same_body_length
