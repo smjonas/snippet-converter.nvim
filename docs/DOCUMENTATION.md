@@ -4,8 +4,8 @@
 - [Transforming snippets](#transforming-snippets)
   - [Examples](#examples)
 - [Sorting snippets](#sorting-snippets)
+  - [Example](#example)
 - [Configuration](#configuration)
-- [Examples](#examples)
 
 ## Supported snippet formats
 
@@ -15,7 +15,7 @@ SnippetConverter can convert snippets between the following formats:
 - [UltiSnips](https://github.com/SirVer/ultisnips)
 - [SnipMate](https://github.com/garbas/vim-snipmate)
 
-The following table shows which snippets can be converted to a different format:
+The following table shows which snippets can be converted to other formats:
 
 <table>
 	<tbody>
@@ -67,13 +67,89 @@ The following table shows which snippets can be converted to a different format:
 <sup>(✓)<sup>3</sup>: Except snippets with vimscript code.</sup>
 
 > :bulb: Note that source and target format can be the same.
-> This is useful if you only want to filter certain snippets or apply transformations on them without converting them to a different format.
+> This is useful if you only want to filter certain snippets or apply transformations to them without converting them to a different format.
 
 ## Converting snippets
-In order to convert snippets from one supported format to another
+In order to convert snippets from one supported format to another, create a
+template with the input / output formats and paths and pass it to the `setup` function
+(see [Creating templates](#creating-templates) section).
+
+Then run the command `:ConvertSnippets`. A GUI window should pop up that will show you further information
+about the status of the conversion.
+
+In general, the command has the following structure:
+
+`:ConvertSnippets template_names* (--options)*`
+
+By default, all templates that have been passed to `setup` will be executed sequentially.
+If you only want to run a single template or a selection of them, pass their names as the
+first arguments (separated by spaces):
+
+`:ConvertSnippets template_a template_b`
+
+
+If you don't want the UI to be shown, you can use headless mode:
+
+`:ConvertSnippets --headless`
+
+All of these commands can also be called using the Lua API as follows:
+```lua
+require("snippet_converter").convert_snippets {
+  templates = {
+    "template_a", "template_b",
+  },
+  options = {
+    headless = true,
+  },
+}
+```
+(use `require("snippet_converter").convert_snippets()` to run all templates)
+
+## Creating templates
+
+A template is simply a table that can contain any of the following keys:
+
+`sources: table <string, string>`
+
+A table with a list of paths per source format.
+The paths can either be absolute paths or relative paths to folders or files in your Neovim runtimepath.
+They may contain wildcards (`*`).
+All snippet files that match any of the given paths will be parsed and converted to the respective output formats.
+
+---
+
+`output: table <string>`
+
+---
+
+`transform_snippets: snippet -> snippet?`
+
+An optional transformation function, see [Transforming snippets](#transforming-snippets).
+
+---
+
+`sort_snippets: (snippet, snippet) -> boolean`
+
+An optional sorting function, see [Sorting snippets](#sorting-snippets).
+
+**Example:**
+
+```lua
+sources = {
+  ultisnips = {
+    -- Folders or files in the runtimepath
+    "vim-snippets/UltiSnips",
+    "latex-snippets/tex.snippets",
+  },
+  vsnip = {
+   -- Absolute paths to snippet directories
+    vim.fn.stdpath("config") .. "/vsnip-snippets",
+  },
+}
+```
 
 ## Transforming snippets
-Before snippets are converted, it is possible to apply a transformation on them. Transformations can be used to either discard specific snippets or modify them arbitrarily.
+Before snippets are converted, it is possible to apply a transformation to them. Transformations can be used to either discard specific snippets or modify them arbitrarily.
 They can be specified per template or globally.
 
 The transformation function takes as parameters the `snippet` itself and a `helper` table that provides additional utilities for transforming the snippet.
@@ -135,16 +211,28 @@ end
 ```
 
 ## Sorting snippets
-```lua
-sort = function(snippet)
-  return snippet.trigger
-end,
-compare = function(first, second)
-  return first < second (default)
-end
-```
+By default, when converting snippets, the output snippets will appear in the same order
+as they were defined in the input files. Snippets defined in JSON format (such as VSCode and vsnip
+snippets) will be sorted alphabetically due to the way JSON files are read by Vim (the
+order of the JSON objects is not preserved).
 
-### Examples
+You can control the sorting behaviour by passing a `sort_snippets` function to the template or setup functions.
+The `sort_snippets` function takes as parameters the two snippets to compare and must return a boolean.
+When `true` is returned, the first snippet will be placed before the second one.
+
+### Example
+
+Here is an example that puts snippets with a priority value at the top of the output file,
+sorting them by their priority in descending order, then by their trigger in ascending order:
+
+```lua
+sort_snippets = function(first, second)
+  if (first.priority or -math.huge) > (second.priority or -math.huge) then
+    return true
+  end
+  return first.trigger < second.trigger
+end,
+```
 
 ## Configuration
 
@@ -173,4 +261,3 @@ require("snippet_converter").setup {
 Specifies whether [Nerd Fonts](https://github.com/ryanoasis/nerd-fonts) icons should be used for the icons in the UI window. Set this to `false` if you are not using a Nerd Font - otherwise the icons will not be displayed correctly.
 
 **Default:** `true`
-
