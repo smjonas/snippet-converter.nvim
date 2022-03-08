@@ -9,7 +9,6 @@ M.get_lines = function(path)
 end
 
 local verify_snippet_format = function(snippet_name, snippet_info, errors_ptr)
-  -- TODO: support scope!
   local assertions = {
     {
       predicate = type(snippet_name) == "string",
@@ -28,6 +27,12 @@ local verify_snippet_format = function(snippet_name, snippet_info, errors_ptr)
       predicate = snippet_info.description == nil or type(snippet_info.description) == "string",
       msg = function()
         return "description must be string or nil, got " .. type(snippet_info.description)
+      end,
+    },
+    {
+      predicate = snippet_info.scope == nil or type(snippet_info.scope) == "string",
+      msg = function()
+        return "scope must be string or nil, got " .. type(snippet_info.scope)
       end,
     },
     {
@@ -51,6 +56,7 @@ local create_snippet = function(snippet_name, trigger, snippet_info, parser, par
   return {
     name = snippet_name,
     trigger = trigger,
+    scope = snippet_info.scope and vim.split(snippet_info.scope, ","),
     description = snippet_info.description,
     body = result,
   }

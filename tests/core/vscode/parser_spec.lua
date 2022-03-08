@@ -2,8 +2,12 @@ local assertions = require("tests.custom_assertions")
 local parser = require("snippet_converter.core.vscode.parser")
 
 describe("VSCode parser", function()
+  local data
   setup(function()
     assertions.register(assert)
+    parser.get_lines = function()
+      return data
+    end
   end)
 
   local parsed_snippets, parser_errors
@@ -14,7 +18,7 @@ describe("VSCode parser", function()
 
   describe("should parse", function()
     it("multiple snippets", function()
-      local data = {
+      data = {
         ["a function"] = {
           prefix = "fn",
           description = "function",
@@ -26,9 +30,6 @@ describe("VSCode parser", function()
         },
       }
       parsed_snippets = {}
-      parser.get_lines = function()
-        return data
-      end
       local num_new_snippets = parser.parse("/some/path.json", parsed_snippets, parser_errors)
       assert.is_true(type(parsed_snippets) == "table")
 
@@ -67,7 +68,7 @@ describe("VSCode parser", function()
     end)
 
     it("snippet with multiple triggers / prefixes", function()
-      local data = {
+      data = {
         ["a function"] = {
           prefix = { "fn", "fun" },
           description = "function",
@@ -75,9 +76,6 @@ describe("VSCode parser", function()
         },
       }
       parsed_snippets = {}
-      parser.get_lines = function()
-        return data
-      end
       local num_new_snippets = parser.parse("some/path", parsed_snippets, parser_errors)
       assert.are_same({}, parser_errors)
       assert.are_same(2, num_new_snippets)
@@ -93,14 +91,27 @@ describe("VSCode parser", function()
         assert.is_false(true)
       end
     end)
+
+    it("snippet scope into table", function()
+      data = {
+        ["a function"] = {
+          prefix = "fn",
+          description = "function",
+          scope = "javascript,typescript",
+          body = "",
+        },
+      }
+      parsed_snippets = {}
+      local num_new_snippets = parser.parse("some/path", parsed_snippets, parser_errors)
+      assert.are_same({}, parser_errors)
+      assert.are_same(1, num_new_snippets)
+      assert.are_same({ "javascript", "typescript" }, parsed_snippets[1].scope)
+    end)
   end)
 
   describe("should fail to parse", function()
     it("empty json", function()
-      local data = {}
-      parser.get_lines = function()
-        return data
-      end
+      data = {}
       local num_snippets = parser.parse("some/path", parsed_snippets, parser_errors)
       assert.are_same(0, num_snippets)
       assert.are_same({}, parsed_snippets)
@@ -109,14 +120,11 @@ describe("VSCode parser", function()
     end)
 
     it("when snippet name is not a string", function()
-      local data = {
+      data = {
         [111] = {
           body = "function ${1:name}($2)\n\t${3:-- code}\nend",
         },
       }
-      parser.get_lines = function()
-        return data
-      end
       local num_snippets = parser.parse("some/path", parsed_snippets, parser_errors)
       assert.are_same(0, num_snippets)
       assert.are_same(parsed_snippets, {})
@@ -124,14 +132,11 @@ describe("VSCode parser", function()
     end)
 
     it("when prefix is missing", function()
-      local data = {
+      data = {
         ["fn"] = {
           body = "function ${1:name}($2)\n\t${3:-- code}\nend",
         },
       }
-      parser.get_lines = function()
-        return data
-      end
       local num_snippets = parser.parse("some/path", parsed_snippets, parser_errors)
       assert.are_same(0, num_snippets)
       assert.are_same(parsed_snippets, {})
@@ -139,31 +144,38 @@ describe("VSCode parser", function()
     end)
 
     it("when description is not a string", function()
-      local data = {
+      data = {
         ["fn"] = {
           prefix = "fn",
           description = { "some", "words" },
         },
       }
-      parser.get_lines = function()
-        return data
-      end
       local num_snippets = parser.parse("some/path", parsed_snippets, parser_errors)
       assert.are_same(0, num_snippets)
       assert.are_same(parsed_snippets, {})
       assert.are_same({ "description must be string or nil, got table" }, parser_errors)
     end)
 
+    it("when scope is not a string", function()
+      data = {
+        ["fn"] = {
+          prefix = "fn",
+          scope = { "javascript", "typescript" },
+        },
+      }
+      local num_snippets = parser.parse("some/path", parsed_snippets, parser_errors)
+      assert.are_same(0, num_snippets)
+      assert.are_same(parsed_snippets, {})
+      assert.are_same({ "scope must be string or nil, got table" }, parser_errors)
+    end)
+
     it("when body is not table or string", function()
-      local data = {
+      data = {
         ["fn"] = {
           prefix = "fn",
           body = 999,
         },
       }
-      parser.get_lines = function()
-        return data
-      end
       local num_snippets = parser.parse("some/path", parsed_snippets, parser_errors)
       assert.are_same(0, num_snippets)
       assert.are_same(parsed_snippets, {})

@@ -157,16 +157,17 @@ If `nil` is returned, the current snippet is discarded, otherwise the snippet is
 
 The available keys in the snippet table are listed below. Optional keys can be nil.
 
-| Key             | Type   | Supported formats   | Optional? |
-|-----------------|--------|---------------------|-----------|
-| trigger         | string | All               | No        |
-| description     | string | All               | Yes       |
-| body            | table  | All               | No        |
-| path            | string | All               | No        |
-| line\_nr        | int    | All except VSCode | No        |
-| options         | string | UltiSnips         | Yes       |
-| custom\_context | string | UltiSnips         | Yes       |
-| priority        | string | UltiSnips         | Yes       |
+| Key             | Type   | Supported formats         | Optional? |
+|-----------------|--------|---------------------------|-----------|
+| trigger         | string | All                       | No        |
+| description     | string | All                       | Yes       |
+| body            | table  | All                       | No        |
+| scope           | table  | VSCode / vsnip            | Yes       |
+| path            | string | All                       | No        |
+| line\_nr        | int    | All except VSCode / vsnip | No        |
+| options         | string | UltiSnips                 | Yes       |
+| custom\_context | string | UltiSnips                 | Yes       |
+| priority        | string | UltiSnips                 | Yes       |
 
 The `helper` table contains the following entries:
 
