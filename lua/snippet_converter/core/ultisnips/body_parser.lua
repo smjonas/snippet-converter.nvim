@@ -133,7 +133,7 @@ parse_any = function(state)
         -- TODO: visual placeholder 3
       end
     end
-    p.raise_parse_error(state, "[any node]: expected int after '${' characters")
+    p.raise_backtrack_error(state, "[any node]: expected int after '${' characters")
   elseif p.peek(state, "`") then
     return parse_code(state)
   else
@@ -141,7 +141,7 @@ parse_any = function(state)
     local text = parse_text(state)
     -- This happens if parse_text could not parse anything because the next char was not escaped.
     if state.input == prev_input then
-      p.raise_parse_error(state, "unescaped char")
+      p.raise_backtrack_error(state, "unescaped char")
     else
       return p.new_inner_node(NodeType.TEXT, { text = text })
     end

@@ -6,7 +6,7 @@ local err = require("snippet_converter.utils.error")
 local io = require("snippet_converter.utils.io")
 local export_utils = require("snippet_converter.utils.export_utils")
 
-local node_visitor = {
+M.node_visitor = {
   [NodeType.TABSTOP] = function(node)
     if not node.transform then
       return "$" .. node.int
@@ -30,8 +30,8 @@ local node_visitor = {
   end,
 }
 
-M.visit_node = setmetatable(node_visitor, {
-  __index = base_converter.visit_node(node_visitor),
+M.visit_node = setmetatable(M.node_visitor, {
+  __index = base_converter.visit_node(M.node_visitor),
 })
 
 local escape_chars = function(str)

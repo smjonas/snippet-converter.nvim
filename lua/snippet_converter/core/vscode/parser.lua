@@ -9,6 +9,7 @@ M.get_lines = function(path)
 end
 
 local verify_snippet_format = function(snippet_name, snippet_info, errors_ptr)
+  -- TODO: support scope!
   local assertions = {
     {
       predicate = type(snippet_name) == "string",
@@ -41,7 +42,8 @@ end
 
 local create_snippet = function(snippet_name, trigger, snippet_info, parser, parser_errors_ptr)
   local body = type(snippet_info.body) == "string" and { snippet_info.body } or snippet_info.body
-  local ok, result = pcall((parser or body_parser).parse, table.concat(body, "\n"))
+  parser = parser or body_parser
+  local ok, result = pcall(parser.parse, parser, table.concat(body, "\n"))
   if not ok then
     parser_errors_ptr[#parser_errors_ptr + 1] = result
     return nil

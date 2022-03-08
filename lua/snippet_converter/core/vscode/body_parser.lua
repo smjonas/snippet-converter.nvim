@@ -1,5 +1,13 @@
-local p = require("snippet_converter.core.parser_utils")
 local NodeType = require("snippet_converter.core.node_type")
+local p = require("snippet_converter.core.parser_utils")
+local VSCodeParser = setmetatable({}, { __index = p })
+
+-- Enable inheritance
+function VSCodeParser:new(o)
+  o = o or {}
+  setmetatable(o, { __index = self })
+  return o
+end
 
 -- Grammar in EBNF (see https://code.visualstudio.com/docs/editor/userdefinedsnippets#_grammar)
 -- any                ::= tabstop | placeholder | choice | variable | text
@@ -24,7 +32,7 @@ local NodeType = require("snippet_converter.core.node_type")
 -- int                ::= [0-9]+
 -- text               ::= .*
 
-local Variable = {
+VSCodeParser.Variable = {
   TM_CURRENT_LINE = "TM_CURRENT_LINE",
   TM_CURRENT_WORD = "TM_CURRENT_WORD",
   TM_LINE_INDEX = "TM_LINE_INDEX",
@@ -56,12 +64,7 @@ local Variable = {
   BLOCK_COMMENT_END = "BLOCK_COMMENT_END",
   LINE_COMMENT = "LINE_COMMENT",
 }
-local variable_tokens = vim.tbl_values(Variable)
-
-local M = {
-  Variable = Variable,
-  variable_tokens = variable_tokens,
-}
+VSCodeParser.variable_tokens = vim.tbl_values(VSCodeParser.Variable)
 
 local format_modifier_tokens = {
   "upcase",
@@ -76,60 +79,61 @@ local var_pattern = "[_a-zA-Z][_a-zA-Z0-9]*"
 local options_pattern = "[^}]*"
 local parse_int = p.pattern("[0-9]+")
 
-local parse_text = function(state)
+-- Expose to subclasses.
+function VSCodeParser:parse_text()
   -- TODO: reword
   -- '%', '$' and '\' must be escaped; '}' signals the end of the text
-  return p.parse_escaped_text(state, "[%$}\\]")
+  return self:parse_escaped_text("[%$}\\]")
 end
 
 -- TODO
-local parse_if = parse_text
-local parse_else = parse_text
+VSCodeParser.parse_if = VSCodeParser.parse_text
+VSCodeParser.parse_else = VSCodeParser.parse_text
 
-local parse_escaped_choice_text = function(state)
-  return p.parse_escaped_text(state, "[%$}\\,|]")
+function VSCodeParser:parse_escaped_choice_text()
+  return self:parse_escaped_text("[%$}\\,|]")
 end
 
 -- Parses a JavaScript regex
-local parse_regex = function(state)
-  return p.parse_escaped_text(state, "[/]")
+function VSCodeParser:parse_regex()
+  return self:parse_escaped_text("[/]")
 end
 
-local parse_format_modifier = function(state)
-  local format_modifier = p.parse_pattern(state, "[a-z]+")
+function VSCodeParser:parse_format_modifier()
+  local format_modifier = self:parse_pattern("[a-z]+")
   if not vim.tbl_contains(format_modifier_tokens, format_modifier) then
     error("parse_format_modifier: invalid modifier " .. format_modifier)
   end
   return format_modifier
 end
 
--- Starts at the second char
-local parse_format = function(state)
-  local int_only, int = p.parse_bracketed(state, parse_int)
+-- Starts at the second cha
+function VSCodeParser:parse_format()
+  local int_only, int = self:parse_bracketed(parse_int)
   if int_only then
     -- format 1 / 2
     return p.new_inner_node(NodeType.FORMAT, { int = int })
   else
     local format_modifier, _if, _else
-    if p.peek(state, ":/") then
+    if self:peek(":/") then
       -- format 3
-      format_modifier = parse_format_modifier(state)
+      format_modifier = self:parse_format_modifier()
     else
-      if p.peek(state, ":+") then
+      if self:peek(":+") then
         -- format 4
-        _if = parse_if(state)
-      elseif p.peek(state, ":?") then
+        _if = self:parse_if()
+      elseif self:peek(":?") then
         -- format 5
-        _if = parse_if(state)
-        p.expect(state, ":")
-        _else = parse_else(state)
-      elseif p.peek(state, ":") then
+        _if = self:parse_if()
+        self:expect(":")
+        _else = self:parse_else()
+      elseif self:peek(":") then
         -- format 6 / 7
-        p.peek(state, "-")
-        _else = parse_else(state)
+        self:peek("-")
+        _else = self:parse_else()
       end
     end
-    p.expect(state, "}")
+    self:expect("}")
     return p.new_inner_node(NodeType.FORMAT, {
       int = int,
       format_modifier = format_modifier,
@@ -139,135 +143,133 @@ local parse_format = function(state)
   end
 end
 
-local parse_format_or_text = function(state)
-  if p.peek(state, "$") then
-    return parse_format(state)
+function VSCodeParser:parse_format_or_text()
+  if self:peek("$") then
+    return self:parse_format()
   else
-    return p.parse_escaped_text(state, "[%$}\\]", "/")
+    return self:parse_escaped_text("[%$}\\]", "/")
   end
 end
 
-local parse_transform = function(state)
-  p.expect(state, "/")
-  local regex = parse_regex(state)
-  p.expect(state, "/")
-  local format_or_text = { parse_format_or_text(state) }
-  while not p.peek(state, "/") do
-    format_or_text[#format_or_text + 1] = parse_format_or_text(state)
+-- Expose to subclasses
+function VSCodeParser:parse_transform()
+  self:expect("/")
+  local regex = self:parse_regex()
+  self:expect("/")
+  local format_or_text = { self:parse_format_or_text() }
+  while not self:peek("/") do
+    format_or_text[#format_or_text + 1] = self:parse_format_or_text()
   end
-  local options = p.parse_pattern(state, options_pattern)
+  local options = self:parse_pattern(options_pattern)
   return p.new_inner_node(
     NodeType.TRANSFORM,
     { regex = regex, format_or_text = format_or_text, options = options }
   )
 end
 
-local parse_any
-local parse_placeholder_any = function(state)
-  local any = { parse_any(state) }
+function VSCodeParser:parse_placeholder_any()
+  local any = { self:parse_any() }
   local pos = 2
-  while state.input:sub(1, 1) ~= "}" do
-    any[pos] = parse_any(state)
+  while self.input:sub(1, 1) ~= "}" do
+    any[pos] = self:parse_any()
     pos = pos + 1
   end
-  p.expect(state, "}")
+  self:expect("}")
   return any
 end
 
-local parse_choice_text = function(state)
-  local text = { parse_escaped_choice_text(state) }
-  while p.peek(state, ",") do
-    text[#text + 1] = parse_escaped_choice_text(state)
+function VSCodeParser:parse_choice_text()
+  local text = { self:parse_escaped_choice_text() }
+  while self:peek(",") do
+    text[#text + 1] = self:parse_escaped_choice_text()
   end
-  p.expect(state, "|}")
+  self:expect("|}")
   return text
 end
 
--- Expose to subclasses.
 -- Starts at char after '$', or after '{' if got_bracket is true
-M.parse_variable = function(state, got_bracket, var_tokens)
-  local var = p.parse_pattern(state, var_pattern)
-  if not vim.tbl_contains(var_tokens or M.variable_tokens, var) then
+function VSCodeParser:parse_variable(got_bracket)
+  assert(self.input)
+  local var = self:parse_pattern(var_pattern)
+  if not vim.tbl_contains(VSCodeParser.variable_tokens, var) then
     error("parse_variable: invalid token " .. var)
   end
-  if not got_bracket or p.peek(state, "}") then
+  if not got_bracket or self:peek("}") then
     -- variable 1 / 2
     return p.new_inner_node(NodeType.VARIABLE, { var = var })
   end
-  if p.peek(state, ":") then
-    local any = parse_any(state)
+  if self:peek(":") then
+    local any = self:parse_any()
     -- variable 3
     return p.new_inner_node(NodeType.VARIABLE, { var = var, any = any })
   end
-  local transform = parse_transform(state)
-  p.expect(state, "}")
+  local transform = self:parse_transform()
+  self:expect("}")
   -- variable 4
   return p.new_inner_node(NodeType.VARIABLE, { var = var, transform = transform })
 end
 
 -- Starts after int
-local parse_tabstop_transform = function(state)
-  if p.peek(state, "}") then
+function VSCodeParser:parse_tabstop_transform()
+  if self:peek("}") then
     -- tabstop 2
     return nil
   end
-  local transform = parse_transform(state)
-  p.expect(state, "}")
+  local transform = self:parse_transform()
+  self:expect("}")
   -- tabstop 3
   return transform
 end
 
-parse_any = function(state)
-  if p.peek(state, "$") then
-    local got_bracket = p.peek(state, "{")
-    local int = p.peek_pattern(state, "^%d+")
+function VSCodeParser:parse_any()
+  if self:peek("$") then
+    local got_bracket = self:peek("{")
+    local int = self:peek_pattern("^%d+")
     if int ~= nil then
       if not got_bracket then
         -- tabstop 1
         return p.new_inner_node(NodeType.TABSTOP, { int = int })
-      elseif p.peek(state, ":") then
-        local any = parse_placeholder_any(state)
+      elseif self:peek(":") then
+        local any = self:parse_placeholder_any()
         return p.new_inner_node(NodeType.PLACEHOLDER, { int = int, any = any })
-      elseif p.peek(state, "|") then
-        local text = parse_choice_text(state)
+      elseif self:peek("|") then
+        local text = self:parse_choice_text()
         return p.new_inner_node(NodeType.CHOICE, { int = int, text = text })
       else
-        local transform = parse_tabstop_transform(state)
+        local transform = self:parse_tabstop_transform()
         -- transform may be nil
         return p.new_inner_node(NodeType.TABSTOP, { int = int, transform = transform })
       end
     else
-      return M.parse_variable(state, got_bracket)
+      return self:parse_variable(got_bracket)
     end
-    p.raise_parse_error(state, "[any node]: expected int after '${' characters")
+    p.raise_backtrack_error("(any node) expected int after '${' characters")
   else
-    state.cur_parser = "text"
-    local prev_input = state.input
-    local text = parse_text(state)
-    if state.input == prev_input then
-      p.raise_parse_error(state, "unescaped char")
+    self.cur_parser = "text"
+    local prev_input = self.input
+    local text = self:parse_text()
+    if self.input == prev_input then
+      p.raise_backtrack_error("unescaped char")
     else
       return p.new_inner_node(NodeType.TEXT, { text = text })
     end
   end
 end
 
-M.parse = function(input)
-  local state = {
-    input = input,
-    source = input,
-  }
+function VSCodeParser:parse(input)
+  self.input = input
+  self.source = input
   local ast = {}
-  while state.input ~= "" do
-    local prev_input = state.input
-    local ok, result = pcall(parse_any, state)
+  while self.input ~= "" do
+    local prev_input = self.input
+    local ok, result = pcall(VSCodeParser.parse_any, self)
     if ok then
       ast[#ast + 1] = result
     else
-      ast = p.backtrack(ast, state, prev_input)
+      ast = self:backtrack(ast, prev_input)
     end
   end
   return ast
 end
 
-return M
+return VSCodeParser

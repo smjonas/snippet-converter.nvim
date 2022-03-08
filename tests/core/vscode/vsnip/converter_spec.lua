@@ -11,11 +11,10 @@ describe("vsnip converter", function()
         },
       }
       local actual = converter.convert(snippet)
-      -- TODO: check escaping of $ in vsnip!
       local expected = [[
   "user": {
     "prefix": "username",
-    "body": "${VIM:$USER}"
+    "body": "${VIM:\\$USER}"
   }]]
       assert.are_same(expected, actual)
     end)

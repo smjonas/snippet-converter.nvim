@@ -7,23 +7,13 @@ M.new_inner_node = function(type, node)
   return node
 end
 
-M.raise_parse_error = function(state, description)
-  -- Only show the line where the error occurred.
-  local error_line = state.input:match("^[^\n]*")
-  local source_line = state.source:match("^[^\n]*")
-  if #source_line < #state.source then
-    source_line = source_line .. "..."
-  end
-  error(("%s at '%s' (input string: '%s')"):format(description, error_line, source_line), 0)
-end
-
 M.expect = function(state, chars)
   local len = chars:len()
   if not state.input or state.input:len() < len then
-    M.raise_parse_error(state, "no chars to skip, expected '" .. chars .. "'")
+    M.raise_backtrack_error("no chars to skip, expected '" .. chars .. "'")
   end
   if state.input:sub(1, len) ~= chars then
-    M.raise_parse_error(state, "expected '" .. chars .. "'")
+    M.raise_backtrack_error("expected '" .. chars .. "'")
   end
   state.input = state.input:sub(len + 1)
 end
@@ -50,7 +40,7 @@ end
 M.parse_pattern = function(state, pattern)
   local match = state.input:match("^" .. pattern)
   if not match then
-    M.raise_parse_error(state, string.format("pattern %s not matched", pattern))
+    M.raise_backtrack_error(string.format("pattern %s not matched", pattern))
   end
   M.expect(state, match)
   return match
@@ -74,7 +64,7 @@ end
 M.parse_escaped_text = function(state, escape_pattern, break_pattern)
   local input = state.input
   if input == "" then
-    M.raise_parse_error("parse_escaped_text: input is nil or empty")
+    M.raise_backtrack_error("parse_escaped_text: input is nil or empty")
   end
   local parsed_text = {}
   local i = 1
@@ -103,7 +93,13 @@ M.parse_escaped_text = function(state, escape_pattern, break_pattern)
   return table.concat(parsed_text)
 end
 
-M.backtrack = function(ast, state, prev_input, parse_any_ptr)
+M.raise_backtrack_error = function(msg)
+  -- Add a header so we can differentiate between an error that should cause the parser to
+  -- backtrack and an actual syntax error such as an unsupported feature.
+  error("BACKTRACK " .. msg, 0)
+end
+
+M.backtrack = function(state, ast, prev_input, parse_any_ptr)
   state.input = prev_input
   local chars = {}
   local ok, result

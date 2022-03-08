@@ -4,7 +4,7 @@ local NodeType = require("snippet_converter.core.node_type")
 describe("VSCode body parser", function()
   it("should parse tabstop and placeholder", function()
     local input = "local ${1:name} = function($2)"
-    local actual = parser.parse(input)
+    local actual = parser:parse(input)
     local expected = {
       { type = NodeType.TEXT, text = "local " },
       {
@@ -21,7 +21,7 @@ describe("VSCode body parser", function()
 
   it("should parse variable with transform", function()
     local input = "${TM_FILENAME/(.*)/${1:/upcase}/}"
-    local actual = parser.parse(input)
+    local actual = parser:parse(input)
     local expected = {
       {
         var = "TM_FILENAME",
@@ -44,7 +44,7 @@ describe("VSCode body parser", function()
     local expected = {
       { int = "0", text = { "🠂", "⇨" }, type = NodeType.CHOICE },
     }
-    assert.are_same(expected, parser.parse(input))
+    assert.are_same(expected, parser:parse(input))
   end)
 
   it("should handle escaped chars in choice element", function()
@@ -52,13 +52,13 @@ describe("VSCode body parser", function()
     local expected = {
       { int = "0", text = { "$", "}", [[\]], ",", "|" }, type = NodeType.CHOICE },
     }
-    assert.are_same(expected, parser.parse(input))
+    assert.are_same(expected, parser:parse(input))
   end)
 
   it("should handle escaped chars in text element", function()
     local input = [[\\\$\}]]
     local expected = { { type = NodeType.TEXT, text = [[\$}]] } }
-    assert.are_same(expected, parser.parse(input))
+    assert.are_same(expected, parser:parse(input))
   end)
 
   it("should parse unambiguous unescaped chars", function()
@@ -70,7 +70,7 @@ describe("VSCode body parser", function()
         type = NodeType.TEXT,
       },
     }
-    assert.are_same(expected, parser.parse(input))
+    assert.are_same(expected, parser:parse(input))
   end)
 
   it("should parse incomplete transform", function()
@@ -78,6 +78,6 @@ describe("VSCode body parser", function()
     local expected = {
       { text = "${1/abc/xyz}", type = NodeType.TEXT },
     }
-    assert.are_same(expected, parser.parse(input))
+    assert.are_same(expected, parser:parse(input))
   end)
 end)
