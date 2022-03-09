@@ -40,18 +40,17 @@ local convert_variable = setmetatable({
 })
 
 M.visit_node = function(custom_node_visitor)
-  assert(custom_node_visitor)
+  -- assert(custom_node_visitor)
   local default
   default = setmetatable({
     [NodeType.TABSTOP] = function(node)
       if node.transform then
-        -- This should be handled inside the format-specific node visitor
-        error("could not convert transform node inside tabstop")
+        -- This is handled by the format-specific node visitor
+        return ("${%s%s}"):format(node.int, custom_node_visitor[NodeType.TRANSFORM](node.transform))
       end
       return "$" .. node.int
     end,
     [NodeType.PLACEHOLDER] = function(node)
-      assert(custom_node_visitor)
       return string.format(
         "${%s:%s}",
         node.int,

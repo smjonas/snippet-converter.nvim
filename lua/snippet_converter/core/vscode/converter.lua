@@ -64,7 +64,7 @@ local list_to_json_string = function(list)
   if not list_items[2] then
     return ("%s"):format(list_items[1])
   end
-  -- Nicely format lines
+  -- Nicely format the array
   return ("[\n      %s\n    ]"):format(table.concat(list_items, ",\n      "))
 end
 

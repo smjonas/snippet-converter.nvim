@@ -93,6 +93,28 @@ M.parse_escaped_text = function(state, escape_pattern, break_pattern)
   return table.concat(parsed_text)
 end
 
+M.parse_till_matching_closing_brace = function(state)
+  local i = 1
+  local num_opening_braces = 1
+  local skipped_chars = {}
+  local char = state.input:sub(1, 1)
+  while char ~= "" do
+    if char == "{" then
+      num_opening_braces = num_opening_braces + 1
+    elseif char == "}" then
+      num_opening_braces = num_opening_braces - 1
+      if num_opening_braces == 0 then
+        break
+      end
+    end
+    skipped_chars[#skipped_chars + 1] = char
+    i = i + 1
+    char = state.input:sub(i, i)
+  end
+  state.input = state.input:sub(i + 1)
+  return table.concat(skipped_chars)
+end
+
 M.raise_backtrack_error = function(msg)
   -- Add a header so we can differentiate between an error that should cause the parser to
   -- backtrack and an actual syntax error such as an unsupported feature.

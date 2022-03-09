@@ -64,6 +64,31 @@ describe("UltiSnips body parser", function()
     assert.are_same(expected, parser.parse(input))
   end)
 
+  it("should parse placeholder with curly braces", function()
+    local input = [[${2:{}}abc]]
+    local expected = {
+      {
+        type = NodeType.PLACEHOLDER,
+        int = "2",
+        any = { { type = NodeType.TEXT, text = "{}" } },
+      },
+      { type = NodeType.TEXT, text = "abc" },
+    }
+    assert.are_same(expected, parser.parse(input))
+  end)
+
+  it("should parse incomplete placeholder as placeholder with empty text node", function()
+    local input = [[${2:]]
+    local expected = {
+      {
+        type = NodeType.PLACEHOLDER,
+        int = "2",
+        any = { type = NodeType.TEXT, text = "" },
+      },
+    }
+    assert.are_same(expected, parser.parse(input))
+  end)
+
   it("should parse visual placeholder with default text", function()
     local input = [[${VISUAL:default}]]
     local expected = { { text = "default", type = NodeType.VISUAL_PLACEHOLDER } }

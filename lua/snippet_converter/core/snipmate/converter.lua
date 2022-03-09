@@ -1,16 +1,40 @@
 local NodeType = require("snippet_converter.core.node_type")
 local base_converter = require("snippet_converter.core.converter")
+local err = require("snippet_converter.utils.error")
 local io = require("snippet_converter.utils.io")
 local export_utils = require("snippet_converter.utils.export_utils")
 
 local M = {}
 
+local node_visitor = {
+  [NodeType.TRANSFORM] = function(node)
+    return ("/%s/%s/%s"):format(node.regex, node.replacement, node.options)
+  end,
+  -- TODO: support Filename() inside ``
+  [NodeType.VIMSCRIPT_CODE] = function(node)
+    return ("`%s`"):format(node.code)
+  end,
+  [NodeType.TRANSFORM] = function(node)
+    return ("/%s/%s/%s"):format(node.regex, node.replacement, node.options)
+  end,
+  [NodeType.TEXT] = function(node)
+    -- Escape ambiguous chars and backslashes
+    return node.text:gsub([[\]], [[\\]]):gsub("%$", "\\%$"):gsub("`", "\\`")
+  end,
+}
+
+M.visit_node = setmetatable(node_visitor, { __index = base_converter.visit_node(node_visitor) })
+
 M.convert = function(snippet, _)
+  if snippet.options and snippet.options:match("r") then
+    err.raise_converter_error("regex trigger")
+  end
   local description = ""
   if snippet.description then
-    description = " " .. snippet.description
+    -- Remove trailing whitespace
+    description = " " .. snippet.description:gsub("%s*$", "")
   end
-  local body = base_converter.convert_ast(snippet.body, base_converter.visit_node(nil))
+  local body = base_converter.convert_ast(snippet.body, M.visit_node)
   -- Prepend a tab to every non-'\n' line
   body = body:gsub("[^\n]+", "\t%1")
   return string.format("snippet %s%s\n%s", snippet.trigger, description, body)
@@ -28,7 +52,7 @@ M.export = function(converted_snippets, filetype, output_path)
   local snippet_lines = export_utils.snippet_strings_to_lines(
     converted_snippets,
     "\n",
-    { HEADER_STRING },
+    { HEADER_STRING, "" },
     nil
   )
   output_path = export_utils.get_output_file_path(output_path, filetype, "snippets")

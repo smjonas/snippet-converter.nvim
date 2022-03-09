@@ -22,6 +22,8 @@ local NodeType = require("snippet_converter.core.node_type")
 -- int                ::= [0-9]+
 -- text               ::= .*
 
+local parser = {}
+
 local options_pattern = "[^}]*"
 local parse_text = function(state)
   -- '`', '{', '$' and '\' must be escaped; '}' signals the end of the text
@@ -55,14 +57,11 @@ end
 
 local parse_any
 local parse_placeholder_any = function(state)
-  local any = { parse_any(state) }
-  local pos = 2
-  while state.input:sub(1, 1) ~= "}" do
-    any[pos] = parse_any(state)
-    pos = pos + 1
+  local inbetween = p.parse_till_matching_closing_brace(state)
+  if inbetween == "" then
+    return p.new_inner_node(NodeType.TEXT, { text = "" })
   end
-  p.expect(state, "}")
-  return any
+  return parser.parse(inbetween)
 end
 
 local parse_choice_text = function(state)
@@ -147,8 +146,6 @@ parse_any = function(state)
     end
   end
 end
-
-local parser = {}
 
 parser.parse = function(input)
   local state = {

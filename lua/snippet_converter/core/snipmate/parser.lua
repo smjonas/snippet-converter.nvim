@@ -28,6 +28,9 @@ M.parse = function(path, parsed_snippets_ptr, parser_errors_ptr)
   local prev_count = #parsed_snippets_ptr
   local pos = prev_count + 1
 
+  -- TODO: handle `Filename()` inside vimscript code (cannot be converted because the
+  -- function is non-standard)
+  -- TODO: preserve comments
   for line_nr, line in ipairs(lines) do
     local header = M.get_header(line)
     if header then

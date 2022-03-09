@@ -78,7 +78,6 @@ local parse_tabstop_transform = function(state)
 end
 
 parse_any = function(state)
-  print("CALLED WITH", vim.inspect(state))
   if p.peek(state, "$") then
     local got_bracket = p.peek(state, "{")
     local int = p.peek_pattern(state, "^%d+")

@@ -6,12 +6,6 @@ local io = require("snippet_converter.utils.io")
 local export_utils = require("snippet_converter.utils.export_utils")
 
 local node_visitor = {
-  [NodeType.TABSTOP] = function(node)
-    if node.transform then
-      return ("${%s%s}"):format(node.int, M.visit_node[NodeType.TRANSFORM](node.transform))
-    end
-    return "$" .. node.int
-  end,
   [NodeType.TRANSFORM] = function(node)
     return ("/%s/%s/%s"):format(node.regex, node.replacement, node.options)
   end,
@@ -25,9 +19,9 @@ local node_visitor = {
     return ("`!v %s`"):format(node.code)
   end,
   [NodeType.TEXT] = function(node)
-    -- Double backslashes need to be be escaped, otherwise they will be parsed as a single
-    -- escaped backslash by UltiSnips
-    return node.text:gsub([[\\]], [[\\\\]])
+    -- Escape ambiguous chars, double backslashes need to be be escaped,
+    -- otherwise they will be parsed as a single escaped backslash by UltiSnips
+    return node.text:gsub("%$", "\\%$"):gsub("`", "\\`"):gsub([[\\]], [[\\\\]])
   end,
 }
 

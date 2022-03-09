@@ -1,5 +1,5 @@
 describe("Scenario", function()
-  local expected_output_ultisnips, expected_output_vscode, expected_output_vscode_sorted
+  local expected_output_ultisnips, expected_output_snipmate, expected_output_vscode, expected_output_vscode_sorted
   setup(function()
     -- Mock vim.schedule
     vim.schedule = function(fn)
@@ -17,10 +17,50 @@ describe("Scenario", function()
     expected_output_ultisnips = vim.fn.readfile(
       "tests/scenarios/expected_output_ultisnips.snippets"
     )
+    expected_output_snipmate = vim.fn.readfile(
+      "tests/scenarios/expected_output_snipmate.snippets"
+    )
     expected_output_vscode = vim.fn.readfile("tests/scenarios/expected_output_vscode.json")
     expected_output_vscode_sorted = vim.fn.readfile(
       "tests/scenarios/expected_output_vscode_sorted.json"
     )
+  end)
+
+  -- Works
+  it("#yay UltiSnips to UltiSnips", function()
+    local snippet_converter = require("snippet_converter")
+    local template = {
+      sources = {
+        ultisnips = {
+          "tests/scenarios/ultisnips.snippets",
+        },
+      },
+      output = {
+        ultisnips = { "tests/scenarios/output-ultisnips.snippets" },
+      },
+    }
+    snippet_converter.setup { templates = { template } }
+    local actual_output = vim.fn.readfile("tests/scenarios/output-ultisnips.snippets")
+    snippet_converter.convert_snippets()
+    assert.are_same(expected_output_ultisnips, actual_output)
+  end)
+
+  it("#kek UltiSnips to SnipMate", function()
+    local snippet_converter = require("snippet_converter")
+    local template = {
+      sources = {
+        ultisnips = {
+          "tests/scenarios/ultisnips.snippets",
+        },
+      },
+      output = {
+        snipmate = { "tests/scenarios/output-snipmate.snippets" },
+      },
+    }
+    snippet_converter.setup { templates = { template } }
+    local actual_output = vim.fn.readfile("tests/scenarios/output-snipmate.snippets")
+    snippet_converter.convert_snippets()
+    assert.are_same(expected_output_snipmate, actual_output)
   end)
 
   -- Works
@@ -42,26 +82,7 @@ describe("Scenario", function()
     assert.are_same(expected_output_vscode, actual_output)
   end)
 
-  -- Works
-  it("UltiSnips to UltiSnips", function()
-    local snippet_converter = require("snippet_converter")
-    local template = {
-      sources = {
-        ultisnips = {
-          "tests/scenarios/ultisnips.snippets",
-        },
-      },
-      output = {
-        ultisnips = { "tests/scenarios/output.snippets" },
-      },
-    }
-    snippet_converter.setup { templates = { template } }
-    local actual_output = vim.fn.readfile("tests/scenarios/output.snippets")
-    snippet_converter.convert_snippets()
-    assert.are_same(expected_output_ultisnips, actual_output)
-  end)
-
-  it("#xxx VSCode to VSCode", function()
+  it("VSCode to VSCode", function()
     local snippet_converter = require("snippet_converter")
     local template = {
       sources = {
