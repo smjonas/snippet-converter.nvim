@@ -64,7 +64,8 @@ local list_to_json_string = function(list)
   if not list_items[2] then
     return ("%s"):format(list_items[1])
   end
-  return ("[%s]"):format(table.concat(list_items, ", "))
+  -- Nicely format lines
+  return ("[\n      %s\n    ]"):format(table.concat(list_items, ",\n      "))
 end
 
 M.convert = function(snippet, _, visit_node)
@@ -79,13 +80,18 @@ M.convert = function(snippet, _, visit_node)
   if snippet.description then
     description_string = ('\n    "description": %s,'):format(escape_chars(snippet.description))
   end
+  local scope = snippet.scope
+      and ('\n    "scope": %s,'):format(
+        escape_chars(table.concat(snippet.scope, ","))
+      )
+    or ""
   local trigger = escape_chars(snippet.trigger)
   local name = (snippet.name and escape_chars(snippet.name)) or trigger
   return ([[
   %s: {
-    "prefix": %s,%s
+    "prefix": %s,%s%s
     "body": %s
-  }]]):format(name, trigger, description_string or "", body)
+  }]]):format(name, trigger, description_string or "", scope, body)
 end
 
 -- Takes a list of converted snippets for a particular filetype and exports them to a JSON

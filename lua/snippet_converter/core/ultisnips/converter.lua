@@ -35,7 +35,7 @@ M.visit_node = setmetatable(node_visitor, {
   __index = base_converter.visit_node(node_visitor),
 })
 
-M.convert = function(snippet, source_format)
+M.convert = function(snippet, _)
   local trigger = snippet.trigger
   -- Literal " in trigger
   if trigger:match([["]]) then

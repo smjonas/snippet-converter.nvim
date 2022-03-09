@@ -2,12 +2,42 @@
   "template": {
     "prefix": "template",
     "description": "Basic template",
-    "body": ["\\documentclass[a4paper]{article}", "", "\\usepackage[utf8]{inputenc}", "\\usepackage[T1]{fontenc}", "\\usepackage{textcomp}", "\\usepackage[dutch]{babel}", "\\usepackage{amsmath, amssymb}", "", "", "% figure support", "\\usepackage{import}", "\\usepackage{xifthen}", "\\pdfminorversion=7", "\\usepackage{pdfpages}", "\\usepackage{transparent}", "\\newcommand{\\incfig}[1]{%", "\t\\def\\svgwidth{\\columnwidth}", "\t\\import{./figures/}{#1.pdf_tex}", "}", "", "\\pdfsuppresswarningpagegroup=1", "", "\\begin{document}", "\t$0", "\\end{document}"]
+    "body": [
+      "\\documentclass[a4paper]{article}",
+      "",
+      "\\usepackage[utf8]{inputenc}",
+      "\\usepackage[T1]{fontenc}",
+      "\\usepackage{textcomp}",
+      "\\usepackage[dutch]{babel}",
+      "\\usepackage{amsmath, amssymb}",
+      "",
+      "",
+      "% figure support",
+      "\\usepackage{import}",
+      "\\usepackage{xifthen}",
+      "\\pdfminorversion=7",
+      "\\usepackage{pdfpages}",
+      "\\usepackage{transparent}",
+      "\\newcommand{\\incfig}[1]{%",
+      "\t\\def\\svgwidth{\\columnwidth}",
+      "\t\\import{./figures/}{#1.pdf_tex}",
+      "}",
+      "",
+      "\\pdfsuppresswarningpagegroup=1",
+      "",
+      "\\begin{document}",
+      "\t$0",
+      "\\end{document}"
+    ]
   },
   "beg": {
     "prefix": "beg",
     "description": "begin{} / end{}",
-    "body": ["\\begin{$1}", "\t$0", "\\end{$1}"]
+    "body": [
+      "\\begin{$1}",
+      "\t$0",
+      "\\end{$1}"
+    ]
   },
   "...": {
     "prefix": "...",
@@ -17,27 +47,55 @@
   "table": {
     "prefix": "table",
     "description": "Table environment",
-    "body": ["\\begin{table}[${1:htpb}]", "\t\\centering", "\t\\caption{${2:caption}}", "\t\\label{tab:${3:label}}", "\t\\begin{tabular}{${5:c}}", "\t$0${5/((?<=.)c|l|r)|./(?1: & )/g}", "\t\\end{tabular}", "\\end{table}"]
+    "body": [
+      "\\begin{table}[${1:htpb}]",
+      "\t\\centering",
+      "\t\\caption{${2:caption}}",
+      "\t\\label{tab:${3:label}}",
+      "\t\\begin{tabular}{${5:c}}",
+      "\t$0${5/((?<=.)c|l|r)|./(?1: & )/g}",
+      "\t\\end{tabular}",
+      "\\end{table}"
+    ]
   },
   "fig": {
     "prefix": "fig",
     "description": "Figure environment",
-    "body": ["\\begin{figure}[${1:htpb}]", "\t\\centering", "\t${2:\\includegraphics[width=0.8\\textwidth]{$3}}", "\t\\caption{${4:$3}}", "\t\\label{fig:${5:${3/\\W+/-/g}}}", "\\end{figure}"]
+    "body": [
+      "\\begin{figure}[${1:htpb}]",
+      "\t\\centering",
+      "\t${2:\\includegraphics[width=0.8\\textwidth]{$3}}",
+      "\t\\caption{${4:$3}}",
+      "\t\\label{fig:${5:${3/\\W+/-/g}}}",
+      "\\end{figure}"
+    ]
   },
   "enum": {
     "prefix": "enum",
     "description": "Enumerate",
-    "body": ["\\begin{enumerate}", "\t\\item $0", "\\end{enumerate}"]
+    "body": [
+      "\\begin{enumerate}",
+      "\t\\item $0",
+      "\\end{enumerate}"
+    ]
   },
   "item": {
     "prefix": "item",
     "description": "Itemize",
-    "body": ["\\begin{itemize}", "\t\\item $0", "\\end{itemize}"]
+    "body": [
+      "\\begin{itemize}",
+      "\t\\item $0",
+      "\\end{itemize}"
+    ]
   },
   "desc": {
     "prefix": "desc",
     "description": "Description",
-    "body": ["\\begin{description}", "\t\\item[$1] $0", "\\end{description}"]
+    "body": [
+      "\\begin{description}",
+      "\t\\item[$1] $0",
+      "\\end{description}"
+    ]
   },
   "pac": {
     "prefix": "pac",
@@ -237,12 +295,30 @@
   "plot": {
     "prefix": "plot",
     "description": "Plot",
-    "body": ["\\begin{figure}[$1]", "\t\\centering", "\t\\begin{tikzpicture}", "\t\t\\begin{axis}[", "\t\t\txmin= ${2:-10}, xmax= ${3:10},", "\t\t\tymin= ${4:-10}, ymax = ${5:10},", "\t\t\taxis lines = middle,", "\t\t]", "\t\t\t\\addplot[domain=$2:$3, samples=${6:100}]{$7};", "\t\t\\end{axis}", "\t\\end{tikzpicture}", "\t\\caption{$8}", "\t\\label{${9:$8}}", "\\end{figure}"]
+    "body": [
+      "\\begin{figure}[$1]",
+      "\t\\centering",
+      "\t\\begin{tikzpicture}",
+      "\t\t\\begin{axis}[",
+      "\t\t\txmin= ${2:-10}, xmax= ${3:10},",
+      "\t\t\tymin= ${4:-10}, ymax = ${5:10},",
+      "\t\t\taxis lines = middle,",
+      "\t\t]",
+      "\t\t\t\\addplot[domain=$2:$3, samples=${6:100}]{$7};",
+      "\t\t\\end{axis}",
+      "\t\\end{tikzpicture}",
+      "\t\\caption{$8}",
+      "\t\\label{${9:$8}}",
+      "\\end{figure}"
+    ]
   },
   "nn": {
     "prefix": "nn",
     "description": "Tikz node",
-    "body": ["\\node[$5] (${1/[^0-9a-zA-Z]//g}$2) ${3:at (${4:0,0}) }{$$1$};", "$0"]
+    "body": [
+      "\\node[$5] (${1/[^0-9a-zA-Z]//g}$2) ${3:at (${4:0,0}) }{$$1$};",
+      "$0"
+    ]
   },
   "mcal": {
     "prefix": "mcal",
@@ -407,7 +483,11 @@
   "case": {
     "prefix": "case",
     "description": "cases",
-    "body": ["\\begin{cases}", "\t$1", "\\end{cases}"]
+    "body": [
+      "\\begin{cases}",
+      "\t$1",
+      "\\end{cases}"
+    ]
   },
   "SI": {
     "prefix": "SI",
@@ -417,7 +497,12 @@
   "bigfun": {
     "prefix": "bigfun",
     "description": "Big function",
-    "body": ["\\begin{align*}", "\t$1: $2 &\\longrightarrow $3 \\\\", "\t$4 &\\longmapsto $1($4) = $0", ".\\end{align*}"]
+    "body": [
+      "\\begin{align*}",
+      "\t$1: $2 &\\longrightarrow $3 \\\\",
+      "\t$4 &\\longmapsto $1($4) = $0",
+      ".\\end{align*}"
+    ]
   },
   "cvec": {
     "prefix": "cvec",

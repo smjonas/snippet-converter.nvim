@@ -23,7 +23,8 @@ describe("Scenario", function()
     )
   end)
 
-  it("#lel UltiSnips to VSCode", function()
+  -- Works
+  it("UltiSnips to VSCode", function()
     local snippet_converter = require("snippet_converter")
     local template = {
       sources = {
@@ -41,6 +42,7 @@ describe("Scenario", function()
     assert.are_same(expected_output_vscode, actual_output)
   end)
 
+  -- Works
   it("UltiSnips to UltiSnips", function()
     local snippet_converter = require("snippet_converter")
     local template = {
@@ -73,7 +75,10 @@ describe("Scenario", function()
     }
     snippet_converter.setup { templates = { template } }
     local actual_output = vim.fn.readfile("tests/scenarios/output.json")
-    snippet_converter.convert_snippets()
+
+    local model = snippet_converter.convert_snippets()
+    print(vim.inspect(model))
+    assert(false)
     assert.are_same(expected_output_vscode_sorted, actual_output)
     -- TODO: make tests independent of each other!
   end)

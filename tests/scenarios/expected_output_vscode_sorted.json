@@ -84,76 +84,6 @@
     "description": "forall",
     "body": "\\forall"
   },
-  "DD": {
-    "prefix": "DD",
-    "description": "D",
-    "body": "\\mathbb{D}"
-  },
-  "EE": {
-    "prefix": "EE",
-    "description": "geq",
-    "body": "\\exists"
-  },
-  "HH": {
-    "prefix": "HH",
-    "description": "H",
-    "body": "\\mathbb{H}"
-  },
-  "NN": {
-    "prefix": "NN",
-    "description": "n",
-    "body": "\\N"
-  },
-  "Nn": {
-    "prefix": "Nn",
-    "description": "cap",
-    "body": "\\cap"
-  },
-  "OO": {
-    "prefix": "OO",
-    "description": "emptyset",
-    "body": "\\O"
-  },
-  "QQ": {
-    "prefix": "QQ",
-    "description": "Q",
-    "body": "\\Q"
-  },
-  "R0+": {
-    "prefix": "R0+",
-    "description": "R0+",
-    "body": "\\R_0^+"
-  },
-  "RR": {
-    "prefix": "RR",
-    "description": "real",
-    "body": "\\R"
-  },
-  "SI": {
-    "prefix": "SI",
-    "description": "SI",
-    "body": "\\SI{$1}{$2}"
-  },
-  "UU": {
-    "prefix": "UU",
-    "description": "cup",
-    "body": "\\cup"
-  },
-  "ZZ": {
-    "prefix": "ZZ",
-    "description": "Z",
-    "body": "\\Z"
-  },
-  "\\\\\\": {
-    "prefix": "\\\\\\",
-    "description": "setminus",
-    "body": "\\setminus"
-  },
-  "__": {
-    "prefix": "__",
-    "description": "subscript",
-    "body": "_{$1}$0"
-  },
   "beg": {
     "prefix": "beg",
     "description": "begin{} / end{}",
@@ -217,6 +147,11 @@
     "description": "column vector",
     "body": "\\begin{pmatrix} ${1:x}_${2:1}\\\\ \\vdots\\\\ $1_${2:n} \\end{pmatrix}"
   },
+  "DD": {
+    "prefix": "DD",
+    "description": "D",
+    "body": "\\mathbb{D}"
+  },
   "desc": {
     "prefix": "desc",
     "description": "Description",
@@ -225,6 +160,11 @@
       "\t\\item[$1] $0",
       "\\end{description}"
     ]
+  },
+  "EE": {
+    "prefix": "EE",
+    "description": "geq",
+    "body": "\\exists"
   },
   "enum": {
     "prefix": "enum",
@@ -241,7 +181,7 @@
     "body": [
       "\\begin{figure}[${1:htpb}]",
       "\t\\centering",
-      "\t${2:\\includegraphics[width=0.8\textwidth]{$3}}",
+      "\t${2:\\includegraphics[width=0.8\\textwidth]{$3}}",
       "\t\\caption{${4:$3}}",
       "\t\\label{fig:${5:${3/\\W+/-/g}}}",
       "\\end{figure}"
@@ -251,6 +191,11 @@
     "prefix": "floor",
     "description": "floor",
     "body": "\\left\\lfloor $1 \\right\\rfloor$0"
+  },
+  "HH": {
+    "prefix": "HH",
+    "description": "H",
+    "body": "\\mathbb{H}"
   },
   "iff": {
     "prefix": "iff",
@@ -284,12 +229,12 @@
   "lim": {
     "prefix": "lim",
     "description": "limit",
-    "body": "\\lim_{${1:n} \to ${2:\\infty}}"
+    "body": "\\lim_{${1:n} \\to ${2:\\infty}}"
   },
   "limsup": {
     "prefix": "limsup",
     "description": "limsup",
-    "body": "\\limsup_{${1:n} \to ${2:\\infty}}"
+    "body": "\\limsup_{${1:n} \\to ${2:\\infty}}"
   },
   "lll": {
     "prefix": "lll",
@@ -319,6 +264,16 @@
       "$0"
     ]
   },
+  "Nn": {
+    "prefix": "Nn",
+    "description": "cap",
+    "body": "\\cap"
+  },
+  "NN": {
+    "prefix": "NN",
+    "description": "n",
+    "body": "\\N"
+  },
   "nnn": {
     "prefix": "nnn",
     "description": "bigcap",
@@ -333,6 +288,11 @@
     "prefix": "notin",
     "description": "not in ",
     "body": "\\not\\in"
+  },
+  "OO": {
+    "prefix": "OO",
+    "description": "emptyset",
+    "body": "\\O"
   },
   "ooo": {
     "prefix": "ooo",
@@ -523,5 +483,45 @@
     "prefix": "~~",
     "description": "~",
     "body": "\\sim"
-  }
+  },
+  "QQ": {
+    "prefix": "QQ",
+    "description": "Q",
+    "body": "\\Q"
+  },
+  "R0+": {
+    "prefix": "R0+",
+    "description": "R0+",
+    "body": "\\R_0^+"
+  },
+  "RR": {
+    "prefix": "RR",
+    "description": "real",
+    "body": "\\R"
+  },
+  "SI": {
+    "prefix": "SI",
+    "description": "SI",
+    "body": "\\SI{$1}{$2}"
+  },
+  "UU": {
+    "prefix": "UU",
+    "description": "cup",
+    "body": "\\cup"
+  },
+  "ZZ": {
+    "prefix": "ZZ",
+    "description": "Z",
+    "body": "\\Z"
+  },
+  "\\\\\\": {
+    "prefix": "\\\\\\",
+    "description": "setminus",
+    "body": "\\setminus"
+  },
+  "__": {
+    "prefix": "__",
+    "description": "subscript",
+    "body": "_{$1}$0"
+  },
 }

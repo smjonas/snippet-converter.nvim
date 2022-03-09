@@ -56,8 +56,21 @@ describe("VSCode body parser", function()
   end)
 
   it("should handle escaped chars in text element", function()
-    local input = [[\\\$\}]]
-    local expected = { { type = NodeType.TEXT, text = [[\$}]] } }
+    local input = [[\$\}]]
+    local expected = { { type = NodeType.TEXT, text = [[$}]] } }
+    assert.are_same(expected, parser:parse(input))
+  end)
+
+  it("should parse escaped backslashes", function()
+    local input = [[\\]]
+    local expected = {
+      {
+        -- In contrast to the UltiSnips parser, "\\" is a double backslash because
+        -- escaping of backslashes has already been handled while reading the JSON file.
+        text = [[\\]],
+        type = NodeType.TEXT,
+      },
+    }
     assert.are_same(expected, parser:parse(input))
   end)
 

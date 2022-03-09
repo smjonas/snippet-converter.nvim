@@ -7,6 +7,7 @@ describe("VSCode converter", function()
       local snippet = {
         trigger = "fn",
         description = "function",
+        scope = { "javascript", "typescript" },
         -- "local ${1:name} = function($2)"
         body = {
           { type = NodeType.TEXT, text = "local " },
@@ -25,6 +26,7 @@ describe("VSCode converter", function()
   "fn": {
     "prefix": "fn",
     "description": "function",
+    "scope": "javascript,typescript",
     "body": "local ${1:name} = function($2)"
   }]]
       assert.are_same(expected, actual)
@@ -44,7 +46,11 @@ describe("VSCode converter", function()
       local expected = [[
   "test": {
     "prefix": "test",
-    "body": ["\\bdfminorversion=7", "\t\\usepackage{\\\\pdfpages}", "\\usepackage{transparent}"]
+    "body": [
+      "\\bdfminorversion=7",
+      "\t\\usepackage{\\\\pdfpages}",
+      "\\usepackage{transparent}"
+    ]
   }]]
       assert.are_same(expected, converter.convert(snippet))
     end)
@@ -89,7 +95,10 @@ describe("VSCode converter", function()
       local expected = [[
   "fn": {
     "prefix": "fn",
-    "body": ["local ${1:name} = function($2)", "newline"]
+    "body": [
+      "local ${1:name} = function($2)",
+      "newline"
+    ]
   }]]
       assert.are_same(expected, actual)
     end)

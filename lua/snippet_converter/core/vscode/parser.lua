@@ -48,6 +48,8 @@ end
 local create_snippet = function(snippet_name, trigger, snippet_info, parser, parser_errors_ptr)
   local body = type(snippet_info.body) == "string" and { snippet_info.body } or snippet_info.body
   parser = parser or body_parser
+  --TODO: remove assertion
+  assert(parser.parse)
   local ok, result = pcall(parser.parse, parser, table.concat(body, "\n"))
   if not ok then
     parser_errors_ptr[#parser_errors_ptr + 1] = result
@@ -62,13 +64,14 @@ local create_snippet = function(snippet_name, trigger, snippet_info, parser, par
   }
 end
 
-M.parse = function(path, parsed_snippets_ptr, parser_errors_ptr, parser)
+M.parse = function(path, parsed_snippets_ptr, parser_errors_ptr, _, parser)
   local snippet_data = M.get_lines(path)
   if vim.tbl_isempty(snippet_data) then
     return #parsed_snippets_ptr
   end
   local prev_count = #parsed_snippets_ptr
   local pos = prev_count + 1
+  -- TODO: what happens with duplicate names?
   for snippet_name, snippet_info in pairs(snippet_data) do
     if verify_snippet_format(snippet_name, snippet_info, parser_errors_ptr) then
       -- The snippet has multiple prefixes.
