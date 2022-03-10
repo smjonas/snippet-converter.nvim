@@ -22,6 +22,7 @@ M.new = function()
 end
 
 function M:skip_task(template, source_format, reason)
+  self.templates[template.name] = template
   make_default_table(self.skipped_tasks, template.name)[snippet_engines[source_format].label] =
     reason
 end
@@ -33,9 +34,8 @@ end
 
 -- template.name must be non nil
 function M:submit_task(template, source_format, num_snippets, num_input_files, parser_errors)
-  -- TODO: remove
-  assert(template.name)
-  self.templates[#self.templates + 1] = template
+  -- TODO: rename template name to unique ID
+  self.templates[template.name] = template
   make_default_table(self.tasks, template.name)[snippet_engines[source_format].label] = {
     num_snippets = num_snippets,
     num_input_files = num_input_files,

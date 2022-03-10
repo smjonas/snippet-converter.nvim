@@ -140,18 +140,6 @@ local convert_snippets = function(model, snippets, context, template)
           -- Remove skipped snippets
           tbl.compact(_snippets, skip_snippet)
 
-          -- local offset = 0
-          -- for i = 1, #_snippets do
-          --   if skip_snippet[i] then
-          --     local gap_size = 1
-          --     while skip_snippet[i + gap_size] do
-          --       gap_size = gap_size + 1
-          --     end
-          --     offset = offset + gap_size
-          --   end
-          --   _snippets[i] = not skip_snippet[i + offset] and _snippets[i + offset]
-          -- end
-
           sort_snippets(source_format, template, _snippets)
 
           for _, snippet in ipairs(_snippets) do

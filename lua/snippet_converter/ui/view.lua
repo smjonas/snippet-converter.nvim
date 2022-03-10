@@ -1,7 +1,6 @@
 local display = require("snippet_converter.ui.display")
 local Node = require("snippet_converter.ui.node")
 local Model = require("snippet_converter.ui.model")
-local make_default_table = require("snippet_converter.utils.table").make_default_table
 
 local View = {}
 
@@ -38,12 +37,11 @@ end
 function View:destroy()
   self._window.close()
   self._window = nil
-  self.state = nil
 end
 
 function View:toggle_help()
   self.current_scene = self.current_scene == Scene.Main and Scene.Help or Scene.Main
-  self:draw(self.model, true)
+  self:draw(self.model, false)
 end
 
 function View:get_node_icon(is_expanded)
@@ -52,6 +50,10 @@ function View:get_node_icon(is_expanded)
   else
     return is_expanded and " \\ " or " > "
   end
+end
+
+function View:get_arrow_icon()
+  return self.settings.ui.use_nerdfont_icons and "→" or "->"
 end
 
 function View:get_status_node_icon(status)
@@ -132,33 +134,35 @@ function View:create_failure_nodes(failures)
   )
 end
 
-local header_nodes = {}
 function View:get_header_nodes(scene, is_converting)
-  if not header_nodes[scene] then
-    local header_title = Node.HlTextNode("snippet-converter.nvim", "Title", Node.Style.Centered())
-    local header_url = Node.HlTextNode(
-      "https://github.com/smjonas/snippet-converter.nvim",
-      "Comment",
-      Node.Style.Centered()
-    )
-    local header_text = scene == Scene.Main and " to view keyboard shortcuts" or " to go back"
-    local header_toggle_keymaps = Node.MultiHlTextNode(
-      { "Press ", "?", header_text },
-      { "Comment", "Title", "Comment" },
-      Node.Style.Centered()
-    )
-    header_nodes[scene] = {
-      header_title,
-      header_url,
-      header_toggle_keymaps,
-      Node.NewLine(),
-    }
+  local header_nodes = {}
+  local header_title = Node.HlTextNode("snippet-converter.nvim", "Title", Node.Style.Centered())
+  local header_url = Node.HlTextNode(
+    "https://github.com/smjonas/snippet-converter.nvim",
+    "Comment",
+    Node.Style.Centered()
+  )
+  local header_text = scene == Scene.Main and " to view keyboard shortcuts" or " to go back"
+  local header_toggle_keymaps = Node.MultiHlTextNode(
+    { "Press ", "?", header_text },
+    { "Comment", "Title", "Comment" },
+    Node.Style.Centered()
+  )
+  header_nodes[scene] = {
+    header_title,
+    header_url,
+    header_toggle_keymaps,
+    Node.NewLine(),
+  }
+  if is_converting then
+    header_nodes[scene][5] = Node.HlTextNode("  Converting snippets...", "")
+  elseif header_nodes[scene][5] then
+    table.remove(header_nodes[scene])
   end
-  header_nodes[scene][5] = is_converting and Node.HlTextNode("  Converting snippets...", "") or nil
   return header_nodes[scene]
 end
 
-function View:create_task_node(task, template, source_format)
+function View:create_task_node(template, task, source_format)
   local model = self.model
   local texts = {
     self:get_node_icon(true),
@@ -188,7 +192,7 @@ function View:create_task_node(task, template, source_format)
     local success_texts = {
       status_icon.icon,
       source_format,
-      " -> ",
+      self.settings.ui.use_nerdfont_icons and " → " or " -> ",
       target_format,
       (" (%d output %s)"):format(num_output_files, amount_to_files_string(num_output_files)),
     }
@@ -208,43 +212,44 @@ function View:create_task_node(task, template, source_format)
       texts[1] = self:get_node_icon(is_expanded)
       -- Redraw view as the has layout changed
       self:draw(model, true)
-      print("redrawn")
     end,
     true
   )
 end
 
-function View:create_skipped_task_node(reason, source_format)
+function View:create_skipped_task_node(template, reason, source_format)
   local text
   if reason == self.model.Reason.NO_INPUT_FILES then
-    text = "no input files found"
+    text = "no matching input files found for paths:"
   elseif reason == self.model.Reason.NO_INPUT_SNIPPETS then
-    text = "no valid input snippets found"
+    text = "no valid input snippets found for paths:"
   end
-  return Node.MultiHlTextNode(
+  local header_node = Node.MultiHlTextNode(
     { "- ", source_format, ": ", text },
     { "", "Statement", "", "healthError" },
-    Node.Style.Padding(2)
+    Node.Style.Padding(1)
   )
+  local source_file_nodes = { header_node }
+  for i, source_file in ipairs(template.sources[source_format:lower()]) do
+    source_file_nodes[i + 1] = Node.MultiHlTextNode(
+      { "- ", source_file },
+      { "", "Comment" },
+      Node.Style.Padding(4)
+    )
+  end
+  return Node.RootNode(source_file_nodes)
 end
 
 function View:create_task_nodes(scene)
   local model = self.model
   local nodes = self:get_header_nodes(self.current_scene, model.is_converting)
   if scene == Scene.Main then
-    for _, template in ipairs(self.model.templates) do
-      for source_format, reason in pairs(model.skipped_tasks[template.name] or {}) do
-        nodes[#nodes + 1] = self:create_skipped_task_node(reason, source_format)
+    for name, template in pairs(model.templates) do
+      for source_format, reason in pairs(model.skipped_tasks[name] or {}) do
+        nodes[#nodes + 1] = self:create_skipped_task_node(template, reason, source_format)
       end
-      local task_nodes = make_default_table(self.state.task_nodes, template.name)
-      for source_format, task in pairs(model.tasks[template.name]) do
-        local task_node = task_nodes[source_format]
-        -- Create new task only if it has not been persisted across redraws
-        if not task_node then
-          task_node = self:create_task_node(task, template, source_format)
-          task_nodes[source_format] = task_node
-        end
-        nodes[#nodes + 1] = task_node
+      for source_format, task in pairs(model.tasks[name] or {}) do
+        nodes[#nodes + 1] = self:create_task_node(template, task, source_format)
       end
     end
   elseif scene == Scene.Help then
@@ -274,12 +279,10 @@ end
 function View:draw(model, persist_view_state)
   self.model = model
   if not persist_view_state then
-    self.state = {
-      task_nodes = {},
-    }
+    -- TODO: persist across scene changes
+    self.persisted_nodes = self:create_task_nodes(self.current_scene)
   end
-  local nodes = self:create_task_nodes(self.current_scene)
-  self._window.draw(Node.RootNode(nodes))
+  self._window.draw(Node.RootNode(self.persisted_nodes))
 end
 
 return View

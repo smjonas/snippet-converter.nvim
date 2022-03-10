@@ -108,7 +108,7 @@ snippet iff "iff" Ai
 endsnippet
 
 snippet mk "Math" wA
-$$1$`!p
+\$$1\$`!p
 if t[2] and t[2][0] not in [',', '.', '?', '-', ' ']:
 	snip.rv = ' '
 else:
@@ -404,7 +404,7 @@ snippet plot "Plot" w
 endsnippet
 
 snippet nn "Tikz node" w
-\node[$5] (${1/[^0-9a-zA-Z]//g}$2) ${3:at (${4:0,0}) }{$$1$};
+\node[$5] (${1/[^0-9a-zA-Z]//g}$2) ${3:at (${4:0,0}) }{\$$1\$};
 $0
 endsnippet
 
@@ -623,7 +623,7 @@ snippet "([a-zA-Z])hat" "hat" riA
 endsnippet
 
 snippet letw "let omega" iA
-Let $\Omega \subset \C$ be open.
+Let \$\Omega \subset \C\$ be open.
 endsnippet
 
 snippet HH "H" iA

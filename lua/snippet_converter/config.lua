@@ -29,7 +29,17 @@ end
 local validate_paths = function(name, paths_for_format, format_name, path_name)
   validate_table(name, paths_for_format)
   local supported_formats = vim.tbl_keys(snippet_engines)
+  -- TODO: what happens with empty sources table?
   for format, paths in pairs(paths_for_format) do
+    vim.validate {
+      [("%s for %s"):format(name, format)] = {
+        paths,
+        function(tbl)
+          return #tbl > 0
+        end,
+        "array with more than one entry",
+      },
+    }
     vim.validate {
       [format_name] = {
         format,

@@ -35,21 +35,21 @@ The following table shows which snippets can be converted to other formats:
 			<td>✓</td>
 			<td>(✓)<sup>1</sup></td>
 			<td>(✓)<sup>2</sup></td>
-			<td>✓</td>
+			<td>(✓)<sup>1</sup></td>
 		</tr>
 		<tr>
 			<td>VSCode</td>
 			<td>✓</td>
 			<td>✓</td>
 			<td>✓</td>
-			<td></td>
+			<td>✓</td>
 		</tr>
 		<tr>
 			<td>vsnip</td>
 			<td>✓</td>
 			<td>(✓)<sup>3</sup></td>
 			<td>✓</td>
-			<td></td>
+			<td>✓</td>
 		</tr>
 		<tr>
 			<td>SnipMate</td>
