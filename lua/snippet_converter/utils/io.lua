@@ -16,6 +16,7 @@ M.write_file = function(object, path)
   local dir_name = path:match("(.*)(%..+)$")
   -- Create missing directories (if any)
   if vim.fn.isdirectory(dir_name) ~= 1 then
+    -- TODO: check output filename out.snippets for vscode output
     vim.fn.mkdir(dir_name, "p")
   end
   vim.fn.writefile(object, path)

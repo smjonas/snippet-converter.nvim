@@ -43,6 +43,7 @@ function M:submit_task(template, source_format, num_snippets, num_input_files, p
     parser_errors = parser_errors,
     converter_errors = {},
     conversion_status = {},
+    max_conversion_status = M.Status.Success,
   }
 end
 
@@ -62,6 +63,8 @@ function M:complete_task(template, source_format, target_format, num_output_file
     status = M.Status.Warning
   end
   tasks.conversion_status[target_label] = status
+  tasks.max_conversion_status = math.max(tasks.max_conversion_status, status)
+
   tasks.num_output_files[target_label] = num_output_files
   self.max_num_failures = math.max(self.max_num_failures or 0, #converter_errors)
 end
