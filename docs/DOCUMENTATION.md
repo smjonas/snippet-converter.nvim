@@ -77,10 +77,6 @@ template with the input / output formats and paths and pass it to the `setup` fu
 Then run the command `:ConvertSnippets`. A GUI window should pop up that will show you further information
 about the status of the conversion.
 
-In general, the command has the following structure:
-
-`:ConvertSnippets template_names* (--options)*`
-
 By default, all templates that have been passed to `setup` will be executed sequentially.
 If you only want to run a single template or a selection of them, pass their names as the
 first arguments (separated by spaces):

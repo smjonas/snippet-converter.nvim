@@ -1,5 +1,7 @@
 local NodeType = require("snippet_converter.core.node_type")
 local p = require("snippet_converter.core.parser_utils")
+
+---@class VSCodeParser : ParserUtils
 local VSCodeParser = setmetatable({}, { __index = p })
 
 -- Enable inheritance

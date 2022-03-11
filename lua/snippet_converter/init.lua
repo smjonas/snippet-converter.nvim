@@ -4,7 +4,7 @@ local M = {
 
 local tbl = require("snippet_converter.utils.table")
 
-local snippet_engines, loader, Model
+local command, snippet_engines, loader, Model
 local controller
 
 -- Setup function must be called before using the plugin!
@@ -15,11 +15,13 @@ M.setup = function(user_config)
   -- Template names are optional, in that case use an integer
   for i, template in ipairs(M.config.templates) do
     if not template.name then
-      template.name = i
+      -- TODO: what if i is an existing name?
+      template.name = tostring(i)
     end
     M.config.templates[i] = cfg.merge_template_config(template)
   end
   -- Load modules and create controller
+  command = require("snippet_converter.command")
   snippet_engines = require("snippet_converter.snippet_engines")
   loader = require("snippet_converter.core.loader")
   Model = require("snippet_converter.ui.model")
@@ -173,9 +175,14 @@ end
 -- Expose functions to tests
 M._convert_snippets = convert_snippets
 
-M.convert_snippets = function()
+M.convert_snippets = function(args)
   if M.config == nil then
     error("setup function must be called before converting snippets")
+    return
+  end
+  local ok, parsed_args = command.validate_args(args, M.config)
+  if not ok then
+    vim.notify(parsed_args, vim.log.levels.ERROR)
     return
   end
 
@@ -183,7 +190,7 @@ M.convert_snippets = function()
   -- Make sure the window shows up before any potential long-running operations
   controller:create_view(model, M.config.settings)
   vim.schedule(function()
-    for _, template in ipairs(M.config.templates) do
+    for _, template in ipairs(parsed_args.templates) do
       local snippet_paths = load_snippets(template.sources)
       local snippets, context = parse_snippets(model, snippet_paths, template)
       convert_snippets(model, snippets, context, template)

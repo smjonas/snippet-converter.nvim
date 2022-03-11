@@ -113,7 +113,6 @@ function View:create_failure_nodes(failures)
     }, Node.Style.LeftTruncated(7))
     failure_nodes[i + 1] = Node.KeymapNode(failure_node, "<c-q>", open_qflist_callback)
   end
-  failure_nodes[#failure_nodes + 1] = Node.KeymapNode(Node.NewLine(), "<c-q>", open_qflist_callback)
   return failure_nodes
 end
 
@@ -151,7 +150,7 @@ function View:create_task_node(template, task, source_format)
     model.tasks[template.name][source_format].max_conversion_status
   )
   local texts = {
-    self:get_node_icon(true),
+    self:get_node_icon(false),
     max_status.icon,
     source_format,
     ": successfully converted ",
@@ -167,25 +166,22 @@ function View:create_task_node(template, task, source_format)
 
   local child_nodes = {}
   for target_format, failures in pairs(task.converter_errors) do
-    local status = model.tasks[template.name][source_format].conversion_status[target_format]
-    local status_icon = self:get_status_node_icon(status)
     local num_output_files = task.num_output_files[target_format]
 
     local task_texts = {
-      status_icon.icon,
+      self:get_node_icon(false),
       source_format,
       self.settings.ui.use_nerdfont_icons and " → " or " -> ",
       target_format,
       (" (%d output %s)"):format(num_output_files, amount_to_files_string(num_output_files)),
     }
 
-    table.insert(task_texts, 1, self:get_node_icon(false))
-    table.insert(task_texts, 6, (": %d snippets could not be converted"):format(#failures))
+    table.insert(task_texts, 5, (": %d snippets could not be converted"):format(#failures))
     local failure_nodes = self:create_failure_nodes(failures)
     child_nodes[#child_nodes + 1] = Node.ExpandableNode(
       Node.MultiHlTextNode(
         task_texts,
-        { "", status_icon.hl_group, "Statement", "", "Statement", "", "Comment" },
+        { "", "Statement", "", "Statement", "", "Comment" },
         Node.Style.Padding(4)
       ),
       Node.RootNode(failure_nodes),
@@ -196,6 +192,7 @@ function View:create_task_node(template, task, source_format)
       end,
       false
     )
+    -- TODO: successful conversions
     -- child_nodes[#child_nodes + 1] = Node.MultiHlTextNode(
     --   task_texts,
     --   { status_icon.hl_group, "Statement", "", "Statement", "Comment" },
@@ -215,31 +212,23 @@ function View:create_task_node(template, task, source_format)
       -- Redraw view as the has layout changed
       self:draw(model, true)
     end,
-    true
+    false
   )
 end
 
-function View:create_skipped_task_node(template, reason, source_format)
+function View:create_skipped_task_node(reason, source_format)
   local text
   if reason == self.model.Reason.NO_INPUT_FILES then
-    text = "no matching input files found for paths"
+    text = "no matching input files found"
   elseif reason == self.model.Reason.NO_INPUT_SNIPPETS then
-    text = "no valid input snippets found for paths"
+    text = "no valid input snippets found"
   end
-  local header_node = Node.MultiHlTextNode(
-    { "- ", source_format, ": ", text },
-    { "", "Statement", "", "healthError" },
+  local status = self:get_status_node_icon(self.model.Status.Error)
+  return Node.MultiHlTextNode(
+    { "- ", status.icon, source_format, ": ", text },
+    { "", status.hl_group, "Statement", "", "healthError" },
     Node.Style.Padding(3)
   )
-  local source_file_nodes = { header_node }
-  for i, source_file in ipairs(template.sources[source_format:lower()]) do
-    source_file_nodes[i + 1] = Node.MultiHlTextNode(
-      { "- ", source_file },
-      { "", "Comment" },
-      Node.Style.Padding(5)
-    )
-  end
-  return Node.RootNode(source_file_nodes)
 end
 
 function View:create_task_nodes(scene)
@@ -249,15 +238,13 @@ function View:create_task_nodes(scene)
     for name, template in pairs(model.templates) do
       local template_nodes = {}
       for source_format, reason in pairs(model.skipped_tasks[name] or {}) do
-        template_nodes[#template_nodes + 1] = self:create_skipped_task_node(
-          template,
-          reason,
-          source_format
-        )
+        template_nodes[#template_nodes + 1] = self:create_skipped_task_node(reason, source_format)
       end
       for source_format, task in pairs(model.tasks[name] or {}) do
         template_nodes[#template_nodes + 1] = self:create_task_node(template, task, source_format)
       end
+      -- TODO: show max status of tasks, auto-expand only for yellow / red tasks
+      -- TODO: write number of converted snippets after Template header
       local template_title_texts = { self:get_node_icon(true), "Template " .. name }
       nodes[#nodes + 1] = Node.ExpandableNode(
         Node.MultiHlTextNode(template_title_texts, { "", "" }),
@@ -268,6 +255,8 @@ function View:create_task_nodes(scene)
         end,
         true
       )
+      -- Add separator
+      nodes[#nodes + 1] = Node.NewLine()
     end
   elseif scene == Scene.Help then
     local expand_node = Node.MultiHlTextNode({

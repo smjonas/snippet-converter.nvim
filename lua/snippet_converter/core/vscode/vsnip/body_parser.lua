@@ -26,6 +26,7 @@ local NodeType = require("snippet_converter.core.node_type")
 -- int                ::= [0-9]+
 -- text               ::= .*
 
+---@class VSnipParser : VSCodeParser
 local VSnipParser = VSCodeParser:new {
   Variable = setmetatable(VSCodeParser.Variable, { __index = { VIM = "VIM" } }),
 }
@@ -75,6 +76,9 @@ function VSnipParser:raise_parse_error(description)
   error(("%s at '%s' (input line: '%s')"):format(description, error_line, source_line), 0)
 end
 
+---@param input string
+---@return boolean success
+---@return table | string
 function VSnipParser:parse(input)
   self.input = input
   self.source = input

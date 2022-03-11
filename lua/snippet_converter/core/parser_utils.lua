@@ -1,3 +1,4 @@
+---@class ParserUtils
 local M = {}
 
 local NodeType = require("snippet_converter.core.node_type")
