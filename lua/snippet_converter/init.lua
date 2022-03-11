@@ -187,8 +187,12 @@ M.convert_snippets = function(args)
   end
 
   local model = Model.new()
-  -- Make sure the window shows up before any potential long-running operations
-  controller:create_view(model, M.config.settings)
+  if parsed_args.opts.headless then
+    controller:create_headless_view(model)
+  else
+    -- Make sure the window shows up before any potential long-running operations
+    controller:create_view(model, M.config.settings)
+  end
   vim.schedule(function()
     for _, template in ipairs(parsed_args.templates) do
       local snippet_paths = load_snippets(template.sources)

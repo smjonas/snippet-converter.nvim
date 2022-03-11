@@ -1,5 +1,9 @@
 local View = require("snippet_converter.ui.view")
+local HeadlessView = require("snippet_converter.ui.headless_view")
 
+---@class Controller
+---@field view View | HeadlessView
+---@field model Model
 local Controller = {}
 
 Controller.new = function()
@@ -14,6 +18,13 @@ function Controller:create_view(model, settings)
   self.view = View.new(settings)
   self.view:open()
   self.view:draw(model, false)
+end
+
+function Controller:create_headless_view(model)
+  print("HEADLIW")
+  assert(model)
+  self.model = model
+  self.view = HeadlessView
 end
 
 function Controller:finalize()

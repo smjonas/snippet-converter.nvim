@@ -62,6 +62,7 @@ local validate_paths = function(name, paths_for_format, format_name, path_name)
 end
 
 local validate_template = function(template)
+  -- TODO: no spaces in template name
   validate_table("template", template)
   vim.validate {
     ["template.name"] = {

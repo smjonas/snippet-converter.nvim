@@ -2,6 +2,8 @@ local display = require("snippet_converter.ui.display")
 local Node = require("snippet_converter.ui.node")
 local Model = require("snippet_converter.ui.model")
 
+---@class View
+---@field settings table
 local View = {}
 
 local Scene = {
