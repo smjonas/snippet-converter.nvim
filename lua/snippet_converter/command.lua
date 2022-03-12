@@ -17,12 +17,15 @@ M.validate_args = function(args, config)
   end
 
   for _, arg in ipairs(args) do
-    if arg:sub(1, 2) == "--" then
-      local opt = arg:sub(3)
-      if not CmdOpts[opt] then
+    local key, value = arg:match("(.+)=(.+)")
+    if key then
+      if not CmdOpts[key] then
         return false, ("[snippet-converter.nvim] unknown option '%s'"):format(arg)
       end
-      opts[opt] = true
+      if value ~= "true" and value ~= "false" then
+        return false, ("[snippet-converter.nvim] invalid option value '%s'"):format(value)
+      end
+      opts[key] = value == "true" and true or false
     else
       if template_with_name[arg] then
         templates[#templates + 1] = template_with_name[arg]

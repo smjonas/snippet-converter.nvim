@@ -8,6 +8,9 @@ M.DEFAULT_CONFIG = {
       use_nerdfont_icons = true,
     },
   },
+  default_opts = {
+    headless = true,
+  },
 }
 
 M.DEFAULT_TEMPLATE_CONFIG = {
@@ -97,10 +100,10 @@ local validate_templates = function(templates)
 end
 
 local validate_settings = function(settings)
-  validate_table("settings", settings, true)
   if settings == nil then
     return
   end
+  validate_table("settings", settings, false)
   validate_table("settings.ui", settings.ui, true)
   if settings.ui then
     vim.validate {
@@ -113,10 +116,24 @@ local validate_settings = function(settings)
   end
 end
 
+local validate_default_opts = function(default_opts)
+  if default_opts == nil then
+    return
+  end
+  validate_table("default_opts", default_opts, false)
+  vim.validate {
+    ["default_opts.headless"] = {
+      default_opts.headless,
+      "boolean",
+    },
+  }
+end
+
 M.validate = function(user_config)
   validate_table("config", user_config)
   validate_templates(user_config.templates)
   validate_settings(user_config.settings)
+  validate_default_opts(user_config.defaults)
   vim.validate {
     transform_snippets = {
       user_config.transform_snippets,

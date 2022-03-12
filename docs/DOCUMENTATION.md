@@ -78,28 +78,17 @@ Then run the command `:ConvertSnippets`. A GUI window should pop up that will sh
 about the status of the conversion.
 
 By default, all templates that have been passed to `setup` will be executed sequentially.
-If you only want to run a single template or a selection of them, pass their names as the
-first arguments (separated by spaces):
+If you only want to run a single template or a selection of them, pass their names to the
+command (separated by spaces):
 
 `:ConvertSnippets template_a template_b`
 
+If you don't want the UI to be shown, use headless mode:
 
-If you don't want the UI to be shown, you can use headless mode:
+`:ConvertSnippets headless=true`
 
-`:ConvertSnippets --headless`
-
-All of these commands can also be called using the Lua API as follows:
-```lua
-require("snippet_converter").convert_snippets {
-  templates = {
-    "template_a", "template_b",
-  },
-  options = {
-    headless = true,
-  },
-}
-```
-(use `require("snippet_converter").convert_snippets()` to run all templates)
+Alternatively, you can change the default option `headless` globally using the `default_opts` table
+(see [Configuration](#configuration) section).
 
 ## Creating templates
 
@@ -241,15 +230,21 @@ M.DEFAULT_CONFIG = {
       use_nerdfont_icons = true,
     },
   },
+  default_opts = {
+    headless = false,
+  },
 }
 ```
 
-You can pass a settings table to the `setup` function in order to overwrite the default settings:
+You can pass a settings table to the `setup` function in order to overwrite the default settings or options:
 ```lua
 require("snippet_converter").setup {
   settings = {
     -- ...
-  }
+  },
+  default_opts = {
+    -- ...
+  },
 }
 ```
 
@@ -258,3 +253,12 @@ require("snippet_converter").setup {
 Specifies whether [Nerd Fonts](https://github.com/ryanoasis/nerd-fonts) icons should be used for the icons in the UI window. Set this to `false` if you are not using a Nerd Font - otherwise the icons will not be displayed correctly.
 
 **Default:** `true`
+
+---
+
+`default_opts.headless: boolean`
+
+Specifies whether the `:ConvertSnippets` command should run in headless mode.
+If set to `false`, a UI window will show the status of the conversion operation.
+
+**Default:** `false`

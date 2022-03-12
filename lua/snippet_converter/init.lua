@@ -187,7 +187,10 @@ M.convert_snippets = function(args)
   end
 
   local model = Model.new()
-  if parsed_args.opts.headless then
+  if
+    parsed_args.opts.headless
+    or M.config.default_opts.headless and parsed_args.opts.headless ~= false
+  then
     controller:create_headless_view(model)
   else
     -- Make sure the window shows up before any potential long-running operations
