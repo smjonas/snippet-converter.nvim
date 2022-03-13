@@ -15,7 +15,7 @@ M.DEFAULT_CONFIG = {
 
 M.DEFAULT_TEMPLATE_CONFIG = {
   compare = function(first, second)
-    return first:upper() < second:upper()
+    return first:lower() < second:lower()
   end,
 }
 

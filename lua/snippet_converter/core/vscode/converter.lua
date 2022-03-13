@@ -11,19 +11,36 @@ M.node_visitor = {
     if not node.transform then
       return "$" .. node.int
     end
-    local options = node.transform.options
+    return ("${%s/%s}"):format(node.int, M.node_visitor[NodeType.TRANSFORM](node.transform))
+  end,
+  [NodeType.TRANSFORM] = function(node)
+    -- Can currently only convert VSCode to VSCode regex
+    if node.regex_kind ~= NodeType.RegexKind.JAVASCRIPT then
+      print(node.regex_kind)
+      err.raise_converter_error(
+        NodeType.RegexKind.to_string(node.regex_kind) .. " regex in transform node"
+      )
+    end
     -- ASCII conversion option
-    if options:match("a") then
+    if node.options:match("a") then
       err.raise_converter_error("option 'a' (ascii conversion) in transform node")
     end
     -- Only g, i and m options are valid - ignore the rest
-    local converted_options = options:gsub("[^gim]", "")
-    return ("${%s/%s/%s/%s}"):format(
-      node.int,
-      node.transform.regex,
-      node.transform.replacement,
-      converted_options
-    )
+    local converted_options = node.options:gsub("[^gim]", "")
+
+    local replacements = {}
+    for i, replacement in pairs(replacements) do
+      -- Text or format nodes
+      replacements[i] = M.node_visitor[replacement.type](replacement)
+    end
+    return ("%s/%s/%s"):format(node.regex, table.concat(replacements), converted_options)
+  end,
+  [NodeType.FORMAT] = function(node)
+    if not node.format_modifier then
+      return "$" .. node.int
+    end
+    -- TODO: handle if / else
+    return ("${%s:/}"):format(node.format_modifier)
   end,
   [NodeType.VISUAL_PLACEHOLDER] = function(_)
     err.raise_converter_error(NodeType.to_string(NodeType.VISUAL_PLACEHOLDER))
@@ -68,6 +85,7 @@ local list_to_json_string = function(list)
   return ("[\n      %s\n    ]"):format(table.concat(list_items, ",\n      "))
 end
 
+-- TODO: remove
 M.convert = function(snippet, _, visit_node)
   if snippet.options and snippet.options:match("r") then
     err.raise_converter_error("regex trigger")
@@ -75,6 +93,9 @@ M.convert = function(snippet, _, visit_node)
   local body = list_to_json_string(
     base_converter.convert_ast(snippet.body, visit_node or M.visit_node)
   )
+  if snippet.trigger == "set" then
+    print(vim.inspect(snippet.body))
+  end
 
   local description_string
   if snippet.description then

@@ -10,7 +10,6 @@ local function find_matching_snippet_files_in_rtp(
 )
   -- Turn glob pattern (with potential wildcards) into lua pattern;
   -- escape all non-alphanumeric characters to be safe
-  -- TODO: use vim.pesc!
   local file_pattern = source_path:gsub("([^%w%*])", "%%%1"):gsub("%*", ".-")
 
   local extension = snippet_engines[source_format].extension

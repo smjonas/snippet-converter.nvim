@@ -51,7 +51,12 @@ local parse_transform = function(state)
   local options = p.parse_pattern(state, options_pattern)
   return p.new_inner_node(
     NodeType.TRANSFORM,
-    { regex = regex, replacement = replacement, options = options }
+    {
+      regex = regex,
+      regex_kind = NodeType.RegexKind.PYTHON,
+      replacement = replacement,
+      options = options,
+    }
   )
 end
 

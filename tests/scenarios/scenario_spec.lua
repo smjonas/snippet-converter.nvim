@@ -17,9 +17,7 @@ describe("Scenario", function()
     expected_output_ultisnips = vim.fn.readfile(
       "tests/scenarios/expected_output_ultisnips.snippets"
     )
-    expected_output_snipmate = vim.fn.readfile(
-      "tests/scenarios/expected_output_snipmate.snippets"
-    )
+    expected_output_snipmate = vim.fn.readfile("tests/scenarios/expected_output_snipmate.snippets")
     expected_output_vscode = vim.fn.readfile("tests/scenarios/expected_output_vscode.json")
     expected_output_vscode_sorted = vim.fn.readfile(
       "tests/scenarios/expected_output_vscode_sorted.json"
@@ -94,12 +92,21 @@ describe("Scenario", function()
         vscode = { "tests/scenarios/output.json" },
       },
     }
-    snippet_converter.setup { templates = { template } }
+    snippet_converter.setup {
+      templates = { template },
+      -- In the test, we care about their relative order if two items are the same in lower case
+      compare = function(first, second)
+        if first:lower() == second:lower() then
+          return first < second
+        end
+        return first:lower() < second:lower()
+      end,
+    }
     local actual_output = vim.fn.readfile("tests/scenarios/output.json")
 
     local model = snippet_converter.convert_snippets()
-    -- print(vim.inspect(model))
-    assert(false)
+    print(vim.inspect(model))
+    -- assert(false)
     assert.are_same(expected_output_vscode_sorted, actual_output)
     -- TODO: make tests independent of each other!
   end)

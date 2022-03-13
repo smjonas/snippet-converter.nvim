@@ -72,7 +72,8 @@ local parse_snippets = function(model, snippet_paths, template)
     for filetype, paths in pairs(snippet_paths[source_format]) do
       tbl.make_default_table(snippets[source_format], filetype)
       for _, path in ipairs(paths) do
-        num_snippets = parser.parse(path, snippets[source_format][filetype], parser_errors, context)
+        num_snippets = num_snippets
+          + parser.parse(path, snippets[source_format][filetype], parser_errors, context)
       end
       num_files = num_files + #paths
     end
@@ -116,9 +117,14 @@ local sort_snippets = function(format, template, snippets)
   end
 end
 
+-- local wrap_parser = function(source_format)
+--   local parser = require(snippet_engines[source_format].parser)
+-- end
+
 local convert_snippets = function(model, snippets, context, template)
   local transform_helper = {}
   for source_format, snippets_for_format in pairs(snippets) do
+    -- transform_helper.
     -- TODO: add parser to transform_helper
     if not model:did_skip_task(template, source_format) then
       for target_format, output_paths in pairs(template.output) do
@@ -180,7 +186,7 @@ M.convert_snippets = function(args)
     error("setup function must be called before converting snippets")
     return
   end
-  local ok, parsed_args = command.validate_args(args, M.config)
+  local ok, parsed_args = command.validate_args(args or {}, M.config)
   if not ok then
     vim.notify(parsed_args, vim.log.levels.ERROR)
     return

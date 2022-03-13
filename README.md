@@ -4,7 +4,7 @@
 
 Neovim plugin to parse, transform and convert snippets. Supports a variety of formats and snippet engines.
 
-[![Neovim](https://img.shields.io/badge/Neovim%200.5+-green.svg?style=for-the-badge&logo=neovim)](https://neovim.io)
+[![Neovim](https://img.shields.io/badge/Neovim%200.7+-green.svg?style=for-the-badge&logo=neovim)](https://neovim.io)
 
 </div>
 

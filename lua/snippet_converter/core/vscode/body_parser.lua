@@ -15,7 +15,7 @@ end
 -- any                ::= tabstop | placeholder | choice | variable | text
 -- tabstop            ::= '$' int
 --                        | '${' int '}'
---                        | '${' int  transform '}'
+--                        | '${' int transform '}'
 -- placeholder        ::= '${' int ':' any '}'
 -- choice             ::= '${' int '|' text (',' text)* '|}'
 -- variable           ::= '$' var | '${' var '}'
@@ -28,7 +28,7 @@ end
 --                        | '${' int ':?' if ':' else '}'
 --                        | '${' int ':-' else '}' | '${' int ':' else '}'
 -- regex              ::= JavaScript Regular Expression value (ctor-string)
--- replacement        ::= text
+-- replacement        ::= (format | text)+
 -- options            ::= text
 -- var                ::= [_a-zA-Z] [_a-zA-Z0-9]*
 -- int                ::= [0-9]+
@@ -145,11 +145,11 @@ function VSCodeParser:parse_format()
   end
 end
 
-function VSCodeParser:parse_format_or_text()
+function VSCodeParser:parse_replacement()
   if self:peek("$") then
     return self:parse_format()
   else
-    return self:parse_escaped_text("[%$}]", "/")
+    return p.new_inner_node(NodeType.TEXT, { text = self:parse_escaped_text("[%$}]", "/") })
   end
 end
 
@@ -158,15 +158,17 @@ function VSCodeParser:parse_transform()
   self:expect("/")
   local regex = self:parse_regex()
   self:expect("/")
-  local format_or_text = { self:parse_format_or_text() }
+  local replacement = { self:parse_replacement() }
   while not self:peek("/") do
-    format_or_text[#format_or_text + 1] = self:parse_format_or_text()
+    replacement[#replacement + 1] = self:parse_replacement()
   end
   local options = self:parse_pattern(options_pattern)
-  return p.new_inner_node(
-    NodeType.TRANSFORM,
-    { regex = regex, format_or_text = format_or_text, options = options }
-  )
+  return p.new_inner_node(NodeType.TRANSFORM, {
+    regex = regex,
+    regex_kind = NodeType.RegexKind.JAVASCRIPT,
+    replacement = replacement,
+    options = options,
+  })
 end
 
 function VSCodeParser:parse_placeholder_any()
@@ -191,7 +193,6 @@ end
 
 -- Starts at char after '$', or after '{' if got_bracket is true
 function VSCodeParser:parse_variable(got_bracket)
-  assert(self.input)
   local var = self:parse_pattern(var_pattern)
   if not vim.tbl_contains(VSCodeParser.variable_tokens, var) then
     error("parse_variable: invalid token " .. var)

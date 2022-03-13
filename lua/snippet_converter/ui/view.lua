@@ -76,11 +76,11 @@ function View:get_status_node_icon(status)
 end
 
 local amount_to_files_string = function(amount)
-  if amount == 1 then
-    return "file"
-  else
-    return "files"
-  end
+  return amount == 1 and "file" or "files"
+end
+
+local amount_to_snippets_string = function(amount)
+  return amount == 1 and "snippet" or "snippets"
 end
 
 local show_failures_in_qflist = function(failures)
@@ -148,23 +148,51 @@ end
 
 function View:create_task_node(template, task, source_format)
   local model = self.model
-  local max_status = self:get_status_node_icon(
-    model.tasks[template.name][source_format].max_conversion_status
-  )
-  local texts = {
-    self:get_node_icon(false),
-    max_status.icon,
-    source_format,
-    ": successfully converted ",
-    tostring(task.num_snippets - model.max_num_failures),
-    " / ",
-    tostring(task.num_snippets),
-    " snippets ",
-    ("(%s input %s)"):format(
-      tostring(task.num_input_files),
-      amount_to_files_string(task.num_input_files)
-    ),
-  }
+  local max_status = model.tasks[template.name][source_format].max_conversion_status
+  local status_icon = self:get_status_node_icon(max_status)
+  local num_snippets_converted = task.num_snippets - task.num_failures
+
+  local texts, highlights
+  if max_status == model.Status.Error then
+    texts = {
+      self:get_node_icon(false),
+      status_icon.icon,
+      source_format,
+      ": ",
+      "no snippets converted ",
+      ("(%s input %s)"):format(
+        tostring(task.num_input_files),
+        amount_to_files_string(task.num_input_files)
+      ),
+    }
+    highlights = { "", status_icon.hl_group, "Statement", "", "healthError", "Comment" }
+  else
+    texts = {
+      self:get_node_icon(false),
+      status_icon.icon,
+      source_format,
+      num_snippets_converted > 0 and ": successfully converted " or ": converted ",
+      tostring(num_snippets_converted),
+      " / ",
+      tostring(task.num_snippets),
+      " snippets ",
+      ("(%s input %s)"):format(
+        tostring(task.num_input_files),
+        amount_to_files_string(task.num_input_files)
+      ),
+    }
+    highlights = {
+      "",
+      status_icon.hl_group,
+      "Statement",
+      "",
+      "Special",
+      "",
+      "Special",
+      "",
+      "Comment",
+    }
+  end
 
   local child_nodes = {}
   for target_format, failures in pairs(task.converter_errors) do
@@ -178,7 +206,15 @@ function View:create_task_node(template, task, source_format)
       (" (%d output %s)"):format(num_output_files, amount_to_files_string(num_output_files)),
     }
 
-    table.insert(task_texts, 5, (": %d snippets could not be converted"):format(#failures))
+    local num_failures = #failures
+    table.insert(
+      task_texts,
+      5,
+      (": %d %s could not be converted"):format(
+        num_failures,
+        amount_to_snippets_string(num_failures)
+      )
+    )
     local failure_nodes = self:create_failure_nodes(failures)
     child_nodes[#child_nodes + 1] = Node.ExpandableNode(
       Node.MultiHlTextNode(
@@ -203,11 +239,7 @@ function View:create_task_node(template, task, source_format)
   end
 
   return Node.ExpandableNode(
-    Node.MultiHlTextNode(
-      texts,
-      { "", max_status.hl_group, "Statement", "", "Special", "", "Special", "", "Comment" },
-      Node.Style.Padding(2)
-    ),
+    Node.MultiHlTextNode(texts, highlights, Node.Style.Padding(2)),
     Node.RootNode(child_nodes),
     function(is_expanded)
       texts[1] = self:get_node_icon(is_expanded)

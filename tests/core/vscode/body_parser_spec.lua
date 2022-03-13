@@ -1,8 +1,8 @@
 local parser = require("snippet_converter.core.vscode.body_parser")
 local NodeType = require("snippet_converter.core.node_type")
 
-describe("VSCode body parser", function()
-  it("should parse tabstop and placeholder", function()
+describe("VSCode body parser should", function()
+  it("parse tabstop and placeholder", function()
     local input = "local ${1:name} = function($2)"
     local actual = parser:parse(input)
     local expected = {
@@ -19,7 +19,7 @@ describe("VSCode body parser", function()
     assert.are_same(expected, actual)
   end)
 
-  it("should parse variable with transform", function()
+  it("parse variable with transform", function()
     local input = "${TM_FILENAME/(.*)/${1:/upcase}/}"
     local actual = parser:parse(input)
     local expected = {
@@ -28,7 +28,8 @@ describe("VSCode body parser", function()
         transform = {
           type = NodeType.TRANSFORM,
           regex = "(.*)",
-          format_or_text = {
+          regex_kind = NodeType.RegexKind.JAVASCRIPT,
+          replacement = {
             { int = "1", format_modifier = "upcase", type = NodeType.FORMAT },
           },
           options = "",
@@ -39,7 +40,7 @@ describe("VSCode body parser", function()
     assert.are_same(expected, actual)
   end)
 
-  it("should parse choice element", function()
+  it("parse choice element", function()
     local input = "${0|🠂,⇨|}"
     local expected = {
       { int = "0", text = { "🠂", "⇨" }, type = NodeType.CHOICE },
@@ -47,7 +48,7 @@ describe("VSCode body parser", function()
     assert.are_same(expected, parser:parse(input))
   end)
 
-  it("should handle escaped chars in choice element", function()
+  it("handle escaped chars in choice element", function()
     local input = [[${0|\$,\},\\,\,,\||}]]
     local expected = {
       { int = "0", text = { "$", "}", [[\]], ",", "|" }, type = NodeType.CHOICE },
@@ -55,13 +56,13 @@ describe("VSCode body parser", function()
     assert.are_same(expected, parser:parse(input))
   end)
 
-  it("should handle escaped chars in text element", function()
+  it("handle escaped chars in text element", function()
     local input = [[\$\}]]
     local expected = { { type = NodeType.TEXT, text = [[$}]] } }
     assert.are_same(expected, parser:parse(input))
   end)
 
-  it("should parse escaped backslashes", function()
+  it("parse escaped backslashes", function()
     local input = [[\\]]
     local expected = {
       {
@@ -74,7 +75,19 @@ describe("VSCode body parser", function()
     assert.are_same(expected, parser:parse(input))
   end)
 
-  it("should parse unambiguous unescaped chars", function()
+  -- TODO: fix char escaping
+  it("parse escaped curly brace preceded by backslash", function()
+    local input = [[\\}]]
+    local expected = {
+      {
+        text = [[\}]],
+        type = NodeType.TEXT,
+      },
+    }
+    assert.are_same(expected, parser:parse(input))
+  end)
+
+  it("parse unambiguous unescaped chars", function()
     local input = [[${\cup}$]]
     local expected = {
       {
@@ -86,7 +99,7 @@ describe("VSCode body parser", function()
     assert.are_same(expected, parser:parse(input))
   end)
 
-  it("should parse incomplete transform", function()
+  it("parse incomplete transform", function()
     local input = [[${1/abc/xyz}]]
     local expected = {
       { text = "${1/abc/xyz}", type = NodeType.TEXT },

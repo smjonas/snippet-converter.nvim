@@ -21,8 +21,6 @@ function Controller:create_view(model, settings)
 end
 
 function Controller:create_headless_view(model)
-  print("HEADLIW")
-  assert(model)
   self.model = model
   self.view = HeadlessView
 end

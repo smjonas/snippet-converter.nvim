@@ -261,18 +261,18 @@
     "description": "cap",
     "body": "\\cap"
   },
-  "nn": {
-    "prefix": "nn",
-    "description": "Tikz node",
-    "body": [
-      "\\node[$5] (${1/[^0-9a-zA-Z]//g}$2) ${3:at (${4:0,0}) }{$${1}$};",
-      "$0"
-    ]
-  },
   "NN": {
     "prefix": "NN",
     "description": "n",
     "body": "\\N"
+  },
+  "nn": {
+    "prefix": "nn",
+    "description": "Tikz node",
+    "body": [
+      "\\node[$5] (${1/[^0-9a-zA-Z]//g}$2) ${3:at (${4:0,0}) }{$$1$};",
+      "$0"
+    ]
   },
   "nnn": {
     "prefix": "nnn",
@@ -334,6 +334,16 @@
     "description": "pmat",
     "body": "\\begin{pmatrix} $1 \\end{pmatrix} $0"
   },
+  "QQ": {
+    "prefix": "QQ",
+    "description": "Q",
+    "body": "\\Q"
+  },
+  "R0+": {
+    "prefix": "R0+",
+    "description": "R0+",
+    "body": "\\R_0^+"
+  },
   "rd": {
     "prefix": "rd",
     "description": "to the ... power",
@@ -344,10 +354,20 @@
     "description": "mrij",
     "body": "(${1:x}_${2:n})_{${3:$2}\\in${4:\\N}}$0"
   },
+  "RR": {
+    "prefix": "RR",
+    "description": "real",
+    "body": "\\R"
+  },
   "set": {
     "prefix": "set",
     "description": "set",
-    "body": "\\{$1\\} $0"
+    "body": "\\{$1\\\} $0"
+  },
+  "SI": {
+    "prefix": "SI",
+    "description": "SI",
+    "body": "\\SI{$1}{$2}"
   },
   "sr": {
     "prefix": "sr",
@@ -483,26 +503,6 @@
     "prefix": "~~",
     "description": "~",
     "body": "\\sim"
-  },
-  "QQ": {
-    "prefix": "QQ",
-    "description": "Q",
-    "body": "\\Q"
-  },
-  "R0+": {
-    "prefix": "R0+",
-    "description": "R0+",
-    "body": "\\R_0^+"
-  },
-  "RR": {
-    "prefix": "RR",
-    "description": "real",
-    "body": "\\R"
-  },
-  "SI": {
-    "prefix": "SI",
-    "description": "SI",
-    "body": "\\SI{$1}{$2}"
   },
   "UU": {
     "prefix": "UU",

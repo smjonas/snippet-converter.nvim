@@ -22,17 +22,14 @@ Model.Reason = {
 }
 
 Model.new = function()
-  return setmetatable(
-    {
-      templates = {},
-      tasks = {},
-      skipped_tasks = {},
-      total_num_snippets = 0,
-      total_num_failures = 0,
-      is_converting = true,
-    },
-    { __index = Model }
-  )
+  return setmetatable({
+    templates = {},
+    tasks = {},
+    skipped_tasks = {},
+    total_num_snippets = 0,
+    total_num_failures = 0,
+    is_converting = true,
+  }, { __index = Model })
 end
 
 function Model:skip_task(template, source_format, reason)
@@ -55,6 +52,7 @@ function Model:submit_task(template, source_format, num_snippets, num_input_file
     num_snippets = num_snippets,
     num_input_files = num_input_files,
     num_output_files = {},
+    num_failures = 0,
     parser_errors = parser_errors,
     converter_errors = {},
     conversion_status = {},
@@ -62,14 +60,21 @@ function Model:submit_task(template, source_format, num_snippets, num_input_file
   }
 end
 
-function Model:complete_task(template, source_format, target_format, num_output_files, converter_errors)
+function Model:complete_task(
+  template,
+  source_format,
+  target_format,
+  num_output_files,
+  converter_errors
+)
   local source_label = snippet_engines[source_format].label
   local target_label = snippet_engines[target_format].label
   local tasks = self.tasks[template.name][source_label]
 
   local num_failures = #converter_errors
-  self.total_num_failures = self.total_num_failures + num_failures
+  tasks.num_failures = num_failures
   tasks.converter_errors[target_label] = converter_errors
+  self.total_num_failures = self.total_num_failures + num_failures
 
   local status
   if num_failures == 0 then
