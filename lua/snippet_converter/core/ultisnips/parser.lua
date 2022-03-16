@@ -99,6 +99,7 @@ end
 M.parse_header = function(path, line, line_nr, parser_errors_ptr)
   local stripped_header = line:match("^%s*snippet%s+(.-)%s*$")
   if stripped_header then
+    -- TODO(refactor): handle this in init.lua globally instead
     local ok, header = pcall(header_parser.parse, stripped_header)
     if not ok then
       parser_errors_ptr[#parser_errors_ptr + 1] = err.new_parser_error(path, line_nr, header)

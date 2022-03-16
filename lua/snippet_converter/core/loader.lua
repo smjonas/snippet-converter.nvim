@@ -11,11 +11,13 @@ local function find_matching_snippet_files_in_rtp(
   -- Turn glob pattern (with potential wildcards) into lua pattern;
   -- escape all non-alphanumeric characters to be safe
   local file_pattern = source_path:gsub("([^%w%*])", "%%%1"):gsub("%*", ".-")
+  print(file_pattern)
 
   local extension = snippet_engines[source_format].extension
   local rtp_files = vim.api.nvim_get_runtime_file("*" .. extension, true)
 
-  for _, file in pairs(rtp_files) do
+  for _, file in ipairs(rtp_files) do
+    print(_, file, file:match(file_pattern) ~= nil)
     if file:match(file_pattern) then
       matching_snippet_files[#matching_snippet_files + 1] = file
     end

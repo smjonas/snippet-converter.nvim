@@ -1,7 +1,5 @@
 local M = {}
 
-local io = require("snippet_converter.utils.io")
-
 M.snippet_strings_to_lines = function(snippets_ptr, sep_chars, headers, footer, snippet_lines_ptr)
   local len = #snippets_ptr
   local total_len = 0

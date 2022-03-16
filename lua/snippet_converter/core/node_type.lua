@@ -25,9 +25,9 @@ local _to_string = {
   "format",
   "variable",
   "visual placeholder",
-  "python code",
+  "Python code",
   "shell code",
-  "vimscript code",
+  "Vimscript code",
 }
 
 NodeType.to_string = function(type)
