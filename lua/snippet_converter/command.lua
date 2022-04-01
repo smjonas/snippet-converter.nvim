@@ -17,7 +17,7 @@ M.validate_args = function(args, config)
   end
 
   for _, arg in ipairs(args) do
-    local key, value = arg:match("(.+)=(.+)")
+    local key, value = arg:match("%-%-(.+)=(.+)")
     if key then
       if not CmdOpts[key] then
         return false, ("[snippet-converter.nvim] unknown option '%s'"):format(arg)
