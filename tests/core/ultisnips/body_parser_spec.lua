@@ -121,6 +121,7 @@ describe("UltiSnips body parser", function()
         int = "1",
         transform = {
           regex = [[\w+\s*]],
+          regex_kind = NodeType.RegexKind.PYTHON,
           replacement = [[\u$0]],
           options = "",
           type = NodeType.TRANSFORM,

@@ -1,33 +1,66 @@
+--[[
+
+Utility function that turns a Lua table into a nicely formatted JSON string (pretty-printing).
+
+---
+
+pretty_print(data: table, compare: function, escape_special_chars: boolean) -> string
+
+Basic usage:
+
+json_pretty_print.pretty_print({
+  key = {
+    a_table = {
+      A = "v1",
+      B = "v2",
+    },
+    an_array = { "one", 2 },
+  },
+})
+
+returns the string:
+
+{
+  "key": {
+    "a_table": {
+      "A": "v1",
+      "B": "v2"
+    },
+    "an_array": [
+      "one",
+      2
+    ]
+  }
+}
+
+By default, keys in tables are sorted alhabetically. To change this, pass a different
+comparison function to stringify. This function should take as arguments the two keys
+to compare and return a boolean that determines whether the first argument should be
+output before the second or not.
+
+If you want to escape any special characters, set escape_special_chars to true.
+Otherwise each table value will be output as is.
+
+--]]
+
 local M = {}
 
-M.new = function()
-  return setmetatable({
-    compare = function(a, b)
-      return a:lower() < b:lower()
-    end,
-  }, { __index = M })
-end
-
 function M:escape_chars(str)
-  -- Escape backslashes (I couldn't get this to work with gsub / regexes)
-  local chars = {}
-  for i = 1, #str do
-    local cur_char = str:sub(i, i)
-    if cur_char == "\\" then
-      chars[#chars + 1] = "\\"
-    end
-    chars[#chars + 1] = cur_char
-  end
-
-  local item = table.concat(chars)
-  -- Surround with quotes and escape whitespace + quote characters
-  return ('"%s"'):format(item:gsub('[\t\r\a\b"]', {
-    ["\t"] = "\\t",
-    ["\r"] = "\\r",
+  -- Escape escape sequences (see http://www.lua.org/manual/5.1/manual.html#2.1).
+  -- Also escape '\', '}' and '$' characters.
+  return str:gsub("[\\}%$\"'\a\b\f\n\r\t\v]", {
+    ["\\"] = "\\\\",
+    ["}"] = "\\}",
+    ["$"] = "\\$",
+    ['"'] = '\\"',
     ["\a"] = "\\a",
     ["\b"] = "\\b",
-    ['"'] = '\\"',
-  }))
+    ["\f"] = "\\f",
+    ["\n"] = "\\n",
+    ["\r"] = "\\r",
+    ["\t"] = "\\t",
+    ["\v"] = "\\v",
+  })
 end
 
 function M:format_string(value)
@@ -99,13 +132,18 @@ function M:emit(value, add_indent)
 end
 
 function M:format_value(value, add_indent)
+  if value == nil then
+    self:emit("null")
+  end
   local _type = type(value)
   if _type == "string" then
     self:format_string(value)
+  elseif _type == "number" then
+    self:emit(tostring(value), add_indent)
   elseif _type == "table" then
     local count = vim.tbl_count(value)
     if count == 0 then
-      self:emit("[]")
+      self:emit("{}")
     elseif #value > 0 then
       self:format_array(value)
     else
@@ -114,12 +152,16 @@ function M:format_value(value, add_indent)
   end
 end
 
-function M:stringify(data, compare, escape_special_chars)
-  self.compare = compare or self.compare
+local default_compare = function(a, b)
+  return a:lower() < b:lower()
+end
+
+function M:pretty_print(data, compare, escape_special_chars)
+  self.compare = compare or default_compare
   self.escape_special_chars = escape_special_chars
   self.indent = 0
   self.out = {}
-  self:format_value(data)
+  self:format_value(data, false)
   return table.concat(self.out)
 end
 

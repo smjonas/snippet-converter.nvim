@@ -66,21 +66,9 @@ describe("VSCode body parser should", function()
     local input = [[\\]]
     local expected = {
       {
-        -- In contrast to the UltiSnips parser, "\\" is a double backslash because
-        -- escaping of backslashes has already been handled while reading the JSON file.
+        -- In contrast to the UltiSnips parser, the input string "\\" is a double backslash
+        -- because escaping of backslashes has already been handled while reading the JSON file.
         text = [[\\]],
-        type = NodeType.TEXT,
-      },
-    }
-    assert.are_same(expected, parser:parse(input))
-  end)
-
-  -- TODO: fix char escaping
-  it("parse escaped curly brace preceded by backslash", function()
-    local input = [[\\}]]
-    local expected = {
-      {
-        text = [[\}]],
         type = NodeType.TEXT,
       },
     }

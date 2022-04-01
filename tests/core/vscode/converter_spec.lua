@@ -2,7 +2,7 @@ local NodeType = require("snippet_converter.core.node_type")
 local converter = require("snippet_converter.core.vscode.converter")
 
 describe("VSCode converter should", function()
-  it("convert basi snippet to JSON", function()
+  it("convert basic snippet to JSON", function()
     local snippet = {
       trigger = "fn",
       description = "function",
@@ -21,78 +21,18 @@ describe("VSCode converter should", function()
       },
     }
     local actual = converter.convert(snippet)
-    local expected = [[
-  "fn": {
-    "prefix": "fn",
-    "description": "function",
-    "scope": "javascript,typescript",
-    "body": "local ${1:name} = function($2)"
-  }]]
+    local expected = {
+      trigger = "fn",
+      description = "function",
+      scope = "javascript,typescript",
+      body = "local ${1:name} = function($2)",
+    }
     assert.are_same(expected, actual)
-  end)
-
-  it("escape backslashes in text node correctly", function()
-    local snippet = {
-      trigger = "test",
-      body = {
-        {
-          type = NodeType.TEXT,
-          -- "bdf" is intentional to test that \b is correctly escaped
-          text = "\\bdfminorversion=7\n\t\\usepackage{\\\\pdfpages}\n\\usepackage{transparent}",
-        },
-      },
-    }
-    local expected = [[
-  "test": {
-    "prefix": "test",
-    "body": [
-      "\\bdfminorversion=7",
-      "\t\\usepackage{\\\\pdfpages}",
-      "\\usepackage{transparent}"
-    ]
-  }]]
-    assert.are_same(expected, converter.convert(snippet))
-  end)
-
-  it("escape } and $ in text node correctly", function()
-    local snippet = {
-      trigger = "test",
-      body = {
-        { type = NodeType.TEXT, text = "}$" },
-      },
-    }
-    local expected = [[
-  "test": {
-    "prefix": "test",
-    "body": "\}\$"
-  }]]
-    assert.are_same(expected, converter.convert(snippet))
-  end)
-
-  it("escape backslashes + quotes in trigger and description correctly", function()
-    local snippet = {
-      trigger = "\\test",
-      description = [["a" \test]],
-      body = {
-        {
-          type = NodeType.TEXT,
-          text = "...",
-        },
-      },
-    }
-    local expected = [[
-  "\\test": {
-    "prefix": "\\test",
-    "description": "\"a\" \\test",
-    "body": "..."
-  }]]
-    assert.are_same(expected, converter.convert(snippet))
   end)
 
   it("handle missing description with multiple lines in body", function()
     local snippet = {
       trigger = "fn",
-      -- "local ${1:name} = function($2)"
       body = {
         { type = NodeType.TEXT, text = "local " },
         {
@@ -105,15 +45,11 @@ describe("VSCode converter should", function()
         { type = NodeType.TEXT, text = ")\nnewline" },
       },
     }
+    local expected = {
+      trigger = "fn",
+      body = { "local ${1:name} = function($2)", "newline" },
+    }
     local actual = converter.convert(snippet)
-    local expected = [[
-  "fn": {
-    "prefix": "fn",
-    "body": [
-      "local ${1:name} = function($2)",
-      "newline"
-    ]
-  }]]
     assert.are_same(expected, actual)
   end)
 

@@ -45,7 +45,7 @@ local HEADER_STRING =
 
 -- Takes a list of converted snippets for a particular filetype,
 -- separates them by newlines and exports them to a file.
--- @param converted_snippets string[] @A list of strings where each item is a snippet string to be exported
+-- @param converted_snippets string[] @A list of snippet tables where each item is a snippet table to be exported
 -- @param filetype string @The filetype of the snippets
 -- @param output_dir string @The absolute path to the directory (or file) to write the snippets to
 M.export = function(converted_snippets, filetype, output_path)
