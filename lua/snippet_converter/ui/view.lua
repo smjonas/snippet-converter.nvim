@@ -1,9 +1,11 @@
 local display = require("snippet_converter.ui.display")
 local Node = require("snippet_converter.ui.node")
 local Model = require("snippet_converter.ui.model")
+local tbl = require("snippet_converter.utils.table")
 
 ---@class View
 ---@field settings table
+---@field persisted_nodes table
 local View = {}
 
 local Scene = {
@@ -16,6 +18,10 @@ View.new = function(settings)
     settings = settings or {},
     _window = display.new_window(),
     current_scene = Scene.Main,
+    persisted_nodes = {
+      [Scene.Main] = {},
+      [Scene.Help] = {},
+    },
   }
   local global_keymaps = {
     ["?"] = function()
@@ -43,6 +49,10 @@ end
 
 function View:toggle_help()
   self.current_scene = self.current_scene == Scene.Main and Scene.Help or Scene.Main
+  -- Persist the previous nodes when switching to the help scene so expanded items stay expanded
+  if self.current_scene == Scene.Help then
+    self.persisted_nodes[self.current_scene] = self:create_task_nodes(self.current_scene)
+  end
   self:draw(self.model, false)
 end
 
@@ -83,7 +93,7 @@ local amount_to_snippets_string = function(amount)
   return amount == 1 and "snippet" or "snippets"
 end
 
-local show_failures_in_qflist = function(failures)
+local show_failures_in_qflist = function(failures, source_format, target_format, start_idx)
   local qf_entries = {}
   for i, failure in ipairs(failures) do
     qf_entries[i] = {
@@ -92,14 +102,18 @@ local show_failures_in_qflist = function(failures)
       text = failure.msg,
     }
   end
-  vim.fn.setqflist(qf_entries, "r")
+  vim.fn.setqflist({}, "r", {
+    items = qf_entries,
+    idx = start_idx,
+    title = ("%s -> %s conversion"):format(source_format, target_format),
+  })
   vim.cmd("copen")
 end
 
-function View:create_failure_nodes(failures)
+function View:create_failure_nodes(failures, source_format, target_format)
   local open_qflist_callback = function()
     self._window.close()
-    show_failures_in_qflist(failures)
+    show_failures_in_qflist(failures, source_format, target_format)
   end
   local failure_nodes = { Node.KeymapNode(Node.NewLine(), "<c-q>", open_qflist_callback) }
   for i, failure in ipairs(failures) do
@@ -113,6 +127,10 @@ function View:create_failure_nodes(failures)
       "Special",
       "",
     }, Node.Style.LeftTruncated(7))
+    open_qflist_callback = function()
+      self._window.close()
+      show_failures_in_qflist(failures, source_format, target_format, i)
+    end
     failure_nodes[i + 1] = Node.KeymapNode(failure_node, "<c-q>", open_qflist_callback)
   end
   return failure_nodes
@@ -215,7 +233,7 @@ function View:create_task_node(template, task, source_format)
         amount_to_snippets_string(num_failures)
       )
     )
-    local failure_nodes = self:create_failure_nodes(failures)
+    local failure_nodes = self:create_failure_nodes(failures, source_format, target_format)
     child_nodes[#child_nodes + 1] = Node.ExpandableNode(
       Node.MultiHlTextNode(
         task_texts,
@@ -226,7 +244,7 @@ function View:create_task_node(template, task, source_format)
       function(is_expanded)
         task_texts[1] = self:get_node_icon(is_expanded)
         -- Redraw view as the has layout changed
-        self:draw(model, true)
+        self:draw(model, false)
       end,
       false
     )
@@ -244,7 +262,7 @@ function View:create_task_node(template, task, source_format)
     function(is_expanded)
       texts[1] = self:get_node_icon(is_expanded)
       -- Redraw view as the has layout changed
-      self:draw(model, true)
+      self:draw(model, false)
     end,
     false
   )
@@ -269,12 +287,12 @@ function View:create_task_nodes(scene)
   local model = self.model
   local nodes = self:get_header_nodes(self.current_scene, model.is_converting)
   if scene == Scene.Main then
-    for name, template in pairs(model.templates) do
+    for name, template in tbl.pairs_by_keys(model.templates) do
       local template_nodes = {}
       for source_format, reason in pairs(model.skipped_tasks[name] or {}) do
         template_nodes[#template_nodes + 1] = self:create_skipped_task_node(reason, source_format)
       end
-      for source_format, task in pairs(model.tasks[name] or {}) do
+      for source_format, task in tbl.pairs_by_keys(model.tasks[name] or {}) do
         template_nodes[#template_nodes + 1] = self:create_task_node(template, task, source_format)
       end
       -- TODO: show max status of tasks, auto-expand only for yellow / red tasks
@@ -285,7 +303,7 @@ function View:create_task_nodes(scene)
         Node.RootNode(template_nodes),
         function(is_expanded)
           template_title_texts[1] = self:get_node_icon(is_expanded)
-          self:draw(self.model, true)
+          self:draw(self.model, false)
         end,
         true
       )
@@ -316,13 +334,13 @@ function View:create_task_nodes(scene)
   return nodes
 end
 
-function View:draw(model, persist_view_state)
+function View:draw(model, do_redraw)
   self.model = model
-  if not persist_view_state then
-    -- TODO: persist across scene changes
-    self.persisted_nodes = self:create_task_nodes(self.current_scene)
+  if do_redraw then
+    -- Redraw the scene from scratch
+    self.persisted_nodes[self.current_scene] = self:create_task_nodes(self.current_scene)
   end
-  self._window.draw(Node.RootNode(self.persisted_nodes))
+  self._window.draw(Node.RootNode(self.persisted_nodes[self.current_scene]))
 end
 
 return View

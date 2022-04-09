@@ -24,4 +24,22 @@ M.compact = function(arr, gaps)
   end
 end
 
+-- Returns an iterator that yields all items in the table in the order specified by compare.
+M.pairs_by_keys = function(tbl, compare)
+  local keys = {}
+  for key, _ in pairs(tbl) do
+    table.insert(keys, key)
+  end
+  compare = compare or function(a, b)
+    return a:lower() < b:lower()
+  end
+  table.sort(keys, compare)
+  local i = 0
+  -- Return an iterator function
+  return function()
+    i = i + 1
+    return keys[i] and keys[i], tbl[keys[i]] or nil
+  end
+end
+
 return M

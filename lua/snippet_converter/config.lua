@@ -9,7 +9,7 @@ M.DEFAULT_CONFIG = {
     },
   },
   default_opts = {
-    headless = true,
+    headless = false,
   },
 }
 
@@ -32,7 +32,15 @@ end
 local validate_paths = function(name, paths_for_format, format_name, path_name)
   validate_table(name, paths_for_format)
   local supported_formats = vim.tbl_keys(snippet_engines)
-  -- TODO: what happens with empty sources table?
+  vim.validate {
+    [name] = {
+      paths_for_format,
+      function(tbl)
+        return #vim.tbl_keys(tbl) > 0
+      end,
+      "non-empty table",
+    },
+  }
   for format, paths in pairs(paths_for_format) do
     vim.validate {
       [("%s for %s"):format(name, format)] = {
@@ -40,7 +48,7 @@ local validate_paths = function(name, paths_for_format, format_name, path_name)
         function(tbl)
           return #tbl > 0
         end,
-        "array with more than one entry",
+        "non-empty array",
       },
     }
     vim.validate {
@@ -65,13 +73,14 @@ local validate_paths = function(name, paths_for_format, format_name, path_name)
 end
 
 local validate_template = function(template)
-  -- TODO: no spaces in template name
   validate_table("template", template)
   vim.validate {
     ["template.name"] = {
       template.name,
-      "string",
-      true,
+      function(arg)
+        return not arg or not arg:match("%s")
+      end,
+      "nil or string without whitespace",
     },
   }
   validate_paths("template.sources", template.sources, "source.format", "source.path")

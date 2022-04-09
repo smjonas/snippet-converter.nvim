@@ -8,18 +8,23 @@ local function find_matching_snippet_files_in_rtp(
   source_format,
   source_path
 )
-  -- Turn glob pattern (with potential wildcards) into lua pattern;
-  -- escape all non-alphanumeric characters to be safe
-  local file_pattern = source_path:gsub("([^%w%*])", "%%%1"):gsub("%*", ".-")
-  print(file_pattern)
+  local file_pattern
+  -- "*" matches all files with the correct extension
+  if source_path == "*" then
+    file_pattern = ".*"
+  else
+    -- Turn glob pattern (with potential wildcards) into lua pattern;
+    -- escape all non-alphanumeric characters to be safe
+    file_pattern = source_path:gsub("([^%w%*])", "%%%1"):gsub("%*", ".-")
+  end
 
   local extension = snippet_engines[source_format].extension
   local rtp_files = vim.api.nvim_get_runtime_file("*" .. extension, true)
 
-  for _, file in ipairs(rtp_files) do
-    print(_, file, file:match(file_pattern) ~= nil)
-    if file:match(file_pattern) then
-      matching_snippet_files[#matching_snippet_files + 1] = file
+  for _, name in ipairs(rtp_files) do
+    -- name can either be a directory or a file name so make sure it is a file
+    if name:match(file_pattern) and io.file_exists(name) then
+      matching_snippet_files[#matching_snippet_files + 1] = name
     end
   end
 end

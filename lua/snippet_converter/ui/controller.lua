@@ -17,7 +17,7 @@ function Controller:create_view(model, settings)
   self.model = model
   self.view = View.new(settings)
   self.view:open()
-  self.view:draw(model, false)
+  self.view:draw(model, true)
 end
 
 function Controller:create_headless_view(model)
@@ -27,7 +27,7 @@ end
 
 function Controller:finalize()
   self.model.is_converting = false
-  self.view:draw(self.model, false)
+  self.view:draw(self.model, true)
 end
 
 return Controller

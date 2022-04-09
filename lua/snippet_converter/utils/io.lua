@@ -1,9 +1,9 @@
 local M = {}
 
-local uv = vim.loop
+-- local uv = vim.loop
 
-M.file_exists = function(path, mode)
-  return uv.fs_access(vim.fn.expand(path), mode or "R")
+M.file_exists = function(path)
+  return vim.fn.filereadable(vim.fn.expand(path)) == 1
 end
 
 M.read_file = function(path)

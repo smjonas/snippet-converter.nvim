@@ -43,6 +43,8 @@ Otherwise each table value will be output as is.
 
 --]]
 
+local tbl = require("snippet_converter.utils.table")
+
 local M = {}
 
 function M:escape_chars(str)
@@ -68,27 +70,13 @@ function M:format_string(value)
   self:emit(([["%s"]]):format(result), true)
 end
 
-local pairs_by_keys = function(tbl, compare)
-  local keys = {}
-  for key, _ in pairs(tbl) do
-    table.insert(keys, key)
-  end
-  table.sort(keys, compare)
-  local i = 0
-  -- Return an iterator function
-  return function()
-    i = i + 1
-    return keys[i] and keys[i], tbl[keys[i]] or nil
-  end
-end
-
 function M:format_table(value, add_indent)
   local tbl_count = vim.tbl_count(value)
   self:emit("{\n", add_indent)
   self.indent = self.indent + 2
   local prev_indent = self.indent
   local i = 1
-  for k, v in pairs_by_keys(value, self.compare) do
+  for k, v in tbl.pairs_by_keys(value, self.compare) do
     self:emit(('"%s": '):format(k), true)
     if type(v) == "string" then
       -- Reset indent temporarily
@@ -152,12 +140,8 @@ function M:format_value(value, add_indent)
   end
 end
 
-local default_compare = function(a, b)
-  return a:lower() < b:lower()
-end
-
 function M:pretty_print(data, compare, escape_special_chars)
-  self.compare = compare or default_compare
+  self.compare = compare
   self.escape_special_chars = escape_special_chars
   self.indent = 0
   self.out = {}
