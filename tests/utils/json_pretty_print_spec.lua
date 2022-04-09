@@ -48,16 +48,13 @@ describe("JSON utils should pretty-print", function()
   it("table with multiple key value pairs (custom sort order)", function()
     local expected = [[
 {
-  "keyB": "valueB",
-  "keyA": "valueA"
+  "key3": "value3",
+  "key1": "value1",
+  "key2": "value2"
 }]]
-    local input = { keyA = "valueA", keyB = "valueB" }
-    assert.are_same(
-      expected,
-      json:pretty_print(input, function(a, b)
-        return a:lower() > b:lower()
-      end)
-    )
+    local input = { key1 = "value1", key2 = "value2", key3 = "value3" }
+    local keys_order = { "key3", "key1", "key2" }
+    assert.are_same(expected, json:pretty_print(input, keys_order))
   end)
 
   it("array", function()
@@ -141,11 +138,6 @@ describe("JSON utils should pretty-print", function()
     ]
   }
 }]]
-    assert.are_same(
-      expected,
-      json:pretty_print(input, function(key, _)
-        return key == "language"
-      end)
-    )
+    assert.are_same(expected, json:pretty_print(input, { "language" }))
   end)
 end)

@@ -1,48 +1,3 @@
---[[
-
-Utility function that turns a Lua table into a nicely formatted JSON string (pretty-printing).
-
----
-
-pretty_print(data: table, compare: function, escape_special_chars: boolean) -> string
-
-Basic usage:
-
-json_pretty_print.pretty_print({
-  key = {
-    a_table = {
-      A = "v1",
-      B = "v2",
-    },
-    an_array = { "one", 2 },
-  },
-})
-
-returns the string:
-
-{
-  "key": {
-    "a_table": {
-      "A": "v1",
-      "B": "v2"
-    },
-    "an_array": [
-      "one",
-      2
-    ]
-  }
-}
-
-By default, keys in tables are sorted alhabetically. To change this, pass a different
-comparison function to stringify. This function should take as arguments the two keys
-to compare and return a boolean that determines whether the first argument should be
-output before the second or not.
-
-If you want to escape any special characters, set escape_special_chars to true.
-Otherwise each table value will be output as is.
-
---]]
-
 local tbl = require("snippet_converter.utils.table")
 
 local M = {}
@@ -140,8 +95,59 @@ function M:format_value(value, add_indent)
   end
 end
 
-function M:pretty_print(data, compare, escape_special_chars)
-  self.compare = compare
+--[[
+
+Utility function that turns a Lua table into a nicely formatted JSON string (pretty-printing).
+
+---
+
+Basic usage:
+
+json_pretty_print.pretty_print({
+  key = {
+    a_table = {
+      A = "v1",
+      B = "v2",
+    },
+    an_array = { "one", 2 },
+  },
+})
+
+returns the string:
+
+{
+  "key": {
+    "a_table": {
+      "A": "v1",
+      "B": "v2"
+    },
+    "an_array": [
+      "one",
+      2
+    ]
+  }
+}
+--]]
+--- Utility function that turns a Lua table into a nicely formatted JSON string (pretty-printing).
+---@param data table the table to pretty-print
+---@param keys_order table an array of keys that determines their order in the output
+---@param escape_special_chars boolean
+---@return string the pretty-printed string
+function M:pretty_print(data, keys_order, escape_special_chars)
+  if keys_order then
+    local order = {}
+    for i, key in ipairs(keys_order) do
+      order[key] = i
+    end
+    local max_pos = #keys_order + 1
+    self.compare = function(a, b)
+      return (order[a] or max_pos) - (order[b] or max_pos) < 0
+    end
+  else
+    self.compare = function(a, b)
+      return a:lower() < b:lower()
+    end
+  end
   self.escape_special_chars = escape_special_chars
   self.indent = 0
   self.out = {}
