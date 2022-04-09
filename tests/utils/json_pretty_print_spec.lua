@@ -100,7 +100,7 @@ describe("JSON utils should pretty-print", function()
     }
     local expected = [[
 {
-  "key": "\}\$\\\"\a\b\f\n\r\t\v"
+  "key": "\}\$\\\\\"\a\b\f\n\r\t\v"
 }]]
     assert.are_same(expected, json:pretty_print(input, nil, true))
   end)

@@ -144,7 +144,9 @@ end
 
 M.new_window = function()
   local namespace_id = vim.api.nvim_create_namespace("snippet_converter")
+  local augroup_id = vim.api.nvim_create_augroup("SnippetConverterWindow", {})
   local win_id, bufnr
+
   local function open()
     bufnr = vim.api.nvim_create_buf(false, true)
     win_id = vim.api.nvim_open_win(bufnr, true, create_popup_window_opts())
@@ -171,22 +173,24 @@ M.new_window = function()
       vim.api.nvim_buf_set_option(bufnr, key, value)
     end
 
-    local resize_autocmd = (
-      "autocmd VimResized <buffer> lua require('snippet_converter.ui.display').redraw_window(%d)"
-    ):format(win_id)
+    -- Resize autocommand
+    vim.api.nvim_create_autocmd("VimResized", {
+      group = augroup_id,
+      buffer = bufnr,
+      callback = function()
+        M.redraw_window(win_id)
+      end,
+    })
 
-    -- Will close the window when clicked outside
-    local autoclose_autocmd = (
-      "autocmd WinLeave,BufHidden,BufLeave <buffer> ++once lua require('snippet_converter.ui.display').destroy_window(%d, %d)"
-    ):format(win_id, bufnr)
-
-    vim.cmd(([[
-      augroup SnippetConverterWindow
-        autocmd!
-        %s
-        %s
-      augroup end
-    ]]):format(resize_autocmd, autoclose_autocmd))
+    -- Autoclose autocommand (closes window when clicked outside)
+    vim.api.nvim_create_autocmd({ "WinLeave", "BufHidden", "BufLeave" }, {
+      group = augroup_id,
+      buffer = bufnr,
+      once = true,
+      callback = function()
+        M.destroy_window(win_id, bufnr)
+      end,
+    })
   end
 
   local draw = function(node)

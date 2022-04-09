@@ -69,8 +69,7 @@ local get_package_json_string = function(name, filetypes, langs_for_filetype)
   end)
 end
 
--- TODO: remove source_format parameter
-M.convert = function(snippet, _, visit_node)
+M.convert = function(snippet, visit_node)
   if snippet.options and snippet.options:match("r") then
     err.raise_converter_error("regex trigger")
   end

@@ -48,8 +48,6 @@ end
 local create_snippet = function(snippet_name, trigger, snippet_info, parser, parser_errors_ptr)
   local body = type(snippet_info.body) == "string" and { snippet_info.body } or snippet_info.body
   parser = parser or body_parser
-  --TODO: remove assertion
-  assert(parser.parse)
   local ok, result = pcall(parser.parse, parser, table.concat(body, "\n"))
   if not ok then
     parser_errors_ptr[#parser_errors_ptr + 1] = result

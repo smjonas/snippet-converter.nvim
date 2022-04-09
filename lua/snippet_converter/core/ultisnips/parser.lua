@@ -9,7 +9,11 @@ M.get_lines = function(path)
   return io.read_file(path)
 end
 
--- TODO: docs for return values and params
+---@param path string the path to the snippet file used by get_lines
+---@param parsed_snippets_ptr table contains all previously parsed snippets, any new snippets will be added to the end of it
+---@param parser_errors_ptr table contains all previously encountered errors, any new errors that occur during parsing will be added to the end of it
+---@param context_ptr table contains all previously gathered global context, any global Python code found in the input file will be appended to the context.ptr_global_code subtable
+---@return number the new number of snippets that have been parsed
 M.parse = function(path, parsed_snippets_ptr, parser_errors_ptr, context_ptr)
   local lines = M.get_lines(path)
   local cur_snippet
@@ -40,7 +44,7 @@ M.parse = function(path, parsed_snippets_ptr, parser_errors_ptr, context_ptr)
           parser_errors_ptr[#parser_errors_ptr + 1] = err.new_parser_error(
             path,
             line_nr,
-            ([[missing context body "%s"]]):format(line)
+            ([[invalid context "%s"]]):format(line)
           )
         end
       elseif line:match("^global !p") then
@@ -99,7 +103,6 @@ end
 M.parse_header = function(path, line, line_nr, parser_errors_ptr)
   local stripped_header = line:match("^%s*snippet%s+(.-)%s*$")
   if stripped_header then
-    -- TODO(refactor): handle this in init.lua globally instead
     local ok, header = pcall(header_parser.parse, stripped_header)
     if not ok then
       parser_errors_ptr[#parser_errors_ptr + 1] = err.new_parser_error(path, line_nr, header)

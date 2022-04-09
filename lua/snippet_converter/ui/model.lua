@@ -45,7 +45,6 @@ end
 
 -- template.name must be non nil
 function Model:submit_task(template, source_format, num_snippets, num_input_files, parser_errors)
-  -- TODO: rename template name to unique ID
   self.templates[template.name] = template
   self.total_num_snippets = self.total_num_snippets + num_snippets
   make_default_table(self.tasks, template.name)[snippet_engines[source_format].label] = {

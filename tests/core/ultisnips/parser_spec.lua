@@ -58,12 +58,11 @@ endsnippet]],
     end
   end)
 
-  -- TODO: fix, also fail on invalid header
   it("should return correct info on header parse failure", function()
     local lines = vim.split(
       [[
 snippet a b c d
-function ${1:name}($2)
+^invalid snippet header
 endsnippet
 
 hey
@@ -309,5 +308,55 @@ context "1"]],
     end
   end)
 
-  -- TODO: invalid context test
+  it("should return errors for invalid context", function()
+    local lines = vim.split(
+      [[
+context
+
+context ""
+snippet fn "function" bA
+function ${1:name}($2)
+	${3:-- code}
+end
+endsnippet
+
+context 'need double quotes'
+snippet for
+for ${1:i}=${2:1},${3:10} do
+	${0:print(i)}
+end
+endsnippet]],
+      "\n"
+    )
+    parser.get_lines = function(_)
+      return lines
+    end
+
+    local num_new_snippets = parser.parse(
+      "/some/snippet/path.snippets",
+      parsed_snippets,
+      parser_errors,
+      context
+    )
+    assert.are_same(2, num_new_snippets)
+
+    local expected_errors = {
+      {
+        line_nr = 1,
+        msg = [[invalid context "context"]],
+        path = "/some/snippet/path.snippets",
+      },
+      {
+        line_nr = 3,
+        msg = [[invalid context "context """]],
+        path = "/some/snippet/path.snippets",
+      },
+      {
+        line_nr = 10,
+        msg = [[invalid context "context 'need double quotes'"]],
+        path = "/some/snippet/path.snippets",
+      },
+    }
+    assert.are_same(expected_errors, parser_errors)
+  end)
 end)

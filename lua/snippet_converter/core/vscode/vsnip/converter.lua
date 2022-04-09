@@ -19,8 +19,8 @@ M.visit_node = setmetatable(node_visitor, {
   __index = base_converter.visit_node(node_visitor),
 })
 
-M.convert = function(snippet, source_format)
-  return vscode_converter.convert(snippet, source_format, M.visit_node)
+M.convert = function(snippet)
+  return vscode_converter.convert(snippet, M.visit_node)
 end
 
 return M

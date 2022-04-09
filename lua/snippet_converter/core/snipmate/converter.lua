@@ -25,7 +25,7 @@ local node_visitor = {
 
 M.visit_node = setmetatable(node_visitor, { __index = base_converter.visit_node(node_visitor) })
 
-M.convert = function(snippet, _)
+M.convert = function(snippet)
   if snippet.options and snippet.options:match("r") then
     err.raise_converter_error("regex trigger")
   end

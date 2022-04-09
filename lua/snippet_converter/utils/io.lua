@@ -1,7 +1,5 @@
 local M = {}
 
--- local uv = vim.loop
-
 M.file_exists = function(path)
   return vim.fn.filereadable(vim.fn.expand(path)) == 1
 end

@@ -154,7 +154,7 @@ local convert_snippets = function(model, snippets, context, template)
 
           for _, snippet in ipairs(_snippets) do
             if not skip_snippet[snippet] then
-              local ok, converted_snippet = pcall(converter.convert, snippet, source_format)
+              local ok, converted_snippet = pcall(converter.convert, snippet)
               if not ok then
                 converter_errors[#converter_errors + 1] = {
                   msg = converted_snippet,

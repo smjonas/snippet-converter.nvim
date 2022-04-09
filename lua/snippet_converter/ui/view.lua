@@ -58,9 +58,9 @@ end
 
 function View:get_node_icon(is_expanded)
   if self.settings.ui.use_nerdfont_icons then
-    return is_expanded and "  " or "  "
+    return is_expanded and " " or " "
   else
-    return is_expanded and " \\ " or " > "
+    return is_expanded and "\\ " or "> "
   end
 end
 
@@ -186,7 +186,6 @@ function View:create_task_node(template, task, source_format)
     highlights = { "", status_icon.hl_group, "Statement", "", "healthError", "Comment" }
   else
     texts = {
-      self:get_node_icon(false),
       status_icon.icon,
       source_format,
       num_snippets_converted > 0 and ": successfully converted " or ": converted ",
@@ -200,7 +199,6 @@ function View:create_task_node(template, task, source_format)
       ),
     }
     highlights = {
-      "",
       status_icon.hl_group,
       "Statement",
       "",
@@ -210,8 +208,14 @@ function View:create_task_node(template, task, source_format)
       "",
       "Comment",
     }
+    if max_status == model.Status.Success then
+      return Node.MultiHlTextNode(texts, highlights, Node.Style.Padding(3))
+    end
   end
 
+  -- max_status == Status.Warning
+  table.insert(texts, 2, self:get_node_icon(false))
+  table.insert(highlights, 2, "")
   local child_nodes = {}
   for target_format, failures in pairs(task.converter_errors) do
     local num_output_files = task.num_output_files[target_format]
@@ -248,19 +252,13 @@ function View:create_task_node(template, task, source_format)
       end,
       false
     )
-    -- TODO: successful conversions
-    -- child_nodes[#child_nodes + 1] = Node.MultiHlTextNode(
-    --   task_texts,
-    --   { status_icon.hl_group, "Statement", "", "Statement", "Comment" },
-    --   Node.Style.Padding(5)
-    -- )
   end
 
   return Node.ExpandableNode(
-    Node.MultiHlTextNode(texts, highlights, Node.Style.Padding(2)),
+    Node.MultiHlTextNode(texts, highlights, Node.Style.Padding(3)),
     Node.RootNode(child_nodes),
     function(is_expanded)
-      texts[1] = self:get_node_icon(is_expanded)
+      texts[2] = self:get_node_icon(is_expanded)
       -- Redraw view as the has layout changed
       self:draw(model, false)
     end,
@@ -277,8 +275,8 @@ function View:create_skipped_task_node(reason, source_format)
   end
   local status = self:get_status_node_icon(self.model.Status.Error)
   return Node.MultiHlTextNode(
-    { "- ", status.icon, source_format, ": ", text },
-    { "", status.hl_group, "Statement", "", "healthError" },
+    { status.icon, source_format, ": ", text },
+    { status.hl_group, "Statement", "", "healthError" },
     Node.Style.Padding(3)
   )
 end
@@ -295,11 +293,17 @@ function View:create_task_nodes(scene)
       for source_format, task in tbl.pairs_by_keys(model.tasks[name] or {}) do
         template_nodes[#template_nodes + 1] = self:create_task_node(template, task, source_format)
       end
-      -- TODO: show max status of tasks, auto-expand only for yellow / red tasks
-      -- TODO: write number of converted snippets after Template header
-      local template_title_texts = { self:get_node_icon(true), "Template " .. name }
+      local amount_string = model.total_num_snippets == 1 and "snippet" or "snippets"
+      local template_title_texts = {
+        self:get_node_icon(true),
+        "Template " .. name,
+        (" (%d %s converted)"):format(
+          model.total_num_snippets - model.total_num_failures,
+          amount_string
+        ),
+      }
       nodes[#nodes + 1] = Node.ExpandableNode(
-        Node.MultiHlTextNode(template_title_texts, { "", "" }),
+        Node.MultiHlTextNode(template_title_texts, { "", "", "Comment" }, Node.Style.Padding(1)),
         Node.RootNode(template_nodes),
         function(is_expanded)
           template_title_texts[1] = self:get_node_icon(is_expanded)
