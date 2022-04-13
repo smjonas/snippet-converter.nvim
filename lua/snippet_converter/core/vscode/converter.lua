@@ -71,7 +71,7 @@ local get_package_json_string = function(name, filetypes, langs_for_filetype)
       snippets = snippets,
     },
   }
-  return json_utils:pretty_print(package_json, { "name", "description", "contributes" }, true)
+  return json_utils:pretty_print(package_json, { { "name", "description", "contributes" } }, true)
 end
 
 M.convert = function(snippet, visit_node)
@@ -96,19 +96,17 @@ end
 -- @param output_dir string @The absolute path to the directory to write the snippets to
 M.export = function(converted_snippets, filetype, output_path)
   local table_to_export = {}
-  local order = { "prefix", "description", "scope", "body" }
+  local order = { [1] = {}, [2] = { "prefix", "description", "scope", "body" } }
   for i, snippet in ipairs(converted_snippets) do
-    -- Ignore any other fields
     local key = snippet.name or snippet.trigger
+    order[1][i] = key
+    -- Ignore any other fields
     table_to_export[key] = {
       prefix = snippet.trigger,
       description = snippet.description,
       scope = snippet.scope,
       body = snippet.body,
     }
-    order[i + 5] = key
-    print(key)
-    assert(false)
   end
   local output_string = json_utils:pretty_print(table_to_export, order, true)
   output_path = export_utils.get_output_file_path(output_path, filetype, "json")
@@ -123,8 +121,7 @@ M.post_export = function(template, filetypes, output_path)
     { lua = { "lua" } }
   )
   local lines = export_utils.snippet_strings_to_lines { json_string }
-  -- TODO: check that output_path is a folder
-  io.write_file(lines, output_path .. "/package.json")
+  io.write_file(lines, io.get_containing_folder(output_path) .. "/package.json")
 end
 
 return M

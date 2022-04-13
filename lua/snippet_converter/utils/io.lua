@@ -8,6 +8,10 @@ M.folder_exists = function(path)
   return vim.fn.isdirectory(vim.fn.expand(path)) == 1
 end
 
+M.get_containing_folder = function(path)
+  return vim.fn.expand(":p:h", path)
+end
+
 M.read_file = function(path)
   -- Replace this with libuv's uv.read_file? However, in that case we only get the raw
   -- buffer content and would need to split the string it to get the lines.

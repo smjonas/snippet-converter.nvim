@@ -175,18 +175,6 @@
       "\\end{enumerate}"
     ]
   },
-  "fig": {
-    "prefix": "fig",
-    "description": "Figure environment",
-    "body": [
-      "\\begin{figure}[${1:htpb}]",
-      "\t\\centering",
-      "\t${2:\\includegraphics[width=0.8\\textwidth]{$3}}",
-      "\t\\caption{${4:$3}}",
-      "\t\\label{fig:${5:${3/\\W+/-/g}}}",
-      "\\end{figure}"
-    ]
-  },
   "floor": {
     "prefix": "floor",
     "description": "floor",
@@ -265,14 +253,6 @@
     "prefix": "NN",
     "description": "n",
     "body": "\\N"
-  },
-  "nn": {
-    "prefix": "nn",
-    "description": "Tikz node",
-    "body": [
-      "\\node[$5] (${1/[^0-9a-zA-Z]//g}$2) ${3:at (${4:0,0}) }{$$1$};",
-      "$0"
-    ]
   },
   "nnn": {
     "prefix": "nnn",
@@ -362,7 +342,7 @@
   "set": {
     "prefix": "set",
     "description": "set",
-    "body": "\\{$1\\\} $0"
+    "body": "\\{$1\\} $0"
   },
   "SI": {
     "prefix": "SI",

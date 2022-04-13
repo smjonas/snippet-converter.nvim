@@ -44,32 +44,6 @@
     "description": "ldots",
     "body": "\\ldots"
   },
-  "table": {
-    "prefix": "table",
-    "description": "Table environment",
-    "body": [
-      "\\begin{table}[${1:htpb}]",
-      "\t\\centering",
-      "\t\\caption{${2:caption}}",
-      "\t\\label{tab:${3:label}}",
-      "\t\\begin{tabular}{${5:c}}",
-      "\t$0${5/((?<=.)c|l|r)|./(?1: & )/g}",
-      "\t\\end{tabular}",
-      "\\end{table}"
-    ]
-  },
-  "fig": {
-    "prefix": "fig",
-    "description": "Figure environment",
-    "body": [
-      "\\begin{figure}[${1:htpb}]",
-      "\t\\centering",
-      "\t${2:\\includegraphics[width=0.8\\textwidth]{$3}}",
-      "\t\\caption{${4:$3}}",
-      "\t\\label{fig:${5:${3/\\W+/-/g}}}",
-      "\\end{figure}"
-    ]
-  },
   "enum": {
     "prefix": "enum",
     "description": "Enumerate",
@@ -310,14 +284,6 @@
       "\t\\caption{$8}",
       "\t\\label{${9:$8}}",
       "\\end{figure}"
-    ]
-  },
-  "nn": {
-    "prefix": "nn",
-    "description": "Tikz node",
-    "body": [
-      "\\node[$5] (${1/[^0-9a-zA-Z]//g}$2) ${3:at (${4:0,0}) }{$$1$};",
-      "$0"
     ]
   },
   "mcal": {

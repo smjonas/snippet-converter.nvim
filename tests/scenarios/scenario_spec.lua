@@ -24,8 +24,7 @@ describe("Scenario", function()
     )
   end)
 
-  -- Works
-  it("#yay UltiSnips to UltiSnips", function()
+  it("#works UltiSnips to UltiSnips", function()
     local snippet_converter = require("snippet_converter")
     local template = {
       sources = {
@@ -61,8 +60,7 @@ describe("Scenario", function()
     assert.are_same(expected_output_snipmate, actual_output)
   end)
 
-  -- Works
-  it("#lel UltiSnips to VSCode", function()
+  it("#works UltiSnips to VSCode", function()
     local snippet_converter = require("snippet_converter")
     local template = {
       sources = {
@@ -71,16 +69,18 @@ describe("Scenario", function()
         },
       },
       output = {
-        vscode = { "tests/scenarios" },
+        -- Path can be either for a file or a containing folder
+        vscode = { "tests/scenarios/output.json" },
       },
     }
     snippet_converter.setup { templates = { template } }
-    local actual_output = vim.fn.readfile("tests/scenarios/ultisnips.json")
-    snippet_converter.convert_snippets()
+    local actual_output = vim.fn.readfile("tests/scenarios/output.json")
+    local model = snippet_converter.convert_snippets()
+    -- assert(false)
     assert.are_same(expected_output_vscode, actual_output)
   end)
 
-  it("VSCode to VSCode", function()
+  it("#works VSCode to VSCode", function()
     local snippet_converter = require("snippet_converter")
     local template = {
       sources = {
@@ -89,7 +89,7 @@ describe("Scenario", function()
         },
       },
       output = {
-        vscode = { "tests/scenarios/output_vscode" },
+        vscode = { "tests/scenarios/output3.json" },
       },
     }
     snippet_converter.setup {
@@ -103,11 +103,9 @@ describe("Scenario", function()
       end,
     }
     -- TODO: support file name as VSCode output path
-    local actual_output = vim.fn.readfile("tests/scenarios/output_vscode/ultisnips.json")
+    local actual_output = vim.fn.readfile("tests/scenarios/output3.json")
 
     local model = snippet_converter.convert_snippets()
-    print(vim.inspect(model))
-    -- assert(false)
     assert.are_same(expected_output_vscode_sorted, actual_output)
     -- TODO: make tests independent of each other!
   end)

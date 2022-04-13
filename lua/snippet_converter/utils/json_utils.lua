@@ -5,10 +5,10 @@ local M = {}
 function M:escape_chars(str)
   -- Escape escape sequences (see http://www.lua.org/manual/5.1/manual.html#2.1).
   -- Also escape '\', '}' and '$' characters.
-  return str:gsub("[\\}%$\"'\a\b\f\n\r\t\v]", {
+  return str:gsub("[\\\"'\a\b\f\n\r\t\v]", {
     ["\\"] = "\\\\",
-    ["}"] = "\\}",
-    ["$"] = "\\$",
+    -- ["}"] = "\\}",
+    -- ["$"] = "\\$",
     ['"'] = '\\"',
     ["\a"] = "\\a",
     ["\b"] = "\\b",
@@ -31,9 +31,10 @@ function M:format_table(value, add_indent)
   self.indent = self.indent + 2
   local prev_indent = self.indent
   local i = 1
-  -- TODO: set self.compare per indentation level
-  for k, v in tbl.pairs_by_keys(value, self.compare) do
-    self:emit(('"%s": '):format(k), true)
+  -- This might be incorrect for more than two levels because the
+  -- table to iterate over is always the same
+  for k, v in tbl.pairs_by_keys(value, self.compare[self.indent / 2] or self.default_compare) do
+    self:emit(('"%s": '):format(self.escape_special_chars and self:escape_chars(k) or k), true)
     if type(v) == "string" then
       -- Reset indent temporarily
       self.indent = 0
@@ -131,23 +132,25 @@ returns the string:
 --]]
 --- Utility function that turns a Lua table into a nicely formatted JSON string (pretty-printing).
 ---@param data table the table to pretty-print
----@param keys_order table an array of keys that determines their order in the output
+---@param keys_orders table a table where the value for each key (the indentation level) is an array of keys that determines their order in the output
 ---@param escape_special_chars boolean
 ---@return string the pretty-printed string
-function M:pretty_print(data, keys_order, escape_special_chars)
-  if keys_order then
-    local order = {}
-    for i, key in ipairs(keys_order) do
-      order[key] = i
+function M:pretty_print(data, keys_orders, escape_special_chars)
+  self.compare = {}
+  if keys_orders then
+    for indentation_level, keys_order in pairs(keys_orders) do
+      local order = {}
+      for i, key in ipairs(keys_order) do
+        order[key] = i
+      end
+      local max_pos = #keys_order + 1
+      self.compare[indentation_level] = function(a, b)
+        return (order[a] or max_pos) - (order[b] or max_pos) < 0
+      end
     end
-    local max_pos = #keys_order + 1
-    self.compare = function(a, b)
-      return (order[a] or max_pos) - (order[b] or max_pos) < 0
-    end
-  else
-    self.compare = function(a, b)
-      return a:lower() < b:lower()
-    end
+  end
+  self.default_compare = function(a, b)
+    return a:lower() < b:lower()
   end
   self.escape_special_chars = escape_special_chars
   self.indent = 0

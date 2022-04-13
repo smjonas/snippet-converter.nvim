@@ -45,7 +45,7 @@ describe("JSON utils should pretty-print", function()
     assert.are_same(expected, json:pretty_print(input))
   end)
 
-  it("table with multiple key value pairs (custom sort order)", function()
+  it("table with multiple key value pairs (single-level custom sort order)", function()
     local expected = [[
 {
   "key3": "value3",
@@ -54,7 +54,28 @@ describe("JSON utils should pretty-print", function()
 }]]
     local input = { key1 = "value1", key2 = "value2", key3 = "value3" }
     local keys_order = { "key3", "key1", "key2" }
-    assert.are_same(expected, json:pretty_print(input, keys_order))
+    assert.are_same(expected, json:pretty_print(input, { keys_order }))
+  end)
+
+  it("table with multiple key value pairs (mult-level custom sort order)", function()
+    local expected = [[
+{
+  "key3": {
+    "inner_key3": "v",
+    "inner_key2": "v",
+    "inner_key1": "v"
+  },
+  "key1": "value1",
+  "key2": "value2"
+}]]
+    local input = {
+      key1 = "value1",
+      key2 = "value2",
+      key3 = { inner_key1 = "v", inner_key2 = "v", inner_key3 = "v" },
+    }
+    local keys_order_level_1 = { "key3", "key1", "key2" }
+    local keys_order_level_2 = { "inner_key3", "inner_key2", "inner_key1" }
+    assert.are_same(expected, json:pretty_print(input, { keys_order_level_1, keys_order_level_2 }))
   end)
 
   it("array", function()
@@ -91,13 +112,13 @@ describe("JSON utils should pretty-print", function()
     assert.are_same(expected, json:pretty_print(input))
   end)
 
-  it("should escape special characters", function()
+  it("should escape special characters in key and value", function()
     local input = {
-      key = '}$\\\\"\a\b\f\n\r\t\v',
+      ['\\\\"\a\b\f\n\r\t\v'] = '\\\\"\a\b\f\n\r\t\v',
     }
     local expected = [[
 {
-  "key": "\}\$\\\\\"\a\b\f\n\r\t\v"
+  "\\\\\"\a\b\f\n\r\t\v": "\\\\\"\a\b\f\n\r\t\v"
 }]]
     assert.are_same(expected, json:pretty_print(input, nil, true))
   end)
@@ -138,6 +159,6 @@ describe("JSON utils should pretty-print", function()
     ]
   }
 }]]
-    assert.are_same(expected, json:pretty_print(input, { "language" }))
+    assert.are_same(expected, json:pretty_print(input, { { "language" } }))
   end)
 end)
