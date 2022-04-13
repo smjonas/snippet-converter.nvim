@@ -14,14 +14,24 @@ M.make_default_table = function(tbl, key)
   })[key]
 end
 
--- Removes all gaps in the array
+-- Removes all gaps in the array (https://stackoverflow.com/a/53038524/10365305)
 M.compact = function(arr, gaps)
-  for i = #arr, 1, -1 do
+  local j = 1
+  local n = #arr
+
+  for i = 1, n do
     if gaps[i] then
-      arr[i] = arr[#arr]
-      arr[#arr] = nil
+      arr[i] = nil
+    else
+      -- Move i's kept value to j's position, if it's not already there.
+      if i ~= j then
+        arr[j] = arr[i]
+        arr[i] = nil
+      end
+      j = j + 1 -- Increment position of where we'll place the next kept value.
     end
   end
+  return arr
 end
 
 -- Returns an iterator that yields all items in the table in the order specified by compare.

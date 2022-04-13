@@ -31,6 +31,7 @@ function M:format_table(value, add_indent)
   self.indent = self.indent + 2
   local prev_indent = self.indent
   local i = 1
+  -- TODO: set self.compare per indentation level
   for k, v in tbl.pairs_by_keys(value, self.compare) do
     self:emit(('"%s": '):format(k), true)
     if type(v) == "string" then

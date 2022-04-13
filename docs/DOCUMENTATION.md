@@ -139,6 +139,10 @@ They can be specified per template or globally.
 
 The transformation function takes as parameters the `snippet` itself and a `helper` table that provides additional utilities for transforming the snippet.
 If `nil` is returned, the current snippet is discarded, otherwise the snippet is replaced with the returned table.
+<!-- It may return either `nil` or a table - the type determines how the snippet will be handled: -->
+<!-- - `nil`: the current snippet will be discarded -->
+<!-- - table: the snippet will be replaced with the returned table -->
+<!-- - string: the snippet will skip be replaced  -->
 
 The available keys in the snippet table are listed below. Optional keys can be nil.
 
@@ -167,10 +171,10 @@ Modify a specific UltiSnips snippet (this effectively reverts [this](https://git
 ```lua
 transform_snippets = function(snippet, helper)
   if snippet.path:match("vim-snippets/UltiSnips/tex.snippets") and snippet.trigger == "$$" then
-    return helper.parse([[
+    return [[
 snippet im "Inline Math" w
 $${1}$
-endsnippet]])
+endsnippet]]
   end
   return snippet
 end

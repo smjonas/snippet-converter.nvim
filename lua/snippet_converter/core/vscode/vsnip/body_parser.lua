@@ -60,10 +60,7 @@ function VSnipParser:parse_variable(got_bracket)
     self:expect("}")
     return p.new_inner_node(NodeType.VARIABLE, { var = var, any = any })
   end
-  -- TODO
-  -- if p.peek("/") then
   self:raise_parse_error("transform in variable node is not supported by vim-vsnip")
-  -- end
 end
 
 function VSnipParser:raise_parse_error(description)

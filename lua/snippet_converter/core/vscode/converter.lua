@@ -96,24 +96,27 @@ end
 -- @param output_dir string @The absolute path to the directory to write the snippets to
 M.export = function(converted_snippets, filetype, output_path)
   local table_to_export = {}
-  for _, snippet in ipairs(converted_snippets) do
+  local order = { "prefix", "description", "scope", "body" }
+  for i, snippet in ipairs(converted_snippets) do
     -- Ignore any other fields
-    table_to_export[snippet.name or snippet.trigger] = {
+    local key = snippet.name or snippet.trigger
+    table_to_export[key] = {
       prefix = snippet.trigger,
       description = snippet.description,
       scope = snippet.scope,
       body = snippet.body,
     }
+    order[i + 5] = key
+    print(key)
+    assert(false)
   end
-  local output_string = json_utils:pretty_print(
-    table_to_export,
-    { "prefix", "description", "scope" }
-  )
+  local output_string = json_utils:pretty_print(table_to_export, order, true)
   output_path = export_utils.get_output_file_path(output_path, filetype, "json")
   io.write_file(vim.split(output_string, "\n"), output_path)
 end
 
 M.post_export = function(template, filetypes, output_path)
+  print(vim.inspect(filetypes))
   local json_string = get_package_json_string(
     ("%s-snippets"):format(template.name),
     filetypes,

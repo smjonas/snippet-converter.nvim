@@ -52,13 +52,14 @@ describe("Snippet converter", function()
     snippet_engines["vscode"].converter = "tests.init.converter_mock"
   end)
 
-  it("should correctly apply snippet transform", function()
+  it("should correctly apply local + global snippet transforms", function()
     local snippets = {
       ultisnips = {
         lua = {
           create_test_snippet("A"),
           create_test_snippet("B"),
           create_test_snippet("C"),
+          create_test_snippet("D"),
         },
       },
     }
@@ -72,24 +73,27 @@ describe("Snippet converter", function()
       output = {
         vscode = { "/some/path/lua.json" },
       },
-      -- TODO: support global transform
       transform_snippets = function(snippet, helper)
         assert.are_same("ultisnips", helper.source_format)
         if snippet.trigger == "B" then
           snippet.description = "Updated description"
-          return snippet
+        elseif snippet.trigger == "C" then
+          snippet.description = "Updated by local transform"
         else
           return nil
         end
-        -- TODO
-        --         elseif snippet.trigger == "B" then
-        --           return helper.parser.parse[[
-        -- snippet test
-        -- code to be exported
-        -- endsnippet]]
+        return snippet
       end,
     }
-    snippet_converter.setup { templates = { template } }
+    snippet_converter.setup {
+      templates = { template },
+      transform_snippets = function(snippet, _)
+        if snippet.trigger == "C" then
+          snippet.description = "Updated by global transform"
+        end
+        return snippet
+      end,
+    }
     -- Submit task to ensure that the model is correctly initialized
     model:submit_task(template, "ultisnips", 1, 1, {})
     local stubbed_converter = stub.new(require("tests.init.converter_mock"), "export")
@@ -100,10 +104,10 @@ describe("Snippet converter", function()
     assert.stub(stubbed_converter).was.called_with(
       match.is_same {
         -- Can delete first and last snippet
-        -- Can modify snippet
+        -- Can modify snippet by local transform
         'snippet B "Updated description"\nif $1 then\n\t$2\nelse\n\t$0\nend\nendsnippet',
-        -- Can set converted snippet text
-        -- "snippet code to be exported",
+        -- Can modify snippet by global transform (global should override local)
+        'snippet C "Updated by global transform"\nif $1 then\n\t$2\nelse\n\t$0\nend\nendsnippet',
       },
       match.is_same("lua"),
       match.is_same("/some/path/lua.json"),

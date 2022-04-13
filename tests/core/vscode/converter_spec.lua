@@ -30,6 +30,20 @@ describe("VSCode converter should", function()
     assert.are_same(expected, actual)
   end)
 
+  it("correctly escape backslashes", function()
+    local snippet = {
+      trigger = "fn",
+      body = {
+        { type = NodeType.TEXT, text = [[\t\\]] },
+      },
+    }
+    local actual = converter.convert(snippet)
+    local expected = {
+      trigger = "fn",
+      body = [[\\t\\\\]],
+    }
+    assert.are_same(expected, actual)
+  end)
   it("handle missing description with multiple lines in body", function()
     local snippet = {
       trigger = "fn",
@@ -60,7 +74,6 @@ describe("VSCode converter should", function()
         {
           type = NodeType.TABSTOP,
           transform = {
-            -- TODO: remove type from transform node
             type = NodeType.TRANSFORM,
             regex = "(.*)",
             regex_kind = NodeType.RegexKind.PYTHON,

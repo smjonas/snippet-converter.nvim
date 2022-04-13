@@ -77,7 +77,6 @@ local format_modifier_tokens = {
 }
 
 local var_pattern = "[_a-zA-Z][_a-zA-Z0-9]*"
--- TODO: move
 local options_pattern = "[^}]*"
 local parse_int = p.pattern("[0-9]+")
 

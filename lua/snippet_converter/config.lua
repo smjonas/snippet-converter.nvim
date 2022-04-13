@@ -65,7 +65,7 @@ local validate_paths = function(name, paths_for_format, format_name, path_name)
       vim.validate {
         [path_name] = {
           path,
-          "string", -- TODO: support * as path to find all files matching extension in rtp
+          "string",
         },
       }
     end

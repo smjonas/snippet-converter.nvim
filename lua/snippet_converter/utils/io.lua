@@ -4,6 +4,10 @@ M.file_exists = function(path)
   return vim.fn.filereadable(vim.fn.expand(path)) == 1
 end
 
+M.folder_exists = function(path)
+  return vim.fn.isdirectory(vim.fn.expand(path)) == 1
+end
+
 M.read_file = function(path)
   -- Replace this with libuv's uv.read_file? However, in that case we only get the raw
   -- buffer content and would need to split the string it to get the lines.
@@ -15,6 +19,7 @@ M.write_file = function(object, path)
   -- Create missing directories (if any)
   if vim.fn.isdirectory(dir_name) ~= 1 then
     -- TODO: check output filename out.snippets for vscode output
+    print(path, dir_name)
     vim.fn.mkdir(dir_name, "p")
   end
   vim.fn.writefile(object, path)

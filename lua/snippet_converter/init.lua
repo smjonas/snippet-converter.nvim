@@ -15,7 +15,7 @@ M.setup = function(user_config)
   -- Template names are optional, in that case use an integer
   for i, template in ipairs(M.config.templates) do
     if not template.name then
-      -- TODO: what if i is an existing name?
+      -- This might cause duplicate names but let's ignore that case
       template.name = tostring(i)
     end
     M.config.templates[i] = cfg.merge_template_config(template)
@@ -89,16 +89,14 @@ local parse_snippets = function(model, snippet_paths, template)
 end
 
 local transform_snippets = function(transformation, snippet, helper)
-  local delete
+  local should_delete = false
   local result = transformation(snippet, helper)
   if result == nil then -- delete the snippet
-    delete = true
+    should_delete = true
   elseif type(result) == "table" then -- overwrite the snippet to be converted
     snippet = result
-    -- elseif type(result) == "string" then -- overwrite the conversion result
-    --   converted_snippet = result
   end
-  return delete
+  return should_delete
 end
 
 local sort_snippets = function(format, template, snippets)
@@ -110,6 +108,7 @@ local sort_snippets = function(format, template, snippets)
   else
     compare = template.compare
   end
+  -- If not set at this point, don't sort the snippets but output them in the order of appearance
   if sort_by then
     table.sort(snippets, function(a, b)
       return compare(sort_by(a), sort_by(b))
@@ -117,15 +116,10 @@ local sort_snippets = function(format, template, snippets)
   end
 end
 
--- local wrap_parser = function(source_format)
---   local parser = require(snippet_engines[source_format].parser)
--- end
-
 local convert_snippets = function(model, snippets, context, template)
   local transform_helper = {}
   for source_format, snippets_for_format in pairs(snippets) do
     transform_helper.source_format = source_format
-    -- TODO: add parser to transform_helper
     if not model:did_skip_task(template, source_format) then
       for target_format, output_paths in pairs(template.output) do
         local converter_errors = {}
@@ -136,14 +130,23 @@ local convert_snippets = function(model, snippets, context, template)
         local filetypes = {}
         for filetype, _snippets in pairs(snippets_for_format) do
           local skip_snippet = {}
-          -- Apply transformation
-          if template.transform_snippets then
+          -- Apply local, then global transformations
+          if template.transform_snippets or M.config.transform_snippets then
             for i, snippet in ipairs(_snippets) do
-              skip_snippet[i] = transform_snippets(
-                template.transform_snippets,
-                snippet,
-                transform_helper
-              )
+              if template.transform_snippets then
+                skip_snippet[i] = transform_snippets(
+                  template.transform_snippets,
+                  snippet,
+                  transform_helper
+                )
+              end
+              if M.config.transform_snippets and not skip_snippet[i] then
+                skip_snippet[i] = transform_snippets(
+                  M.config.transform_snippets,
+                  snippet,
+                  transform_helper
+                )
+              end
             end
           end
 

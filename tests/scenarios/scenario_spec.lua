@@ -62,7 +62,7 @@ describe("Scenario", function()
   end)
 
   -- Works
-  it("UltiSnips to VSCode", function()
+  it("#lel UltiSnips to VSCode", function()
     local snippet_converter = require("snippet_converter")
     local template = {
       sources = {
@@ -71,16 +71,16 @@ describe("Scenario", function()
         },
       },
       output = {
-        vscode = { "tests/scenarios/output.json" },
+        vscode = { "tests/scenarios" },
       },
     }
     snippet_converter.setup { templates = { template } }
-    local actual_output = vim.fn.readfile("tests/scenarios/output.json")
+    local actual_output = vim.fn.readfile("tests/scenarios/ultisnips.json")
     snippet_converter.convert_snippets()
     assert.are_same(expected_output_vscode, actual_output)
   end)
 
-  it("#wow VSCode to VSCode", function()
+  it("VSCode to VSCode", function()
     local snippet_converter = require("snippet_converter")
     local template = {
       sources = {
@@ -89,7 +89,7 @@ describe("Scenario", function()
         },
       },
       output = {
-        vscode = { "tests/scenarios/output.json" },
+        vscode = { "tests/scenarios/output_vscode" },
       },
     }
     snippet_converter.setup {
@@ -102,7 +102,8 @@ describe("Scenario", function()
         return first:lower() < second:lower()
       end,
     }
-    local actual_output = vim.fn.readfile("tests/scenarios/output.json")
+    -- TODO: support file name as VSCode output path
+    local actual_output = vim.fn.readfile("tests/scenarios/output_vscode/ultisnips.json")
 
     local model = snippet_converter.convert_snippets()
     print(vim.inspect(model))
