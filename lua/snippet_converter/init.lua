@@ -15,7 +15,7 @@ M.setup = function(user_config)
   -- Template names are optional, in that case use an integer
   for i, template in ipairs(M.config.templates) do
     if not template.name then
-      -- This might cause duplicate names but let's ignore that case
+      -- This might cause duplicate names but let's not support that case
       template.name = tostring(i)
     end
     M.config.templates[i] = cfg.merge_template_config(template)
@@ -29,7 +29,7 @@ M.setup = function(user_config)
 end
 
 -- Partitions the snippet paths into a table of <filetype, [snippet_paths]>
--- (e.g. filetype of an input file "lua.snippets" is "lua").
+-- (e.g. filetype of an input file "lua.snippets" gis "lua").
 
 -- @param snippet_paths table<string> a list of snippet paths
 -- @return <string, string> a table where each key is a filetype

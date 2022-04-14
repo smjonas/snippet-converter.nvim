@@ -4,11 +4,8 @@ local M = {}
 
 function M:escape_chars(str)
   -- Escape escape sequences (see http://www.lua.org/manual/5.1/manual.html#2.1).
-  -- Also escape '\', '}' and '$' characters.
-  return str:gsub("[\\\"'\a\b\f\n\r\t\v]", {
+  return str:gsub('[\\"\a\b\f\n\r\t\v]', {
     ["\\"] = "\\\\",
-    -- ["}"] = "\\}",
-    -- ["$"] = "\\$",
     ['"'] = '\\"',
     ["\a"] = "\\a",
     ["\b"] = "\\b",

@@ -27,7 +27,7 @@ snippet_engines.vscode = {
     return snippet.name
   end,
   default_compare = function(first, second)
-    return first:upper() < second:upper()
+    return first < second
   end,
 }
 
@@ -42,7 +42,7 @@ snippet_engines.vsnip = {
     return snippet.name
   end,
   default_compare = function(first, second)
-    return first:upper() < second:upper()
+    return first < second
   end,
 }
 

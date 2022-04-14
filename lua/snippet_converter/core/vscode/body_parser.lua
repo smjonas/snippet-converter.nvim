@@ -82,7 +82,7 @@ local parse_int = p.pattern("[0-9]+")
 
 -- Expose to subclasses.
 function VSCodeParser:parse_text()
-  -- ''$' must be escaped; '}' signals the end of the text
+  -- '$' and '}' must be escaped
   return self:parse_escaped_text("[%$}]")
 end
 

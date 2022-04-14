@@ -44,6 +44,24 @@ describe("VSCode converter should", function()
     }
     assert.are_same(expected, actual)
   end)
+
+  it("correctly escape curly brace preceded by backslash", function()
+    local snippet = {
+      trigger = "fn",
+      body = {
+        { type = NodeType.TEXT, text = [[\\{$1\\} $0]] },
+      },
+    }
+    local actual = converter.convert(snippet)
+    local expected = {
+      trigger = "fn",
+      body = [[\\{$1\\} $0]],
+    }
+    assert.are_same(expected, actual)
+  end)
+
+-- \\{$1\\} $0
+
   it("handle missing description with multiple lines in body", function()
     local snippet = {
       trigger = "fn",

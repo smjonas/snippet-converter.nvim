@@ -45,6 +45,10 @@ M.node_visitor = {
   [NodeType.VISUAL_PLACEHOLDER] = function(_)
     err.raise_converter_error(NodeType.to_string(NodeType.VISUAL_PLACEHOLDER))
   end,
+  [NodeType.TEXT] = function(node)
+    -- Escape '$' and '}' characters (see https://code.visualstudio.com/docs/editor/userdefinedsnippets#_grammar)
+    return node.text:gsub("[%$}]", "\\%1")
+  end
 }
 
 M.visit_node = setmetatable(M.node_visitor, {

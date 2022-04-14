@@ -114,11 +114,11 @@ describe("JSON utils should pretty-print", function()
 
   it("should escape special characters in key and value", function()
     local input = {
-      ['\\\\"\a\b\f\n\r\t\v'] = '\\\\"\a\b\f\n\r\t\v',
+      ['"\a\b\f\n\r\t\v\\\\'] = '"\a\b\f\n\r\t\v\\\\',
     }
     local expected = [[
 {
-  "\\\\\"\a\b\f\n\r\t\v": "\\\\\"\a\b\f\n\r\t\v"
+  "\"\a\b\f\n\r\t\v\\\\": "\"\a\b\f\n\r\t\v\\\\"
 }]]
     assert.are_same(expected, json:pretty_print(input, nil, true))
   end)

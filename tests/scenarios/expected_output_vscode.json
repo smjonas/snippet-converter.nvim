@@ -3,40 +3,40 @@
     "prefix": "template",
     "description": "Basic template",
     "body": [
-      "\\documentclass[a4paper]{article}",
+      "\\documentclass[a4paper]{article\\}",
       "",
-      "\\usepackage[utf8]{inputenc}",
-      "\\usepackage[T1]{fontenc}",
-      "\\usepackage{textcomp}",
-      "\\usepackage[dutch]{babel}",
-      "\\usepackage{amsmath, amssymb}",
+      "\\usepackage[utf8]{inputenc\\}",
+      "\\usepackage[T1]{fontenc\\}",
+      "\\usepackage{textcomp\\}",
+      "\\usepackage[dutch]{babel\\}",
+      "\\usepackage{amsmath, amssymb\\}",
       "",
       "",
       "% figure support",
-      "\\usepackage{import}",
-      "\\usepackage{xifthen}",
+      "\\usepackage{import\\}",
+      "\\usepackage{xifthen\\}",
       "\\pdfminorversion=7",
-      "\\usepackage{pdfpages}",
-      "\\usepackage{transparent}",
-      "\\newcommand{\\incfig}[1]{%",
-      "\t\\def\\svgwidth{\\columnwidth}",
-      "\t\\import{./figures/}{#1.pdf_tex}",
-      "}",
+      "\\usepackage{pdfpages\\}",
+      "\\usepackage{transparent\\}",
+      "\\newcommand{\\incfig\\}[1]{%",
+      "\t\\def\\svgwidth{\\columnwidth\\}",
+      "\t\\import{./figures/\\}{#1.pdf_tex\\}",
+      "\\}",
       "",
       "\\pdfsuppresswarningpagegroup=1",
       "",
-      "\\begin{document}",
+      "\\begin{document\\}",
       "\t$0",
-      "\\end{document}"
+      "\\end{document\\}"
     ]
   },
   "beg": {
     "prefix": "beg",
     "description": "begin{} / end{}",
     "body": [
-      "\\begin{$1}",
+      "\\begin{$1\\}",
       "\t$0",
-      "\\end{$1}"
+      "\\end{$1\\}"
     ]
   },
   "...": {
@@ -48,33 +48,33 @@
     "prefix": "enum",
     "description": "Enumerate",
     "body": [
-      "\\begin{enumerate}",
+      "\\begin{enumerate\\}",
       "\t\\item $0",
-      "\\end{enumerate}"
+      "\\end{enumerate\\}"
     ]
   },
   "item": {
     "prefix": "item",
     "description": "Itemize",
     "body": [
-      "\\begin{itemize}",
+      "\\begin{itemize\\}",
       "\t\\item $0",
-      "\\end{itemize}"
+      "\\end{itemize\\}"
     ]
   },
   "desc": {
     "prefix": "desc",
     "description": "Description",
     "body": [
-      "\\begin{description}",
+      "\\begin{description\\}",
       "\t\\item[$1] $0",
-      "\\end{description}"
+      "\\end{description\\}"
     ]
   },
   "pac": {
     "prefix": "pac",
     "description": "Package",
-    "body": "\\usepackage[${1:options}]{${2:package}}$0"
+    "body": "\\usepackage[${1:options}]{${2:package}\\}$0"
   },
   "=>": {
     "prefix": "=>",
@@ -94,7 +94,7 @@
   "//": {
     "prefix": "//",
     "description": "Fraction",
-    "body": "\\frac{$1}{$2}$0"
+    "body": "\\frac{$1\\}{$2\\}$0"
   },
   "sympy": {
     "prefix": "sympy",
@@ -129,42 +129,42 @@
   "pmat": {
     "prefix": "pmat",
     "description": "pmat",
-    "body": "\\begin{pmatrix} $1 \\end{pmatrix} $0"
+    "body": "\\begin{pmatrix\\} $1 \\end{pmatrix\\} $0"
   },
   "bmat": {
     "prefix": "bmat",
     "description": "bmat",
-    "body": "\\begin{bmatrix} $1 \\end{bmatrix} $0"
+    "body": "\\begin{bmatrix\\} $1 \\end{bmatrix\\} $0"
   },
   "conj": {
     "prefix": "conj",
     "description": "conjugate",
-    "body": "\\overline{$1}$0"
+    "body": "\\overline{$1\\}$0"
   },
   "sum": {
     "prefix": "sum",
     "description": "sum",
-    "body": "\\sum_{n=${1:1}}^{${2:\\infty}} ${3:a_n z^n}"
+    "body": "\\sum_{n=${1:1}\\}^{${2:\\infty}\\} ${3:a_n z^n}"
   },
   "taylor": {
     "prefix": "taylor",
     "description": "taylor",
-    "body": "\\sum_{${1:k}=${2:0}}^{${3:\\infty}} ${4:c_$1} (x-a)^$1 $0"
+    "body": "\\sum_{${1:k}=${2:0}\\}^{${3:\\infty}\\} ${4:c_$1} (x-a)^$1 $0"
   },
   "lim": {
     "prefix": "lim",
     "description": "limit",
-    "body": "\\lim_{${1:n} \\to ${2:\\infty}}"
+    "body": "\\lim_{${1:n} \\to ${2:\\infty}\\}"
   },
   "limsup": {
     "prefix": "limsup",
     "description": "limsup",
-    "body": "\\limsup_{${1:n} \\to ${2:\\infty}}"
+    "body": "\\limsup_{${1:n} \\to ${2:\\infty}\\}"
   },
   "part": {
     "prefix": "part",
     "description": "d/dx",
-    "body": "\\frac{\\partial ${1:V}}{\\partial ${2:x}} $0"
+    "body": "\\frac{\\partial ${1:V}\\}{\\partial ${2:x}\\} $0"
   },
   "sr": {
     "prefix": "sr",
@@ -179,17 +179,17 @@
   "td": {
     "prefix": "td",
     "description": "to the ... power",
-    "body": "^{$1}$0"
+    "body": "^{$1\\}$0"
   },
   "rd": {
     "prefix": "rd",
     "description": "to the ... power",
-    "body": "^{($1)}$0"
+    "body": "^{($1)\\}$0"
   },
   "__": {
     "prefix": "__",
     "description": "subscript",
-    "body": "_{$1}$0"
+    "body": "_{$1\\}$0"
   },
   "ooo": {
     "prefix": "ooo",
@@ -199,7 +199,7 @@
   "rij": {
     "prefix": "rij",
     "description": "mrij",
-    "body": "(${1:x}_${2:n})_{${3:$2}\\in${4:\\N}}$0"
+    "body": "(${1:x}_${2:n})_{${3:$2}\\in${4:\\N}\\}$0"
   },
   "<=": {
     "prefix": "<=",
@@ -224,42 +224,42 @@
   "xnn": {
     "prefix": "xnn",
     "description": "xn",
-    "body": "x_{n}"
+    "body": "x_{n\\}"
   },
   "ynn": {
     "prefix": "ynn",
     "description": "yn",
-    "body": "y_{n}"
+    "body": "y_{n\\}"
   },
   "xii": {
     "prefix": "xii",
     "description": "xi",
-    "body": "x_{i}"
+    "body": "x_{i\\}"
   },
   "yii": {
     "prefix": "yii",
     "description": "yi",
-    "body": "y_{i}"
+    "body": "y_{i\\}"
   },
   "xjj": {
     "prefix": "xjj",
     "description": "xj",
-    "body": "x_{j}"
+    "body": "x_{j\\}"
   },
   "yjj": {
     "prefix": "yjj",
     "description": "yj",
-    "body": "y_{j}"
+    "body": "y_{j\\}"
   },
   "xp1": {
     "prefix": "xp1",
     "description": "x",
-    "body": "x_{n+1}"
+    "body": "x_{n+1\\}"
   },
   "xmm": {
     "prefix": "xmm",
     "description": "x",
-    "body": "x_{m}"
+    "body": "x_{m\\}"
   },
   "R0+": {
     "prefix": "R0+",
@@ -270,26 +270,26 @@
     "prefix": "plot",
     "description": "Plot",
     "body": [
-      "\\begin{figure}[$1]",
+      "\\begin{figure\\}[$1]",
       "\t\\centering",
-      "\t\\begin{tikzpicture}",
-      "\t\t\\begin{axis}[",
+      "\t\\begin{tikzpicture\\}",
+      "\t\t\\begin{axis\\}[",
       "\t\t\txmin= ${2:-10}, xmax= ${3:10},",
       "\t\t\tymin= ${4:-10}, ymax = ${5:10},",
       "\t\t\taxis lines = middle,",
       "\t\t]",
-      "\t\t\t\\addplot[domain=$2:$3, samples=${6:100}]{$7};",
-      "\t\t\\end{axis}",
-      "\t\\end{tikzpicture}",
-      "\t\\caption{$8}",
-      "\t\\label{${9:$8}}",
-      "\\end{figure}"
+      "\t\t\t\\addplot[domain=$2:$3, samples=${6:100}]{$7\\};",
+      "\t\t\\end{axis\\}",
+      "\t\\end{tikzpicture\\}",
+      "\t\\caption{$8\\}",
+      "\t\\label{${9:$8}\\}",
+      "\\end{figure\\}"
     ]
   },
   "mcal": {
     "prefix": "mcal",
     "description": "mathcal",
-    "body": "\\mathcal{$1}$0"
+    "body": "\\mathcal{$1\\}$0"
   },
   "lll": {
     "prefix": "lll",
@@ -334,12 +334,12 @@
   "invs": {
     "prefix": "invs",
     "description": "inverse",
-    "body": "^{-1}"
+    "body": "^{-1\\}"
   },
   "compl": {
     "prefix": "compl",
     "description": "complement",
-    "body": "^{c}"
+    "body": "^{c\\}"
   },
   "\\\\\\": {
     "prefix": "\\\\\\",
@@ -364,7 +364,7 @@
   "set": {
     "prefix": "set",
     "description": "set",
-    "body": "\\{$1\\} $0"
+    "body": "\\{$1\\\\} $0"
   },
   "||": {
     "prefix": "||",
@@ -404,12 +404,12 @@
   "uuu": {
     "prefix": "uuu",
     "description": "bigcup",
-    "body": "\\bigcup_{${1:i \\in ${2: I}}} $0"
+    "body": "\\bigcup_{${1:i \\in ${2: I}}\\} $0"
   },
   "nnn": {
     "prefix": "nnn",
     "description": "bigcap",
-    "body": "\\bigcap_{${1:i \\in ${2: I}}} $0"
+    "body": "\\bigcap_{${1:i \\in ${2: I}}\\} $0"
   },
   "OO": {
     "prefix": "OO",
@@ -444,50 +444,50 @@
   "tt": {
     "prefix": "tt",
     "description": "text",
-    "body": "\\text{$1}$0"
+    "body": "\\text{$1\\}$0"
   },
   "case": {
     "prefix": "case",
     "description": "cases",
     "body": [
-      "\\begin{cases}",
+      "\\begin{cases\\}",
       "\t$1",
-      "\\end{cases}"
+      "\\end{cases\\}"
     ]
   },
   "SI": {
     "prefix": "SI",
     "description": "SI",
-    "body": "\\SI{$1}{$2}"
+    "body": "\\SI{$1\\}{$2\\}"
   },
   "bigfun": {
     "prefix": "bigfun",
     "description": "Big function",
     "body": [
-      "\\begin{align*}",
+      "\\begin{align*\\}",
       "\t$1: $2 &\\longrightarrow $3 \\\\",
       "\t$4 &\\longmapsto $1($4) = $0",
-      ".\\end{align*}"
+      ".\\end{align*\\}"
     ]
   },
   "cvec": {
     "prefix": "cvec",
     "description": "column vector",
-    "body": "\\begin{pmatrix} ${1:x}_${2:1}\\\\ \\vdots\\\\ $1_${2:n} \\end{pmatrix}"
+    "body": "\\begin{pmatrix\\} ${1:x}_${2:1}\\\\ \\vdots\\\\ $1_${2:n} \\end{pmatrix\\}"
   },
   "letw": {
     "prefix": "letw",
     "description": "let omega",
-    "body": "Let $\\Omega \\subset \\C$ be open."
+    "body": "Let \\$\\Omega \\subset \\C\\$ be open."
   },
   "HH": {
     "prefix": "HH",
     "description": "H",
-    "body": "\\mathbb{H}"
+    "body": "\\mathbb{H\\}"
   },
   "DD": {
     "prefix": "DD",
     "description": "D",
-    "body": "\\mathbb{D}"
+    "body": "\\mathbb{D\\}"
   }
 }

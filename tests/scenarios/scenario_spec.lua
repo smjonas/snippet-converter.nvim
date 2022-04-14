@@ -60,7 +60,8 @@ describe("Scenario", function()
     assert.are_same(expected_output_snipmate, actual_output)
   end)
 
-  it("#works UltiSnips to VSCode", function()
+  it("#works2 UltiSnips to VSCode", function()
+    -- TODO: continue with set snippet not correctly escaped (\\{$1\\\\} $0)
     local snippet_converter = require("snippet_converter")
     local template = {
       sources = {
@@ -76,11 +77,10 @@ describe("Scenario", function()
     snippet_converter.setup { templates = { template } }
     local actual_output = vim.fn.readfile("tests/scenarios/output.json")
     local model = snippet_converter.convert_snippets()
-    -- assert(false)
     assert.are_same(expected_output_vscode, actual_output)
   end)
 
-  it("#works VSCode to VSCode", function()
+  it("#works3 VSCode to VSCode", function()
     local snippet_converter = require("snippet_converter")
     local template = {
       sources = {
@@ -96,10 +96,7 @@ describe("Scenario", function()
       templates = { template },
       -- In the test, we care about their relative order if two items are the same in lower case
       compare = function(first, second)
-        if first:lower() == second:lower() then
-          return first < second
-        end
-        return first:lower() < second:lower()
+        return first < second
       end,
     }
     -- TODO: support file name as VSCode output path
