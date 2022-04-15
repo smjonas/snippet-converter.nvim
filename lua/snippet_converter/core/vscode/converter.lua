@@ -4,6 +4,7 @@ local NodeType = require("snippet_converter.core.node_type")
 local base_converter = require("snippet_converter.core.converter")
 local err = require("snippet_converter.utils.error")
 local io = require("snippet_converter.utils.io")
+local tbl = require("snippet_converter.utils.table")
 local export_utils = require("snippet_converter.utils.export_utils")
 local json_utils = require("snippet_converter.utils.json_utils")
 
@@ -48,7 +49,7 @@ M.node_visitor = {
   [NodeType.TEXT] = function(node)
     -- Escape '$' and '}' characters (see https://code.visualstudio.com/docs/editor/userdefinedsnippets#_grammar)
     return node.text:gsub("[%$}]", "\\%1")
-  end
+  end,
 }
 
 M.visit_node = setmetatable(M.node_visitor, {
@@ -58,15 +59,16 @@ M.visit_node = setmetatable(M.node_visitor, {
 ---Creates package.json file contents as expected by VSCode and Luasnip.
 ---@name string the name that will be added at the top of the output
 ---@filetypes array an array of filetypes that determine the path attribute
----@param langs_for_filetype table<string, table> maps a relative path to a snippet to an array of supported languages for that file.
 ---@return string the generated string to be written
-local get_package_json_string = function(name, filetypes, langs_for_filetype)
+local get_package_json_string = function(name, filetypes)
   local snippets = {}
   for i, filetype in ipairs(filetypes) do
+    print(filetype)
     snippets[i] = {
-      language = langs_for_filetype[filetype],
+      language = filetype,
       path = ("./%s.json"):format(filetype),
     }
+    print(vim.inspect(snippets[1]))
   end
   local package_json = {
     name = name,
@@ -75,12 +77,22 @@ local get_package_json_string = function(name, filetypes, langs_for_filetype)
       snippets = snippets,
     },
   }
-  return json_utils:pretty_print(package_json, { { "name", "description", "contributes" } }, true)
+  print(vim.inspect(package_json))
+  return json_utils:pretty_print(
+    package_json,
+    { { "name", "description", "contributes" }, { "language", "path" } },
+    true
+  )
 end
 
+--TODO: from UltiSnips: $VISUAL with transform
 M.convert = function(snippet, visit_node)
   if snippet.options and snippet.options:match("r") then
     err.raise_converter_error("regex trigger")
+  end
+  if snippet.trigger == "set" then
+    print(vim.inspect(snippet.body))
+    -- assert(false)
   end
   -- Prepare snippet for export
   snippet.body = vim.split(
@@ -98,7 +110,7 @@ end
 -- @param converted_snippets table[] @A list of strings where each item is a snippet string to be exported
 -- @param filetype string @The filetype of the snippets
 -- @param output_dir string @The absolute path to the directory to write the snippets to
-M.export = function(converted_snippets, filetype, output_path)
+M.export = function(converted_snippets, filetype, output_path, _)
   local table_to_export = {}
   local order = { [1] = {}, [2] = { "prefix", "description", "scope", "body" } }
   for i, snippet in ipairs(converted_snippets) do
@@ -117,14 +129,15 @@ M.export = function(converted_snippets, filetype, output_path)
   io.write_file(vim.split(output_string, "\n"), output_path)
 end
 
-M.post_export = function(template, filetypes, output_path)
-  print(vim.inspect(filetypes))
+-- @param context []? @A table of additional snippet contexts optionally provided the source parser (e.g. extends directives from UltiSnips)
+M.post_export = function(template, filetypes, output_path, context)
+  -- print(vim.inspect(filetypes))
   local json_string = get_package_json_string(
     ("%s-snippets"):format(template.name),
-    filetypes,
-    { lua = { "lua" } }
+    tbl.concat_arrays(filetypes, context.include_filetypes or {})
   )
   local lines = export_utils.snippet_strings_to_lines { json_string }
+  -- print(io.get_containing_folder(output_path) .. "/package.json")
   io.write_file(lines, io.get_containing_folder(output_path) .. "/package.json")
 end
 

@@ -2,7 +2,7 @@ local parser = require("snippet_converter.core.vscode.body_parser")
 local NodeType = require("snippet_converter.core.node_type")
 
 describe("VSCode body parser should", function()
-  it("parse tabstop and placeholder", function()
+  it("#xxx parse tabstop and placeholder", function()
     local input = "local ${1:name} = function($2)"
     local actual = parser:parse(input)
     local expected = {
@@ -57,10 +57,24 @@ describe("VSCode body parser should", function()
   end)
 
   it("handle escaped chars in text element", function()
-    local input = [[\$\\\}]]
+    local input = [[\$\}\\]]
     -- In contrast to the UltiSnips parser, the input string "\\" is a double backslash
-    -- because escaping of backslashes has already been handled while reading the JSON file.
-    local expected = { { type = NodeType.TEXT, text = [[$\\}]] } }
+    -- because unescaping of backslashes was already done while reading the JSON file.
+    local expected = { { type = NodeType.TEXT, text = [[$}\\]] } }
+    assert.are_same(expected, parser:parse(input))
+  end)
+
+  it("handle escaped chars in text element + following tabstop", function()
+    -- TODO: continue!!
+    local input = [[\{$1\\} $0]]
+    -- In contrast to the UltiSnips parser, the input string "\\" is a double backslash
+    -- because unescaping of backslashes was already done while reading the JSON file.
+    local expected = {
+      { type = NodeType.TEXT, text = [[\{]] },
+      { type = NodeType.TABSTOP, int = "1" },
+      { type = NodeType.TEXT, text = [[\} ]] },
+      { type = NodeType.TABSTOP, int = "0" },
+    }
     assert.are_same(expected, parser:parse(input))
   end)
 

@@ -67,7 +67,7 @@ local HEADER_STRING =
 -- @param converted_snippets string[] @A list of strings where each item is a snippet string to be exported
 -- @param filetype string @The filetype of the snippets
 -- @param output_dir string @The absolute path to the directory (or file) to write the snippets to
--- @param context []? @A table of additional snippet contexts optionally provided the source parser (example: global code)
+-- @param context []? @A table of additional snippet contexts optionally provided the source parser (e.g. global code)
 M.export = function(converted_snippets, filetype, output_path, context)
   local output_strings = {}
   if context then

@@ -89,6 +89,41 @@ endsnippet]],
     assert.are_same(1, num_snippets)
   end)
 
+  it("should parse extends directory and provide it as global context", function()
+    local lines = vim.split(
+      [[
+extends ft1, ft2,  ft3
+
+extends ft4, ft_"5,  ft6
+snippet for
+a
+endsnippet]],
+      "\n"
+    )
+    parser.get_lines = function(_)
+      return lines
+    end
+
+    context.include_filetypes = {}
+    local num_new_snippets = parser.parse(
+      "/some/snippet/path.snippets",
+      parsed_snippets,
+      parser_errors,
+      context
+    )
+    assert.are_same(1, num_new_snippets)
+    assert.are_same("for", parsed_snippets[1].trigger)
+    assert.are_same({}, parser_errors)
+    local expected_context = {
+      include_filetypes = {
+        "ft4",
+        [[ft_"5]],
+        "ft6",
+      },
+    }
+    assert.are_same(expected_context, context)
+  end)
+
   it("should parse global python code and provide it as context", function()
     local lines = vim.split(
       [[

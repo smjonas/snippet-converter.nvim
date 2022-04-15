@@ -55,6 +55,14 @@ M.parse = function(path, parsed_snippets_ptr, parser_errors_ptr, context_ptr)
         found_global_python_code = false
       elseif found_global_python_code then
         table.insert(cur_global_code, line)
+      elseif line:match("^extends") then
+        local fts = line:match("^extends (.+)")
+        if fts then
+          context_ptr.include_filetypes = vim.tbl_map(
+            vim.trim,
+            vim.split(fts, ",%s", { trim_empty = true })
+          )
+        end
       else
         local priority = line:match("^priority (-?%d+)")
         if priority then

@@ -9,7 +9,7 @@ M.folder_exists = function(path)
 end
 
 M.get_containing_folder = function(path)
-  return vim.fn.expand(":p:h", path)
+  return vim.fn.fnamemodify(path, ":p:h")
 end
 
 M.read_file = function(path)
@@ -23,9 +23,10 @@ M.write_file = function(object, path)
   -- Create missing directories (if any)
   if vim.fn.isdirectory(dir_name) ~= 1 then
     -- TODO: check output filename out.snippets for vscode output
-    print(path, dir_name)
+    print("TRYIn", path, dir_name)
     vim.fn.mkdir(dir_name, "p")
   end
+  print("WRITIN", path)
   vim.fn.writefile(object, path)
 end
 

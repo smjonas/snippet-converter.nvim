@@ -1,5 +1,19 @@
 local M = {}
 
+--- Appends all elements from the second array to the first one.
+---@param a1 [] the first array
+---@param a2 [] the second array
+---@return [] the updated first array
+M.concat_arrays = function(a1, a2)
+  if #a2 == 0 then
+    return a1
+  end
+  for i = 1, #a2 do
+    a1[#a1 + 1] = a2[i]
+  end
+  return a1
+end
+
 M.make_default_table = function(tbl, key)
   if key == nil then
     error("table.make_default_table: key is nil for table " .. vim.inspect(tbl))

@@ -61,6 +61,7 @@ local parse_snippets = function(model, snippet_paths, template)
   local snippets = {}
   local context = {
     global_code = {},
+    include_filetypes = nil,
   }
   for source_format, _ in pairs(template.sources) do
     snippets[source_format] = {}
@@ -118,15 +119,15 @@ end
 
 local convert_snippets = function(model, snippets, context, template)
   local transform_helper = {}
-  for source_format, snippets_for_format in pairs(snippets) do
-    transform_helper.source_format = source_format
-    if not model:did_skip_task(template, source_format) then
-      for target_format, output_paths in pairs(template.output) do
+  for target_format, output_paths in pairs(template.output) do
+    for source_format, snippets_for_format in pairs(snippets) do
+      if not model:did_skip_task(template, source_format) then
         local converter_errors = {}
         local converter = require(snippet_engines[target_format].converter)
         local converted_snippets = {}
         local pos = 1
 
+        transform_helper.source_format = source_format
         local filetypes = {}
         for filetype, _snippets in pairs(snippets_for_format) do
           local skip_snippet = {}
@@ -179,9 +180,11 @@ local convert_snippets = function(model, snippets, context, template)
           -- Store filetype in case they are needed (e.g. for creating package.json files)
           filetypes[#filetypes + 1] = filetype
         end
+        -- TODO: continue with post_export run multiple times
         if converter.post_export then
           for _, output_path in ipairs(output_paths) do
-            converter.post_export(template, filetypes, output_path)
+            print("CALLED", output_path, source_format)
+            converter.post_export(template, filetypes, output_path, context)
           end
         end
         model:complete_task(template, source_format, target_format, #output_paths, converter_errors)

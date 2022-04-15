@@ -367,7 +367,7 @@
   "set": {
     "prefix": "set",
     "description": "set",
-    "body": "\\{$1\\\\\\} $0"
+    "body": "\\{$1\\\\} $0"
   },
   "sr": {
     "prefix": "sr",

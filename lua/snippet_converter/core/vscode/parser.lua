@@ -53,6 +53,11 @@ local create_snippet = function(snippet_name, trigger, snippet_info, parser, par
     parser_errors_ptr[#parser_errors_ptr + 1] = result
     return nil
   end
+  if trigger == "set" then
+    print(#snippet_info.body)
+    print(vim.inspect(result))
+    -- assert(false)
+  end
   return {
     name = snippet_name,
     trigger = trigger,
