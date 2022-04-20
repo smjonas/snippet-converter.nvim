@@ -15,7 +15,8 @@ describe("vsnip body parser", function()
   it("should not parse variable with transform", function()
     local input = "${TM_FILENAME/(.*)/${1:/upcase}/}"
     local ok, actual = parser:parse(input)
-    local expected = [[transform in variable node is not supported by vim-vsnip at '/(.*)/${1:/upcase}/}' (input line: '${TM_FILENAME/(.*)/${1:/upcase}/}')]]
+    local expected =
+      [[transform in variable node is not supported by vim-vsnip at '/(.*)/${1:/upcase}/}' (input line: '${TM_FILENAME/(.*)/${1:/upcase}/}')]]
     assert.is_false(ok)
     assert.are_same(expected, actual)
   end)

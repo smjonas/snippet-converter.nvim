@@ -1,0 +1,13 @@
+name: "Setup luarocks"
+description: "Install luarocks + packages"
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/checkout@v3
+    - name: Install luarocks + packages
+      shell: bash
+      run: |
+        sudo apt install -y luarocks
+        sudo luarocks install luacheck
+        sudo luarocks install vusted

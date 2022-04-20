@@ -81,6 +81,4 @@ snippet fn desc
 	body]]
     assert.are_same(expected, actual)
   end)
-
-
 end)
