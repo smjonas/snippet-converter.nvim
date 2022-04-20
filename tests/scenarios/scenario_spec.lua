@@ -24,7 +24,7 @@ describe("Scenario", function()
     )
   end)
 
-  it("#works UltiSnips to UltiSnips", function()
+  it("UltiSnips to UltiSnips", function()
     local snippet_converter = require("snippet_converter")
     local template = {
       sources = {
@@ -33,16 +33,16 @@ describe("Scenario", function()
         },
       },
       output = {
-        ultisnips = { "tests/scenarios/output-ultisnips.snippets" },
+        ultisnips = { "tests/scenarios/output_ultisnips.snippets" },
       },
     }
     snippet_converter.setup { templates = { template } }
-    local actual_output = vim.fn.readfile("tests/scenarios/output-ultisnips.snippets")
     snippet_converter.convert_snippets()
+    local actual_output = vim.fn.readfile("tests/scenarios/output_ultisnips.snippets")
     assert.are_same(expected_output_ultisnips, actual_output)
   end)
 
-  it("#kek UltiSnips to SnipMate", function()
+  it("UltiSnips to SnipMate", function()
     local snippet_converter = require("snippet_converter")
     local template = {
       sources = {
@@ -51,16 +51,16 @@ describe("Scenario", function()
         },
       },
       output = {
-        snipmate = { "tests/scenarios/output-snipmate.snippets" },
+        snipmate = { "tests/scenarios/output_snipmate.snippets" },
       },
     }
     snippet_converter.setup { templates = { template } }
-    local actual_output = vim.fn.readfile("tests/scenarios/output-snipmate.snippets")
     snippet_converter.convert_snippets()
+    local actual_output = vim.fn.readfile("tests/scenarios/output_snipmate.snippets")
     assert.are_same(expected_output_snipmate, actual_output)
   end)
 
-  it("#works2 UltiSnips to VSCode", function()
+  it("UltiSnips to VSCode", function()
     -- TODO: continue with set snippet not correctly escaped (\\{$1\\\\} $0)
     local snippet_converter = require("snippet_converter")
     local template = {
@@ -71,16 +71,16 @@ describe("Scenario", function()
       },
       output = {
         -- Path can be either for a file or a containing folder
-        vscode = { "tests/scenarios/output.json" },
+        vscode = { "tests/scenarios/output_vscode.json" },
       },
     }
     snippet_converter.setup { templates = { template } }
-    local actual_output = vim.fn.readfile("tests/scenarios/output.json")
     local model = snippet_converter.convert_snippets()
+    local actual_output = vim.fn.readfile("tests/scenarios/output.json")
     assert.are_same(expected_output_vscode, actual_output)
   end)
 
-  it("#works3 VSCode to VSCode", function()
+  it("VSCode to VSCode", function()
     local snippet_converter = require("snippet_converter")
     local template = {
       sources = {
@@ -89,7 +89,7 @@ describe("Scenario", function()
         },
       },
       output = {
-        vscode = { "tests/scenarios/output3.json" },
+        vscode = { "tests/scenarios/output_vscode.json" },
       },
     }
     snippet_converter.setup {
@@ -99,11 +99,9 @@ describe("Scenario", function()
         return first < second
       end,
     }
-    -- TODO: support file name as VSCode output path
-    local actual_output = vim.fn.readfile("tests/scenarios/output3.json")
 
     local model = snippet_converter.convert_snippets()
+    local actual_output = vim.fn.readfile("tests/scenarios/output_vscode.json")
     assert.are_same(expected_output_vscode_sorted, actual_output)
-    -- TODO: make tests independent of each other!
   end)
 end)

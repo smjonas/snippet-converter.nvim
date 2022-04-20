@@ -30,22 +30,7 @@ describe("VSCode converter should", function()
     assert.are_same(expected, actual)
   end)
 
-  it("correctly escape backslashes", function()
-    local snippet = {
-      trigger = "fn",
-      body = {
-        { type = NodeType.TEXT, text = [[\t\\]] },
-      },
-    }
-    local actual = converter.convert(snippet)
-    local expected = {
-      trigger = "fn",
-      body = [[\\t\\\\]],
-    }
-    assert.are_same(expected, actual)
-  end)
-
-  it("correctly escape curly brace preceded by backslash", function()
+  it("correctly escape curly brace preceded by backslashes", function()
     local snippet = {
       trigger = "fn",
       body = {
@@ -55,12 +40,11 @@ describe("VSCode converter should", function()
     local actual = converter.convert(snippet)
     local expected = {
       trigger = "fn",
-      body = [[\\{$1\\} $0]],
+      -- In .convert, '\' was not yet escaped for JSON export
+      body = [[\\{\$1\\\} \$0]],
     }
     assert.are_same(expected, actual)
   end)
-
--- \\{$1\\} $0
 
   it("handle missing description with multiple lines in body", function()
     local snippet = {

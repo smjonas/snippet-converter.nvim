@@ -11,7 +11,7 @@ end)
 describe("Compact", function()
   it("should remove gaps from array", function()
     local arr = { "A", "B", "C", "D" }
-    utils.compact(arr, { false, true, true, false })
+    utils.compact(arr, { true, false, false, true })
     assert.are_same({ "B", "C" }, arr)
   end)
 end)

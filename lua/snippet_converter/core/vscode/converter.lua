@@ -63,12 +63,10 @@ M.visit_node = setmetatable(M.node_visitor, {
 local get_package_json_string = function(name, filetypes)
   local snippets = {}
   for i, filetype in ipairs(filetypes) do
-    print(filetype)
     snippets[i] = {
       language = filetype,
       path = ("./%s.json"):format(filetype),
     }
-    print(vim.inspect(snippets[1]))
   end
   local package_json = {
     name = name,
@@ -77,7 +75,6 @@ local get_package_json_string = function(name, filetypes)
       snippets = snippets,
     },
   }
-  print(vim.inspect(package_json))
   return json_utils:pretty_print(
     package_json,
     { { "name", "description", "contributes" }, { "language", "path" } },
@@ -89,10 +86,6 @@ end
 M.convert = function(snippet, visit_node)
   if snippet.options and snippet.options:match("r") then
     err.raise_converter_error("regex trigger")
-  end
-  if snippet.trigger == "set" then
-    print(vim.inspect(snippet.body))
-    -- assert(false)
   end
   -- Prepare snippet for export
   snippet.body = vim.split(

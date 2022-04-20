@@ -267,7 +267,7 @@ function VSCodeParser:parse(input)
     if ok then
       ast[#ast + 1] = result
     else
-      ast = self:backtrack(ast, prev_input)
+      ast = self:backtrack(ast, prev_input, self.parse_any)
     end
   end
   return ast

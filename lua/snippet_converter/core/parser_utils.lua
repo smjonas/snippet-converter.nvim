@@ -82,10 +82,14 @@ M.parse_escaped_text = function(state, escape_pattern, break_pattern)
       if cur_char:match(escape_pattern) then
         -- Overwrite the backslash
         parsed_text[#parsed_text] = cur_char
+        begin_escape = false
       else
         parsed_text[#parsed_text + 1] = cur_char
+        -- Do not always stop "begin_escape mode"
+        if cur_char ~= [[\]] then
+          begin_escape = false
+        end
       end
-      begin_escape = false
     end
     i = i + 1
     cur_char = state.input:sub(i, i)
@@ -123,6 +127,8 @@ M.raise_backtrack_error = function(msg)
 end
 
 M.backtrack = function(state, ast, prev_input, parse_any_ptr)
+  -- TODO: remove assertions on release
+  assert(parse_any_ptr)
   state.input = prev_input
   local chars = {}
   local ok, result

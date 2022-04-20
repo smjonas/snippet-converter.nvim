@@ -2,7 +2,7 @@ local parser = require("snippet_converter.core.vscode.body_parser")
 local NodeType = require("snippet_converter.core.node_type")
 
 describe("VSCode body parser should", function()
-  it("#xxx parse tabstop and placeholder", function()
+  it("parse tabstop and placeholder", function()
     local input = "local ${1:name} = function($2)"
     local actual = parser:parse(input)
     local expected = {
@@ -72,6 +72,7 @@ describe("VSCode body parser should", function()
     local expected = {
       { type = NodeType.TEXT, text = [[\{]] },
       { type = NodeType.TABSTOP, int = "1" },
+      -- a backslash before a } escapes it
       { type = NodeType.TEXT, text = [[\} ]] },
       { type = NodeType.TABSTOP, int = "0" },
     }

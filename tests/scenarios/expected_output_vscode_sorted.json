@@ -416,7 +416,7 @@
       "\\newcommand{\\incfig\\}[1]{%",
       "\t\\def\\svgwidth{\\columnwidth\\}",
       "\t\\import{./figures/\\}{#1.pdf_tex\\}",
-      "}",
+      "\\}",
       "",
       "\\pdfsuppresswarningpagegroup=1",
       "",
@@ -489,15 +489,5 @@
     "prefix": "~~",
     "description": "~",
     "body": "\\sim"
-  },
-  "\\\\\\": {
-    "prefix": "\\\\\\",
-    "description": "setminus",
-    "body": "\\setminus"
-  },
-  "__": {
-    "prefix": "__",
-    "description": "subscript",
-    "body": "_{$1\\}$0"
   }
 }
