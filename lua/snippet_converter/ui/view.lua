@@ -178,10 +178,7 @@ function View:create_task_node(template, task, source_format)
       source_format,
       ": ",
       "no snippets converted ",
-      ("(%s input %s)"):format(
-        tostring(task.num_input_files),
-        amount_to_files_string(task.num_input_files)
-      ),
+      ("(%s input %s)"):format(tostring(task.num_input_files), amount_to_files_string(task.num_input_files)),
     }
     highlights = { "", status_icon.hl_group, "Statement", "", "healthError", "Comment" }
   else
@@ -193,10 +190,7 @@ function View:create_task_node(template, task, source_format)
       " / ",
       tostring(task.num_snippets),
       " snippets ",
-      ("(%s input %s)"):format(
-        tostring(task.num_input_files),
-        amount_to_files_string(task.num_input_files)
-      ),
+      ("(%s input %s)"):format(tostring(task.num_input_files), amount_to_files_string(task.num_input_files)),
     }
     highlights = {
       status_icon.hl_group,
@@ -232,10 +226,7 @@ function View:create_task_node(template, task, source_format)
     table.insert(
       task_texts,
       5,
-      (": %d %s could not be converted"):format(
-        num_failures,
-        amount_to_snippets_string(num_failures)
-      )
+      (": %d %s could not be converted"):format(num_failures, amount_to_snippets_string(num_failures))
     )
     local failure_nodes = self:create_failure_nodes(failures, source_format, target_format)
     child_nodes[#child_nodes + 1] = Node.ExpandableNode(
@@ -297,10 +288,7 @@ function View:create_task_nodes(scene)
       local template_title_texts = {
         self:get_node_icon(true),
         "Template " .. name,
-        (" (%d %s converted)"):format(
-          model.total_num_snippets - model.total_num_failures,
-          amount_string
-        ),
+        (" (%d %s converted)"):format(model.total_num_snippets - model.total_num_failures, amount_string),
       }
       nodes[#nodes + 1] = Node.ExpandableNode(
         Node.MultiHlTextNode(template_title_texts, { "", "", "Comment" }, Node.Style.Padding(1)),

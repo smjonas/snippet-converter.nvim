@@ -3,11 +3,7 @@ local io = require("snippet_converter.utils.io")
 
 local loader = {}
 
-local function find_matching_snippet_files_in_rtp(
-  matching_snippet_files,
-  source_format,
-  source_path
-)
+local function find_matching_snippet_files_in_rtp(matching_snippet_files, source_format, source_path)
   local file_pattern
   -- "*" matches all files with the correct extension
   if source_path == "*" then

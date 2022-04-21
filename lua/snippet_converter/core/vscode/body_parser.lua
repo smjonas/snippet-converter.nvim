@@ -244,7 +244,6 @@ function VSCodeParser:parse_any()
     else
       return self:parse_variable(got_bracket)
     end
-    p.raise_backtrack_error("(any node) expected int after '${' characters")
   else
     self.cur_parser = "text"
     local prev_input = self.input

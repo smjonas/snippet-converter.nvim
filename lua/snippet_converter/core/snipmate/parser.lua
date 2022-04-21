@@ -9,18 +9,17 @@ M.get_lines = function(file)
 end
 
 -- TODO: reuse this function for UltiSnips + SnipMate
-local store_snippet =
-  function(cur_snippet, line_nr, path, pos, parsed_snippets_ptr, parser_errors_ptr)
-    local ok, result = pcall(body_parser.parse, table.concat(cur_snippet.body, "\n"))
-    if ok then
-      cur_snippet.body = result
-      parsed_snippets_ptr[pos] = cur_snippet
-      return true
-    else
-      local start_line_nr = line_nr - #cur_snippet.body
-      parser_errors_ptr[#parser_errors_ptr + 1] = err.new_parser_error(path, start_line_nr, result)
-    end
+local store_snippet = function(cur_snippet, line_nr, path, pos, parsed_snippets_ptr, parser_errors_ptr)
+  local ok, result = pcall(body_parser.parse, table.concat(cur_snippet.body, "\n"))
+  if ok then
+    cur_snippet.body = result
+    parsed_snippets_ptr[pos] = cur_snippet
+    return true
+  else
+    local start_line_nr = line_nr - #cur_snippet.body
+    parser_errors_ptr[#parser_errors_ptr + 1] = err.new_parser_error(path, start_line_nr, result)
   end
+end
 
 M.parse = function(path, parsed_snippets_ptr, parser_errors_ptr)
   local lines = M.get_lines(path)
@@ -35,9 +34,7 @@ M.parse = function(path, parsed_snippets_ptr, parser_errors_ptr)
     local header = M.get_header(line)
     if header then
       if cur_snippet ~= nil then
-        if
-          store_snippet(cur_snippet, line_nr, path, pos, parsed_snippets_ptr, parser_errors_ptr)
-        then
+        if store_snippet(cur_snippet, line_nr, path, pos, parsed_snippets_ptr, parser_errors_ptr) then
           pos = pos + 1
         end
       end

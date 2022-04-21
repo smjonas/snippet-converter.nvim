@@ -13,8 +13,7 @@ local function matches_snippet(_, arguments)
   local same_options = expected.options == actual.options
 
   local same_path = expected.path == actual.path
-  local same_line_nr = (options and options.ignore_line_nr and true)
-    or expected.line_nr == actual.line_nr
+  local same_line_nr = (options and options.ignore_line_nr and true) or expected.line_nr == actual.line_nr
   local same_priority = expected.priority == actual.priority
   local same_custom_context = expected.custom_context == actual.custom_context
 
@@ -42,12 +41,7 @@ M.register = function(assert)
   )
 
   say:set("assertion.matches_snippet.positive", "Expected snippet to match %s\n but got %s")
-  assert:register(
-    "assertion",
-    "matches_snippet",
-    matches_snippet,
-    "assertion.matches_snippet.positive"
-  )
+  assert:register("assertion", "matches_snippet", matches_snippet, "assertion.matches_snippet.positive")
 end
 
 return M

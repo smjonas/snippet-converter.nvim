@@ -18,9 +18,7 @@ M.node_visitor = {
   [NodeType.TRANSFORM] = function(node)
     -- Can currently only convert VSCode to VSCode regex
     if node.regex_kind ~= NodeType.RegexKind.JAVASCRIPT then
-      err.raise_converter_error(
-        NodeType.RegexKind.to_string(node.regex_kind) .. " regex in transform node"
-      )
+      err.raise_converter_error(NodeType.RegexKind.to_string(node.regex_kind) .. " regex in transform node")
     end
     -- ASCII conversion option
     if node.options:match("a") then
@@ -88,10 +86,7 @@ M.convert = function(snippet, visit_node)
     err.raise_converter_error("regex trigger")
   end
   -- Prepare snippet for export
-  snippet.body = vim.split(
-    base_converter.convert_ast(snippet.body, visit_node or M.visit_node),
-    "\n"
-  )
+  snippet.body = vim.split(base_converter.convert_ast(snippet.body, visit_node or M.visit_node), "\n")
   if #snippet.body == 1 then
     snippet.body = snippet.body[1]
   end

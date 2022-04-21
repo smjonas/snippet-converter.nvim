@@ -79,13 +79,7 @@ M.parse = function(path, parsed_snippets_ptr, parser_errors_ptr, _, parser)
       -- The snippet has multiple prefixes.
       if type(snippet_info.prefix) == "table" then
         for _, trigger in ipairs(snippet_info.prefix) do
-          local snippet = create_snippet(
-            snippet_name,
-            trigger,
-            snippet_info,
-            parser,
-            parser_errors_ptr
-          )
+          local snippet = create_snippet(snippet_name, trigger, snippet_info, parser, parser_errors_ptr)
           if snippet then
             snippet.path = path
             parsed_snippets_ptr[pos] = snippet

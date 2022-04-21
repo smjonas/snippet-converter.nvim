@@ -50,15 +50,11 @@ M.handle_non_terminal_symbol = function(production_name, grammar, input, force_p
       end
       -- The rule was successfully applied to the input string
       if #matches == #symbols then
-        if
-          production_name ~= grammar.start_symbol or (not force_parse_to_end or cur_input == "")
-        then
+        if production_name ~= grammar.start_symbol or (not force_parse_to_end or cur_input == "") then
           -- Warning: verify function may change the contents of result.matches!
           -- Always assume that the table contents have changed beyond this point (e.g. when
           -- logging the current value).
-          if
-            production.verify_matches == nil or production.verify_matches(rule, matches) == true
-          then
+          if production.verify_matches == nil or production.verify_matches(rule, matches) == true then
             if production.on_store_matches ~= nil then
               production.on_store_matches(symbols, matches)
             end

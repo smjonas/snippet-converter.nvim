@@ -35,11 +35,7 @@ snippet for
       end
 
       parsed_snippets = {}
-      local num_new_snippets = parser.parse(
-        "/some/snippet/path.snippets",
-        parsed_snippets,
-        parser_errors
-      )
+      local num_new_snippets = parser.parse("/some/snippet/path.snippets", parsed_snippets, parser_errors)
 
       assert.are_same({}, parser_errors)
       assert.are_same(2, num_new_snippets)

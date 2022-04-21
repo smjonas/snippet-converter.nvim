@@ -34,8 +34,7 @@ end
 
 function Model:skip_task(template, source_format, reason)
   self.templates[template.name] = template
-  make_default_table(self.skipped_tasks, template.name)[snippet_engines[source_format].label] =
-    reason
+  make_default_table(self.skipped_tasks, template.name)[snippet_engines[source_format].label] = reason
 end
 
 function Model:did_skip_task(template, source_format)
@@ -59,13 +58,7 @@ function Model:submit_task(template, source_format, num_snippets, num_input_file
   }
 end
 
-function Model:complete_task(
-  template,
-  source_format,
-  target_format,
-  num_output_files,
-  converter_errors
-)
+function Model:complete_task(template, source_format, target_format, num_output_files, converter_errors)
   local source_label = snippet_engines[source_format].label
   local target_label = snippet_engines[target_format].label
   local tasks = self.tasks[template.name][source_label]

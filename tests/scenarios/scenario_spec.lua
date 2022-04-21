@@ -14,14 +14,10 @@ describe("Scenario", function()
       --no-op
     end
 
-    expected_output_ultisnips = vim.fn.readfile(
-      "tests/scenarios/expected_output_ultisnips.snippets"
-    )
+    expected_output_ultisnips = vim.fn.readfile("tests/scenarios/expected_output_ultisnips.snippets")
     expected_output_snipmate = vim.fn.readfile("tests/scenarios/expected_output_snipmate.snippets")
     expected_output_vscode = vim.fn.readfile("tests/scenarios/expected_output_vscode.json")
-    expected_output_vscode_sorted = vim.fn.readfile(
-      "tests/scenarios/expected_output_vscode_sorted.json"
-    )
+    expected_output_vscode_sorted = vim.fn.readfile("tests/scenarios/expected_output_vscode_sorted.json")
   end)
 
   it("UltiSnips to UltiSnips", function()
@@ -75,8 +71,8 @@ describe("Scenario", function()
       },
     }
     snippet_converter.setup { templates = { template } }
-    local model = snippet_converter.convert_snippets()
-    local actual_output = vim.fn.readfile("tests/scenarios/output.json")
+    snippet_converter.convert_snippets()
+    local actual_output = vim.fn.readfile("tests/scenarios/output_vscode.json")
     assert.are_same(expected_output_vscode, actual_output)
   end)
 
@@ -100,7 +96,7 @@ describe("Scenario", function()
       end,
     }
 
-    local model = snippet_converter.convert_snippets()
+    snippet_converter.convert_snippets()
     local actual_output = vim.fn.readfile("tests/scenarios/output_vscode.json")
     assert.are_same(expected_output_vscode_sorted, actual_output)
   end)

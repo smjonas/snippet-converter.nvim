@@ -95,6 +95,8 @@ local transform_snippets = function(transformation, snippet, helper)
   if result == nil then -- delete the snippet
     should_delete = true
   elseif type(result) == "table" then -- overwrite the snippet to be converted
+    -- luacheck:ignore 311
+    -- Reassign the pointer
     snippet = result
   end
   return should_delete
@@ -136,18 +138,10 @@ local convert_snippets = function(model, snippets, context, template)
           if template.transform_snippets or M.config.transform_snippets then
             for i, snippet in ipairs(_snippets) do
               if template.transform_snippets then
-                skip_snippet[i] = transform_snippets(
-                  template.transform_snippets,
-                  snippet,
-                  transform_helper
-                )
+                skip_snippet[i] = transform_snippets(template.transform_snippets, snippet, transform_helper)
               end
               if M.config.transform_snippets and not skip_snippet[i] then
-                skip_snippet[i] = transform_snippets(
-                  M.config.transform_snippets,
-                  snippet,
-                  transform_helper
-                )
+                skip_snippet[i] = transform_snippets(M.config.transform_snippets, snippet, transform_helper)
               end
             end
           end
@@ -207,10 +201,7 @@ M.convert_snippets = function(args)
   end
 
   local model = Model.new()
-  if
-    parsed_args.opts.headless
-    or M.config.default_opts.headless and parsed_args.opts.headless ~= false
-  then
+  if parsed_args.opts.headless or M.config.default_opts.headless and parsed_args.opts.headless ~= false then
     controller:create_headless_view(model)
   else
     -- Make sure the window shows up before any potential long-running operations

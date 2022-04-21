@@ -231,11 +231,7 @@ M.new_window = function()
 
     -- Set global keymaps
     for lhs, _ in pairs(global_keymaps) do
-      set_keymap(
-        bufnr,
-        lhs,
-        "<cmd>lua require('snippet_converter.ui.display').handle_keymap(%q)<cr>"
-      )
+      set_keymap(bufnr, lhs, "<cmd>lua require('snippet_converter.ui.display').handle_keymap(%q)<cr>")
     end
 
     -- Set line keymaps
@@ -244,9 +240,9 @@ M.new_window = function()
       local keymap = render_output.line_keymaps[line]
       if keymap then
         line_keymaps[line] = { [keymap.lhs] = keymap.callback }
-        local cmd_string = (
-          "<cmd>lua require('snippet_converter.ui.display').handle_line_keymap(%d"
-        ):format(win_id)
+        local cmd_string = ("<cmd>lua require('snippet_converter.ui.display').handle_line_keymap(%d"):format(
+          win_id
+        )
         set_keymap(bufnr, keymap.lhs, cmd_string .. ",%q)<cr>")
       end
     end
