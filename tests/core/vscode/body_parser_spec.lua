@@ -41,6 +41,7 @@ describe("VSCode body parser should", function()
   end)
 
   it("parse choice element", function()
+    -- TODO: Choices selection is not supported on $0
     local input = "${0|🠂,⇨|}"
     local expected = {
       { int = "0", text = { "🠂", "⇨" }, type = NodeType.CHOICE },

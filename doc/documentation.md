@@ -1,70 +1,29 @@
-# Documentation
-- [Supported snippet formats](#supported-snippet-formats)
-- [Converting snippets](#converting-snippets)
-- [Transforming snippets](#transforming-snippets)
-  - [Examples](#examples)
-- [Sorting snippets](#sorting-snippets)
-  - [Example](#example)
-- [Configuration](#configuration)
-
 ## Supported snippet formats
 
-SnippetConverter can convert snippets between the following formats:
+SnippetConverter allows you to convert snippets between the following formats:
 - [VSCode](https://code.visualstudio.com/docs/editor/userdefinedsnippets) (supported by [vim-vsnip](https://github.com/hrsh7th/vim-vsnip), [LuaSnip](https://github.com/L3MON4D3/LuaSnip))
 - [vsnip](https://github.com/hrsh7th/vim-vsnip) (a superset of VSCode snippets)
 - [UltiSnips](https://github.com/SirVer/ultisnips)
 - [SnipMate](https://github.com/garbas/vim-snipmate)
 
-The following table shows which snippets can be converted to other formats:
+The following table shows which snippets can be converted to other formats (the first column denotes the source format):
 
-<table>
-	<tbody>
-		<tr>
-			<td colspan="2" rowspan="2">Conversion between snippet formats</td>
-			<td colspan="5"><i>Target format</i></td>
-		</tr>
-		<tr>
-			<td>UltiSnips</td>
-			<td>VSCode</td>
-			<td>vsnip</td>
-			<td>SnipMate</td>
-		</tr>
-		<tr>
-			<td rowspan="4"><i>Source</br>format</i></td>
-			<td>UltiSnips</td>
-			<td>✓</td>
-			<td>(✓)<sup>1</sup></td>
-			<td>(✓)<sup>2</sup></td>
-			<td>(✓)<sup>1</sup></td>
-		</tr>
-		<tr>
-			<td>VSCode</td>
-			<td>✓</td>
-			<td>✓</td>
-			<td>✓</td>
-			<td>✓</td>
-		</tr>
-		<tr>
-			<td>vsnip</td>
-			<td>✓</td>
-			<td>(✓)<sup>3</sup></td>
-			<td>✓</td>
-			<td>✓</td>
-		</tr>
-		<tr>
-			<td>SnipMate</td>
-			<td>✓</td>
-			<td>✓</td>
-			<td>✓</td>
-			<td>✓</td>
-		</tr>
-	</tbody>
-</table>
+| Source format / Target format     | UltiSnips | VSCode | vsnip | SnipMate |
+|-----------------------------------|-----------|--------|-------|----------|
+| UltiSnips                         | ✓         | ✓[1]   | ✓ [2] | ✓ [1]    |
+| VSCode                            | ✓         | ✓      | ✓     | ✓        |
+| vsnip                             | ✓         | ✓ [3]  | ✓ [1] | ✓        |
+| SnipMate                          | ✓         | ✓      | ✓     | ✓        |
 
-<sup>✓: All snippets can be converted - no exceptions.</sup>\
-<sup>(✓)<sup>1</sup>: Except snippets with python / vimscript / shell code or regular expression triggers.</sup>\
-<sup>(✓)<sup>2</sup>: Except snippets with python / shell code or regular expression triggers / transformations.</sup>\
-<sup>(✓)<sup>3</sup>: Except snippets with vimscript code.</sup>
+**Legend:**
+
+✓: All snippets can be converted - no exceptions.
+
+✓ [1]: Except snippets with python / vimscript / shell code or regular expression triggers.
+
+✓ [2]: Except snippets with python / shell code or regular expression triggers / transformations.
+
+✓ [3]: Except snippets with vimscript code.
 
 > :bulb: Note that source and target format can be the same.
 > This is useful if you only want to filter certain snippets or apply transformations to them without converting them to a different format.
@@ -101,22 +60,6 @@ The paths can either be absolute paths or relative paths to folders or files in 
 They may contain wildcards (`*`).
 All snippet files that match any of the given paths will be parsed and converted to the respective output formats.
 
----
-
-`output: table <string>`
-
----
-
-`transform_snippets: snippet -> snippet?`
-
-An optional transformation function, see [Transforming snippets](#transforming-snippets).
-
----
-
-`sort_snippets: (snippet, snippet) -> boolean`
-
-An optional sorting function, see [Sorting snippets](#sorting-snippets).
-
 **Example:**
 
 ```lua
@@ -132,6 +75,22 @@ sources = {
   },
 }
 ```
+
+---
+
+`output: table <string>`
+
+---
+
+`transform_snippets: snippet -> snippet | nil`
+
+An optional transformation function, see [Transforming snippets](#transforming-snippets).
+
+---
+
+`sort_snippets: (snippet -> snippet) -> boolean`
+
+An optional sorting function, see [Sorting snippets](#sorting-snippets).
 
 ## Transforming snippets
 Before snippets are converted, it is possible to apply a transformation to them. Transformations can be used to either discard specific snippets or modify them arbitrarily.

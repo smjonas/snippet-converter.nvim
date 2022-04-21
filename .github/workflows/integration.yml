@@ -1,4 +1,4 @@
-name: Linting, style checking & running tests
+name: CI run
 
 on:
   push:

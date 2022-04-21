@@ -5,6 +5,7 @@
 Neovim plugin to parse, transform and convert snippets. Supports a variety of formats and snippet engines.
 
 [![Neovim](https://img.shields.io/badge/Neovim%200.7+-green.svg?style=for-the-badge&logo=neovim)](https://neovim.io)
+[![Lua](https://img.shields.io/badge/Lua-blue.svg?style=for-the-badge&logo=lua)](http://www.lua.org)
 
 </div>
 
@@ -94,7 +95,7 @@ output locations and formats.
 ## Documentation
 
 For more detailed instructions, info about customization and examples check out the
-[documentation](docs/DOCUMENTATION.md).
+[documentation](doc/documentation.md).
 
 ## Acknowledgements
 I want to thank [William Boman](https://github.com/williamboman) for his plugin [nvim-lsp-installer](https://github.com/williamboman/nvim-lsp-installer).
