@@ -69,7 +69,25 @@ describe("VSCode converter should", function()
     assert.are_same(expected, actual)
   end)
 
-  it("not convert snippet with non-VSCode regex in transform node", function()
+  it("convert choice node", function()
+    local snippet = {
+      trigger = "fn",
+      body = {
+        { type = NodeType.CHOICE, int = "1", text = { "a", "b", "c" } },
+        { type = NodeType.CHOICE, int = "2", text = { "a" } },
+      },
+    }
+    local expected = {
+      trigger = "fn",
+      body = "${1|a,b,c|}${2|a|}",
+    }
+    local actual = converter.convert(snippet)
+    assert.are_same(expected, actual)
+  end)
+end)
+
+describe("VSCode converter should fail to convert", function()
+  it("snippet with non-VSCode regex in transform node", function()
     local snippet = {
       trigger = "fn",
       body = {

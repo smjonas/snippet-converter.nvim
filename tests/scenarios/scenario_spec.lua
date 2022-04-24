@@ -57,7 +57,6 @@ describe("Scenario", function()
   end)
 
   it("UltiSnips to VSCode", function()
-    -- TODO: continue with set snippet not correctly escaped (\\{$1\\\\} $0)
     local snippet_converter = require("snippet_converter")
     local template = {
       sources = {

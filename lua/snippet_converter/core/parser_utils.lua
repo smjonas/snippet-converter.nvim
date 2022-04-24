@@ -120,6 +120,16 @@ M.parse_till_matching_closing_brace = function(state)
   return table.concat(skipped_chars)
 end
 
+function M.raise_parse_error(state, description)
+  -- Only show the line where the error occurred.
+  local error_line = state.input:match("^[^\n]*")
+  local source_line = state.source:match("^[^\n]*")
+  if #source_line < #state.source then
+    source_line = source_line .. "..."
+  end
+  error(("%s at '%s' (input line: '%s')"):format(description, error_line, source_line), 0)
+end
+
 M.raise_backtrack_error = function(msg)
   -- Add a header so we can differentiate between an error that should cause the parser to
   -- backtrack and an actual syntax error such as an unsupported feature.

@@ -4,7 +4,8 @@ local NodeType = require("snippet_converter.core.node_type")
 describe("VSCode body parser should", function()
   it("parse tabstop and placeholder", function()
     local input = "local ${1:name} = function($2)"
-    local actual = parser:parse(input)
+    local ok, actual = parser:parse(input)
+    assert.is_true(ok)
     local expected = {
       { type = NodeType.TEXT, text = "local " },
       {
@@ -21,7 +22,8 @@ describe("VSCode body parser should", function()
 
   it("parse variable with transform", function()
     local input = "${TM_FILENAME/(.*)/${1:/upcase}/}"
-    local actual = parser:parse(input)
+    local ok, actual = parser:parse(input)
+    assert.is_true(ok)
     local expected = {
       {
         var = "TM_FILENAME",
@@ -40,33 +42,45 @@ describe("VSCode body parser should", function()
     assert.are_same(expected, actual)
   end)
 
-  it("parse choice element", function()
-    -- TODO: Choices selection is not supported on $0
+  it("parse choice node", function()
+    local input = "${1|🠂,⇨|}"
+    local expected = {
+      { int = "1", text = { "🠂", "⇨" }, type = NodeType.CHOICE },
+    }
+    local ok, actual = parser:parse(input)
+    assert.is_true(ok)
+    assert.are_same(expected, actual)
+  end)
+
+  it("error out on invalid choice node", function()
     local input = "${0|🠂,⇨|}"
-    local expected = {
-      { int = "0", text = { "🠂", "⇨" }, type = NodeType.CHOICE },
-    }
-    assert.are_same(expected, parser:parse(input))
+    local expected = "choice node placeholder must not be 0 at '🠂,⇨|}' (input line: '${0|🠂,⇨|}')"
+    local ok, actual = parser.parse(input)
+    assert.is_false(ok)
+    assert.are_same(expected, actual)
   end)
 
-  it("handle escaped chars in choice element", function()
-    local input = [[${0|\$,\},\\,\,,\||}]]
+  it("handle escaped chars in choice node", function()
+    local input = [[${1|\$,\},\\,\,,\||}]]
     local expected = {
-      { int = "0", text = { "$", "}", [[\]], ",", "|" }, type = NodeType.CHOICE },
+      { int = "1", text = { "$", "}", [[\]], ",", "|" }, type = NodeType.CHOICE },
     }
-    assert.are_same(expected, parser:parse(input))
+    local ok, actual = parser:parse(input)
+    assert.is_true(ok)
+    assert.are_same(expected, actual)
   end)
 
-  it("handle escaped chars in text element", function()
+  it("handle escaped chars in text node", function()
     local input = [[\$\}\\]]
     -- In contrast to the UltiSnips parser, the input string "\\" is a double backslash
     -- because unescaping of backslashes was already done while reading the JSON file.
     local expected = { { type = NodeType.TEXT, text = [[$}\\]] } }
-    assert.are_same(expected, parser:parse(input))
+    local ok, actual = parser:parse(input)
+    assert.is_true(ok)
+    assert.are_same(expected, actual)
   end)
 
-  it("handle escaped chars in text element + following tabstop", function()
-    -- TODO: continue!!
+  it("handle escaped chars in text node + following tabstop", function()
     local input = [[\{$1\\} $0]]
     -- In contrast to the UltiSnips parser, the input string "\\" is a double backslash
     -- because unescaping of backslashes was already done while reading the JSON file.
@@ -77,7 +91,9 @@ describe("VSCode body parser should", function()
       { type = NodeType.TEXT, text = [[\} ]] },
       { type = NodeType.TABSTOP, int = "0" },
     }
-    assert.are_same(expected, parser:parse(input))
+    local ok, actual = parser:parse(input)
+    assert.is_true(ok)
+    assert.are_same(expected, actual)
   end)
 
   it("parse unambiguous unescaped chars", function()
@@ -89,7 +105,9 @@ describe("VSCode body parser should", function()
         type = NodeType.TEXT,
       },
     }
-    assert.are_same(expected, parser:parse(input))
+    local ok, actual = parser:parse(input)
+    assert.is_true(ok)
+    assert.are_same(expected, actual)
   end)
 
   it("parse incomplete transform", function()
@@ -97,6 +115,8 @@ describe("VSCode body parser should", function()
     local expected = {
       { text = "${1/abc/xyz}", type = NodeType.TEXT },
     }
-    assert.are_same(expected, parser:parse(input))
+    local ok, actual = parser:parse(input)
+    assert.is_true(ok)
+    assert.are_same(expected, actual)
   end)
 end)

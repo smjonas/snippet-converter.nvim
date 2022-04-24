@@ -41,6 +41,9 @@ M.node_visitor = {
     -- TODO: handle if / else
     return ("${%s:/}"):format(node.format_modifier)
   end,
+  [NodeType.CHOICE] = function(node)
+    return ("${%s|%s|}"):format(node.int, table.concat(node.text, ","))
+  end,
   [NodeType.VISUAL_PLACEHOLDER] = function(_)
     err.raise_converter_error(NodeType.to_string(NodeType.VISUAL_PLACEHOLDER))
   end,

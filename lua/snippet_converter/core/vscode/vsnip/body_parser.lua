@@ -63,16 +63,6 @@ function VSnipParser:parse_variable(got_bracket)
   self:raise_parse_error("transform in variable node is not supported by vim-vsnip")
 end
 
-function VSnipParser:raise_parse_error(description)
-  -- Only show the line where the error occurred.
-  local error_line = self.input:match("^[^\n]*")
-  local source_line = self.source:match("^[^\n]*")
-  if #source_line < #self.source then
-    source_line = source_line .. "..."
-  end
-  error(("%s at '%s' (input line: '%s')"):format(description, error_line, source_line), 0)
-end
-
 ---@param input string
 ---@return boolean success
 ---@return table | string
@@ -86,8 +76,9 @@ function VSnipParser:parse(input)
     if ok then
       ast[#ast + 1] = result
     elseif result:match("^BACKTRACK") then
-      ast = self:backtrack(ast, prev_input)
+      ast = self:backtrack(ast, prev_input, VSCodeParser.parse_any)
     else
+      -- A parser error occurred that is not a backtrack signal
       return false, result
     end
   end

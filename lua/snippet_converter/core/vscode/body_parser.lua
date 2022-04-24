@@ -107,7 +107,7 @@ function VSCodeParser:parse_format_modifier()
   return format_modifier
 end
 
--- Starts at the second cha
+-- Starts at the second char
 function VSCodeParser:parse_format()
   local int_only, int = self:parse_bracketed(parse_int)
   if int_only then
@@ -234,6 +234,9 @@ function VSCodeParser:parse_any()
         local any = self:parse_placeholder_any()
         return p.new_inner_node(NodeType.PLACEHOLDER, { int = int, any = any })
       elseif self:peek("|") then
+        if int == "0" then
+          self:raise_parse_error("choice node placeholder must not be 0")
+        end
         local text = self:parse_choice_text()
         return p.new_inner_node(NodeType.CHOICE, { int = int, text = text })
       else
@@ -256,6 +259,9 @@ function VSCodeParser:parse_any()
   end
 end
 
+---@param input string
+---@return boolean success
+---@return table | string
 function VSCodeParser:parse(input)
   self.input = input
   self.source = input
@@ -265,11 +271,14 @@ function VSCodeParser:parse(input)
     local ok, result = pcall(VSCodeParser.parse_any, self)
     if ok then
       ast[#ast + 1] = result
+    elseif result:match("^BACKTRACK") then
+      ast = self:backtrack(ast, prev_input, VSCodeParser.parse_any)
     else
-      ast = self:backtrack(ast, prev_input, self.parse_any)
+      -- A parser error occurred that is not a backtrack signal
+      return false, result
     end
   end
-  return ast
+  return true, ast
 end
 
 return VSCodeParser
