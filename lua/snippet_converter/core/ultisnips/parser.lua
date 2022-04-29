@@ -75,7 +75,7 @@ M.parse = function(path, parsed_snippets_ptr, parser_errors_ptr, context_ptr)
       -- TODO: handle pre_expand, post_expand:
       -- https://github.com/SirVer/ultisnips/blob/e96733b5db27b48943db86dd8623f1497b860bc6/test/test_ParseSnippets.py#L329
     elseif line:match("^endsnippet") then
-      local ok, result = pcall(body_parser.parse, table.concat(cur_snippet.body, "\n"))
+      local ok, result = body_parser.parse(table.concat(cur_snippet.body, "\n"))
       if ok then
         -- TODO: refactor
         if cur_priority then

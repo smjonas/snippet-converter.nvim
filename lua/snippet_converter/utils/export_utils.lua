@@ -33,13 +33,4 @@ M.snippet_strings_to_lines = function(snippets_ptr, sep_chars, headers, footer, 
   return snippet_lines
 end
 
--- If the output_path is already a valid file name, use it - otherwise create a file
--- in the output_path directory with the correct file extension.
-M.get_output_file_path = function(output_path, filetype, extension)
-  if not output_path:match((".%s$"):format(extension)) then
-    output_path = ("%s/%s.%s"):format(output_path, filetype, extension)
-  end
-  return output_path
-end
-
 return M

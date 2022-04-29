@@ -57,13 +57,35 @@ local parse_transform = function(state)
   })
 end
 
+-- local parse_any
+-- local parse_placeholder_any = function(state)
+--   local any = { parse_any(state) }
+--   local pos = 2
+--   while state.input:sub(1, 1) ~= "}" do
+--     any[pos] = parse_any(state)
+--     pos = pos + 1
+--   end
+--   p.expect(state, "}")
+--   return any
+-- end
+
 local parse_any
 local parse_placeholder_any = function(state)
+  -- local inbetween = p.parse_escaped_text(state, "[}]", "[}]")
   local inbetween = p.parse_till_matching_closing_brace(state)
+  local any
   if inbetween == "" then
-    return p.new_inner_node(NodeType.TEXT, { text = "" })
+    any = p.new_inner_node(NodeType.TEXT, { text = "" })
+  else
+    local ok
+    ok, any = parser.parse(inbetween)
+    if not ok then
+      -- Reraise error
+      error(any, 0)
+    end
   end
-  return parser.parse(inbetween)
+  p.expect(state, "}")
+  return any
 end
 
 local parse_choice_text = function(state)
@@ -114,6 +136,9 @@ parse_any = function(state)
         local any = parse_placeholder_any(state)
         return p.new_inner_node(NodeType.PLACEHOLDER, { int = int, any = any })
       elseif p.peek(state, "|") then
+        if int == "0" then
+          p.raise_parse_error(state, "choice node placeholder must not be 0")
+        end
         local text = parse_choice_text(state)
         return p.new_inner_node(NodeType.CHOICE, { int = int, text = text })
       else
@@ -149,6 +174,9 @@ parse_any = function(state)
   end
 end
 
+---@param input string
+---@return boolean success
+---@return table | string
 parser.parse = function(input)
   local state = {
     input = input,
@@ -158,13 +186,17 @@ parser.parse = function(input)
   while state.input ~= "" do
     local prev_input = state.input
     local ok, result = pcall(parse_any, state)
+    -- print(ok, result)
     if ok then
       ast[#ast + 1] = result
-    else
+    elseif result:match("^BACKTRACK") then
       ast = p.backtrack(state, ast, prev_input, parse_any)
+    else
+      -- A parser error occurred that is not a backtrack signal
+      return false, result
     end
   end
-  return ast
+  return true, ast
 end
 
 return parser

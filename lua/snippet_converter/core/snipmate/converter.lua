@@ -47,7 +47,7 @@ local HEADER_STRING =
 -- separates them by newlines and exports them to a file.
 -- @param converted_snippets string[] @A list of snippet tables where each item is a snippet table to be exported
 -- @param filetype string @The filetype of the snippets
--- @param output_dir string @The absolute path to the directory (or file) to write the snippets to
+-- @param output_dir string @The absolute path to the directory to write the snippets to
 M.export = function(converted_snippets, filetype, output_path)
   local snippet_lines = export_utils.snippet_strings_to_lines(
     converted_snippets,
@@ -55,7 +55,7 @@ M.export = function(converted_snippets, filetype, output_path)
     { HEADER_STRING, "" },
     nil
   )
-  output_path = export_utils.get_output_file_path(output_path, filetype, "snippets")
+  output_path = ("%s/%s.%s"):format(output_path, filetype, "snippets")
   io.write_file(snippet_lines, output_path)
 end
 

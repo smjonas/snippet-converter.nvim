@@ -55,7 +55,7 @@ describe("VSCode body parser should", function()
   it("error out on invalid choice node", function()
     local input = "${0|🠂,⇨|}"
     local expected = "choice node placeholder must not be 0 at '🠂,⇨|}' (input line: '${0|🠂,⇨|}')"
-    local ok, actual = parser.parse(input)
+    local ok, actual = parser:parse(input)
     assert.is_false(ok)
     assert.are_same(expected, actual)
   end)

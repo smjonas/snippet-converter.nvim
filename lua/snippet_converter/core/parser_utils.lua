@@ -116,7 +116,7 @@ M.parse_till_matching_closing_brace = function(state)
     i = i + 1
     char = state.input:sub(i, i)
   end
-  state.input = state.input:sub(i + 1)
+  state.input = state.input:sub(i)
   return table.concat(skipped_chars)
 end
 

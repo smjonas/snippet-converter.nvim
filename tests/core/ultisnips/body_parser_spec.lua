@@ -15,21 +15,35 @@ describe("UltiSnips body parser", function()
       { int = "2", type = NodeType.TABSTOP },
       { text = ")", type = NodeType.TEXT },
     }
-    assert.are_same(expected, parser.parse(input))
+    local ok, actual = parser.parse(input)
+    assert.is_true(ok)
+    assert.are_same(expected, actual)
   end)
 
   it("should parse choice element", function()
-    local input = "${0|🠂,⇨|}"
+    local input = "${1|🠂,⇨|}"
     local expected = {
-      { int = "0", text = { "🠂", "⇨" }, type = NodeType.CHOICE },
+      { int = "1", text = { "🠂", "⇨" }, type = NodeType.CHOICE },
     }
-    assert.are_same(expected, parser.parse(input))
+    local ok, actual = parser.parse(input)
+    assert.is_true(ok)
+    assert.are_same(expected, actual)
+  end)
+
+  it("error out on invalid choice node", function()
+    local input = "${0|🠂,⇨|}"
+    local expected = "choice node placeholder must not be 0 at '🠂,⇨|}' (input line: '${0|🠂,⇨|}')"
+    local ok, actual = parser.parse(input)
+    assert.is_false(ok)
+    assert.are_same(expected, actual)
   end)
 
   it("should parse escaped chars in text element", function()
     local input = [[\`\{\$\\]]
     local expected = { { text = [[`{$\]], type = NodeType.TEXT } }
-    assert.are_same(expected, parser.parse(input))
+    local ok, actual = parser.parse(input)
+    assert.is_true(ok)
+    assert.are_same(expected, actual)
   end)
 
   it("should parse multiple lines starting with backslash", function()
@@ -43,7 +57,9 @@ describe("UltiSnips body parser", function()
         type = NodeType.TEXT,
       },
     }
-    assert.are_same(expected, parser.parse(input))
+    local ok, actual = parser.parse(input)
+    assert.is_true(ok)
+    assert.are_same(expected, actual)
   end)
 
   it("should parse unambiguous unescaped chars", function()
@@ -55,13 +71,17 @@ describe("UltiSnips body parser", function()
         type = NodeType.TEXT,
       },
     }
-    assert.are_same(expected, parser.parse(input))
+    local ok, actual = parser.parse(input)
+    assert.is_true(ok)
+    assert.are_same(expected, actual)
   end)
 
   it("should parse python code", function()
     local input = [[`!p print("hello world")`]]
     local expected = { { code = [[print("hello world")]], type = NodeType.PYTHON_CODE } }
-    assert.are_same(expected, parser.parse(input))
+    local ok, actual = parser.parse(input)
+    assert.is_true(ok)
+    assert.are_same(expected, actual)
   end)
 
   it("should parse placeholder with curly braces", function()
@@ -74,11 +94,13 @@ describe("UltiSnips body parser", function()
       },
       { type = NodeType.TEXT, text = "abc" },
     }
-    assert.are_same(expected, parser.parse(input))
+    local ok, actual = parser.parse(input)
+    assert.is_true(ok)
+    assert.are_same(expected, actual)
   end)
 
   it("should parse incomplete placeholder as placeholder with empty text node", function()
-    local input = [[${2:]]
+    local input = [[${2:}]]
     local expected = {
       {
         type = NodeType.PLACEHOLDER,
@@ -86,13 +108,17 @@ describe("UltiSnips body parser", function()
         any = { type = NodeType.TEXT, text = "" },
       },
     }
-    assert.are_same(expected, parser.parse(input))
+    local ok, actual = parser.parse(input)
+    assert.is_true(ok)
+    assert.are_same(expected, actual)
   end)
 
   it("should parse visual placeholder with default text", function()
     local input = [[${VISUAL:default}]]
     local expected = { { text = "default", type = NodeType.VISUAL_PLACEHOLDER } }
-    assert.are_same(expected, parser.parse(input))
+    local ok, actual = parser.parse(input)
+    assert.is_true(ok)
+    assert.are_same(expected, actual)
   end)
 
   it("should parse tabstop inside literal {$...$} text block", function()
@@ -111,7 +137,9 @@ describe("UltiSnips body parser", function()
         type = NodeType.TEXT,
       },
     }
-    assert.are_same(expected, parser.parse(input))
+    local ok, actual = parser.parse(input)
+    assert.is_true(ok)
+    assert.are_same(expected, actual)
   end)
 
   it("should parse transformation", function()
@@ -129,7 +157,9 @@ describe("UltiSnips body parser", function()
         type = NodeType.TABSTOP,
       },
     }
-    assert.are_same(expected, parser.parse(input))
+    local ok, actual = parser.parse(input)
+    assert.is_true(ok)
+    assert.are_same(expected, actual)
   end)
 
   it("should parse placeholder with multiple nested nodes", function()
@@ -153,7 +183,18 @@ describe("UltiSnips body parser", function()
         type = NodeType.TEXT,
       },
     }
-    assert.are_same(expected, parser.parse(input))
+    local ok, actual = parser.parse(input)
+    assert.is_true(ok)
+    assert.are_same(expected, actual)
+  end)
+
+  it("should handle syntax error in tabstop", function()
+    local input = [[${1:${0|a,b,c|}}]]
+    -- This error message is not entirely correct (it does not show the original line) but it's good enough
+    local expected = [[choice node placeholder must not be 0 at 'a,b,c|}' (input line: '${0|a,b,c|}')]]
+    local ok, actual = parser.parse(input)
+    assert.is_false(ok)
+    assert.are_same(expected, actual)
   end)
 
   it("should not throw invalid index error when merging", function()

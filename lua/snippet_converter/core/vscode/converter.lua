@@ -116,7 +116,7 @@ M.export = function(converted_snippets, filetype, output_path, _)
     }
   end
   local output_string = json_utils:pretty_print(table_to_export, order, true)
-  output_path = export_utils.get_output_file_path(output_path, filetype, "json")
+  output_path = ("%s/%s.%s"):format(output_path, filetype, "json")
   io.write_file(vim.split(output_string, "\n"), output_path)
 end
 

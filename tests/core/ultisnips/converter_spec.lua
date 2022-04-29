@@ -85,6 +85,22 @@ endsnippet]]
     assert.are_same(expected, actual)
   end)
 
+  it("convert choice node", function()
+    local snippet = {
+      trigger = "fn",
+      body = {
+        { type = NodeType.CHOICE, int = "1", text = { "a", "b", "c" } },
+        { type = NodeType.CHOICE, int = "2", text = { "a" } },
+      },
+    }
+    local expected = [[
+snippet fn
+${1|a,b,c|}${2|a|}
+endsnippet]]
+    local actual = converter.convert(snippet)
+    assert.are_same(expected, actual)
+  end)
+
   it("escape ambiguous chars", function()
     local snippet = {
       trigger = "fn",

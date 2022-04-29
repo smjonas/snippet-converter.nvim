@@ -18,6 +18,9 @@ local node_visitor = {
   [NodeType.VIMSCRIPT_CODE] = function(node)
     return ("`!v %s`"):format(node.code)
   end,
+  [NodeType.CHOICE] = function(node)
+    return ("${%s|%s|}"):format(node.int, table.concat(node.text, ","))
+  end,
   [NodeType.TEXT] = function(node)
     -- Escape ambiguous chars, double backslashes need to be be escaped,
     -- otherwise they will be parsed as a single escaped backslash by UltiSnips
@@ -64,7 +67,7 @@ local HEADER_STRING =
 -- separates them by newlines and exports them to a file.
 -- @param converted_snippets string[] @A list of strings where each item is a snippet string to be exported
 -- @param filetype string @The filetype of the snippets
--- @param output_dir string @The absolute path to the directory (or file) to write the snippets to
+-- @param output_dir string @The absolute path to the directory to write the snippets to
 -- @param context []? @A table of additional snippet contexts optionally provided the source parser (e.g. global code)
 M.export = function(converted_snippets, filetype, output_path, context)
   local output_strings = {}
@@ -88,7 +91,7 @@ M.export = function(converted_snippets, filetype, output_path, context)
     { HEADER_STRING, "" },
     nil
   )
-  output_path = export_utils.get_output_file_path(output_path, filetype, "snippets")
+  output_path = ("%s/%s.%s"):format(output_path, filetype, "snippets")
   io.write_file(snippet_lines, output_path)
 end
 
