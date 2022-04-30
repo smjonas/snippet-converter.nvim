@@ -9,7 +9,17 @@ M.get_lines = function(path)
 end
 
 local verify_snippet_format = function(snippet_name, snippet_info, errors_ptr)
+  if type(snippet_info) ~= "table" then
+    errors_ptr[#errors_ptr + 1] = "snippet must be a table, got " .. type(snippet_name)
+    return false
+  end
   local assertions = {
+    {
+      predicate = type(snippet_info) == "table",
+      msg = function()
+        return "snippet must be a table, got " .. type(snippet_name)
+      end,
+    },
     {
       predicate = type(snippet_name) == "string",
       msg = function()
@@ -63,6 +73,7 @@ local create_snippet = function(snippet_name, trigger, snippet_info, parser, par
 end
 
 M.parse = function(path, parsed_snippets_ptr, parser_errors_ptr, _, parser)
+  print(path)
   local snippet_data = M.get_lines(path)
   if vim.tbl_isempty(snippet_data) then
     return #parsed_snippets_ptr

@@ -109,6 +109,16 @@ describe("VSCode parser", function()
   end)
 
   describe("should fail to parse", function()
+    it("when snippet is not a table", function()
+      data = {
+        1,
+      }
+      local num_snippets = parser.parse("some/path", parsed_snippets, parser_errors)
+      assert.are_same(0, num_snippets)
+      assert.are_same({}, parsed_snippets)
+      assert.are_same({ "snippet must be a table, got number" }, parser_errors)
+    end)
+
     it("empty json", function()
       data = {}
       local num_snippets = parser.parse("some/path", parsed_snippets, parser_errors)

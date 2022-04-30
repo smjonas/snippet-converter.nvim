@@ -305,23 +305,18 @@ function View:create_task_nodes(scene)
   elseif scene == Scene.Help then
     local expand_node = Node.MultiHlTextNode({
       "<cr> (enter)",
-      ("  toggle a%snode"):format(self:get_node_icon(false)),
+      ("  Toggle a %snode."):format(self:get_node_icon(false)),
     }, { "Statement", "" }, Node.Style.Padding(2))
-    local open_node = Node.MultiHlTextNode(
-      { "o", "             open the snippet under the cursor in a new split" },
-      { "Statement", "" },
-      Node.Style.Padding(2)
-    )
     local qflist_node = Node.MultiHlTextNode({
       "<c-q>",
-      "         send the errors under the cursor to the quickfix list and close this window",
+      "         Send the errors under the cursor to the quickfix list and close this window.",
     }, { "Statement", "" }, Node.Style.Padding(2))
     local close_node = Node.MultiHlTextNode(
-      { "<esc> / q", "     close this window" },
+      { "<esc> / q", "     Close this window." },
       { "Statement", "" },
       Node.Style.Padding(2)
     )
-    nodes[#nodes + 1] = Node.RootNode { expand_node, open_node, qflist_node, close_node }
+    nodes[#nodes + 1] = Node.RootNode { expand_node, qflist_node, close_node }
   end
   return nodes
 end

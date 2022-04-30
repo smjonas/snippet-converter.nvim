@@ -12,18 +12,18 @@ The following table shows which snippets can be converted to other formats (the 
 |-----------------------------------|-----------|--------|-------|----------|
 | UltiSnips                         | ✓         | ✓[1]   | ✓ [2] | ✓ [1]    |
 | VSCode                            | ✓         | ✓      | ✓     | ✓        |
-| vsnip                             | ✓         | ✓ [3]  | ✓ [1] | ✓        |
+| vsnip                             | ✓         | ✓ [3]  | ✓     | ✓        |
 | SnipMate                          | ✓         | ✓      | ✓     | ✓        |
 
 **Legend:**
 
 ✓: All snippets can be converted - no exceptions.
 
-✓ [1]: Except snippets with python / vimscript / shell code or regular expression triggers.
+✓ [1]: All snippets except snippets with python / vimscript / shell code or regular expression triggers.
 
-✓ [2]: Except snippets with python / shell code or regular expression triggers / transformations.
+✓ [2]: All except snippets with python / shell code or regular expression triggers / transformations.
 
-✓ [3]: Except snippets with vimscript code.
+✓ [3]: All except snippets with vimscript code.
 
 > :bulb: Note that source and target format can be the same.
 > This is useful if you only want to filter certain snippets or apply transformations to them without converting them to a different format.
@@ -31,7 +31,7 @@ The following table shows which snippets can be converted to other formats (the 
 ## Converting snippets
 In order to convert snippets from one supported format to another, create a
 template with the input / output formats and paths and pass it to the `setup` function
-(see [Creating templates](#creating-templates) section).
+(see [Creating templates](#creating-templates)).
 
 Then run the command `:ConvertSnippets`. A GUI window should pop up that will show you further information
 about the status of the conversion.
@@ -47,9 +47,9 @@ If you don't want the UI to be shown, use headless mode:
 `:ConvertSnippets headless=true`
 
 Alternatively, you can change the default option `headless` globally using the `default_opts` table
-(see [Configuration](#configuration) section).
+(see [Configuration](#configuration)).
 
-## Creating templates
+### Creating templates
 
 A template is simply a table that can contain any of the following keys:
 
@@ -70,7 +70,7 @@ sources = {
     "latex-snippets/tex.snippets",
   },
   vsnip = {
-   -- Absolute paths to snippet directories
+   -- Absolute paths to snippet directories or files
     vim.fn.stdpath("config") .. "/vsnip-snippets",
   },
 }
@@ -78,7 +78,11 @@ sources = {
 
 ---
 
-`output: table <string>`
+`output: table <string, string>`
+
+A table with a list of paths per output format where the converted snippets will be
+stored. Each path must be an absolute path to a directory.
+If a directory does not exist, it will be created.
 
 ---
 
@@ -91,6 +95,22 @@ An optional transformation function, see [Transforming snippets](#transforming-s
 `sort_snippets: (snippet -> snippet) -> boolean`
 
 An optional sorting function, see [Sorting snippets](#sorting-snippets).
+
+## Recommended output paths
+Choosing the correct output paths is important to make the converted snippets available to your snippet engine.
+
+- **LuaSnip**: LuaSnip will load VSCode or SnipMate snippets if they are stored in the Neovim
+  runtimepath. Note: you need to call `require("luasnip.loaders.from_vscode").load(opts)` or
+  `require("luasnip.loaders.from_snipmate").load(opts)`.
+
+  To load snippets from different paths, pass the directories to the `opts.paths` table (see `:h luasnip-vscode-snippets-loader` for details).
+
+  For VSCode snippets, SnippetConverter will automatically generate a `package.json` file for you.
+
+  **Example output path:**
+  ```lua
+  vim.fn.stdpath("config") .. "/vscode_snippets"
+  ```
 
 ## Transforming snippets
 Before snippets are converted, it is possible to apply a transformation to them. Transformations can be used to either discard specific snippets or modify them arbitrarily.

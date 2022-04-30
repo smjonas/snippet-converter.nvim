@@ -10,7 +10,7 @@ Neovim plugin to parse, transform and convert snippets. Supports a variety of fo
 </div>
 
 > :warning: This plugin is still in development and not currently usable.\
-> I expect to release the initial 1.0 version in a few weeks! Stay tuned!
+> I expect to release the initial 1.0 version in a few weeks! Stay tuned for a Reddit post :smile:!
 
 ## Primary objectives
 - Decouple the functionality of user's snippets from the concrete syntax or snippet engine.
@@ -52,6 +52,9 @@ Support for the following formats is planned for future versions:
 
 Is there any other snippet engine or custom format that you think should be supported? Let me know by creating an issue!
 
+## Requirements
+- Neovim ≥ 0.7
+
 ## Getting started
 
 To get started, pass a Lua table with a list of templates to the `setup` function. A template must contain
@@ -78,7 +81,7 @@ use {
         },
       },
       output = {
-        vscode = vim.fn.stdpath("data") .. "/vscode_snippets",
+        vscode = vim.fn.stdpath("config") .. "/vscode_snippets",
       },
     }
 
@@ -90,7 +93,8 @@ use {
 }
 ```
 Then simply run the command `:ConvertSnippets` to convert all snippets to your specified
-output locations and formats.
+output locations and formats. To see which output folders are suitable so that your
+snippet engine will find the snippets, have a look at the [Usage Guide](doc/documentation#usage-guide).
 
 ## Documentation
 

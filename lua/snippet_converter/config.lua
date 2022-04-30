@@ -86,13 +86,6 @@ local validate_template = function(template)
   validate_paths("template.sources", template.sources, "source.format", "source.path")
   validate_paths("template.output", template.output, "output.format", "output.path")
   vim.validate {
-    ["template.sort_by"] = {
-      template.sort_by,
-      "function",
-      true,
-    },
-  }
-  vim.validate {
     ["template.compare"] = {
       template.compare,
       "function",

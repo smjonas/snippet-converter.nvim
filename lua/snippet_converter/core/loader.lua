@@ -1,26 +1,25 @@
 local snippet_engines = require("snippet_converter.snippet_engines")
 local io = require("snippet_converter.utils.io")
 
-local loader = {}
+local M = {}
 
-local function find_matching_snippet_files_in_rtp(matching_snippet_files, source_format, source_path)
-  local file_pattern
-  -- "*" matches all files with the correct extension
-  if source_path == "*" then
-    file_pattern = ".*"
-  else
-    -- Turn glob pattern (with potential wildcards) into lua pattern;
-    -- escape all non-alphanumeric characters to be safe
-    file_pattern = source_path:gsub("([^%w%*])", "%%%1"):gsub("%*", ".-")
-  end
-
+local find_matching_snippet_files = function(matching_snippet_files, source_format, source_path)
   local extension = snippet_engines[source_format].extension
-  local rtp_files = vim.api.nvim_get_runtime_file("*" .. extension, true)
-
-  for _, name in ipairs(rtp_files) do
-    -- name can either be a directory or a file name so make sure it is a file
-    if name:match(file_pattern) and io.file_exists(name) then
-      matching_snippet_files[#matching_snippet_files + 1] = name
+  -- ./ indicates to look for files in the runtimepath
+  local rt_path = source_path:match("%./(.*)")
+  if rt_path then
+    local rtp_files = vim.api.nvim_get_runtime_file("*" .. extension, true)
+    for _, name in ipairs(rtp_files) do
+      -- Name can either be a directory or a file name so make sure it is a file
+      if name:match(rt_path) and io.file_exists(name) then
+        matching_snippet_files[#matching_snippet_files + 1] = name
+      end
+    end
+  else
+    print(extension)
+    for _, file in ipairs(io.scan_dir(vim.fn.expand(source_path), extension)) do
+        matching_snippet_files[#matching_snippet_files + 1] = file
+        print(file)
     end
   end
 end
@@ -33,16 +32,16 @@ end
 -- @param source_paths list<string> a list of paths to search for in the runtimepath as
 -- well as the system (e.g. "vim-snippets/snippets"); may contain wildcards ("*")
 -- @return list<string> a list containing the absolute paths to the matching snippet files
-loader.get_matching_snippet_paths = function(source_format, source_paths)
+M.get_matching_snippet_paths = function(source_format, source_paths)
   local matching_snippet_files = {}
   for _, source_path in pairs(source_paths) do
     if io.file_exists(source_path) then
       matching_snippet_files[#matching_snippet_files + 1] = source_path
     else
-      find_matching_snippet_files_in_rtp(matching_snippet_files, source_format, source_path)
+      find_matching_snippet_files(matching_snippet_files, source_format, source_path)
     end
   end
   return matching_snippet_files
 end
 
-return loader
+return M
