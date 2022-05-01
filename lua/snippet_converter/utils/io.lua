@@ -27,7 +27,8 @@ M.scan_dir = function(root, extension)
   local files = {}
   local fs = uv.fs_scandir(root)
   if fs then
-    local name, type = "", ""
+    local name = ""
+    local type
     while name do
       name, type = uv.fs_scandir_next(fs)
       local path = M.join(root, name)
@@ -60,6 +61,7 @@ M.read_file = function(path)
 end
 
 M.write_file = function(object, path)
+  path = vim.fn.expand(path)
   local dir_name = vim.fn.fnamemodify(path, ":p:h")
   -- Create missing directories (if any)
   if vim.fn.isdirectory(dir_name) ~= 1 then

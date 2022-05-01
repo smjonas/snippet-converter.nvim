@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copied from https://github.com/nvim-neorg/neorg/blob/main/scripts/generate_tag.sh
+# Adapted from https://github.com/nvim-neorg/neorg/blob/main/scripts/generate_tag.sh
 
 current_version=$(nvim --headless --noplugin -u ./scripts/minimal_init.vim -c 'luafile ./scripts/print_version.lua' -c 'qa' 2>&1 | tr -d \")
 

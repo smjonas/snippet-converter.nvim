@@ -186,7 +186,6 @@ parser.parse = function(input)
   while state.input ~= "" do
     local prev_input = state.input
     local ok, result = pcall(parse_any, state)
-    -- print(ok, result)
     if ok then
       ast[#ast + 1] = result
     elseif result:match("^BACKTRACK") then

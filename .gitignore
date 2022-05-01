@@ -1,4 +1,2 @@
 # Test artifacts
-output*.json
-output*.snippets
-package.json
+output

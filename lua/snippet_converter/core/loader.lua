@@ -8,29 +8,31 @@ local find_matching_snippet_files = function(matching_snippet_files, source_form
   -- ./ indicates to look for files in the runtimepath
   local rt_path = source_path:match("%./(.*)")
   if rt_path then
+    -- Turn path into Lua pattern; escape all non-alphanumeric characters to be safe
+    local rt_path_pattern = rt_path:gsub("([^%w%*])", "%%%1"):gsub("%*", ".-")
     local rtp_files = vim.api.nvim_get_runtime_file("*" .. extension, true)
     for _, name in ipairs(rtp_files) do
       -- Name can either be a directory or a file name so make sure it is a file
-      if name:match(rt_path) and io.file_exists(name) then
+      if name:match(rt_path_pattern) and io.file_exists(name) then
         matching_snippet_files[#matching_snippet_files + 1] = name
       end
     end
   else
-    print(extension)
     for _, file in ipairs(io.scan_dir(vim.fn.expand(source_path), extension)) do
-        matching_snippet_files[#matching_snippet_files + 1] = file
-        print(file)
+      matching_snippet_files[#matching_snippet_files + 1] = file
     end
   end
 end
 
--- Searches for a set of snippet files on the user's system for a specific snippet engine
--- that match the given paths.
+-- Searches for a set of snippet files on the user's system with a given extension
+-- that matches the given paths.
 --
 -- @param source_format string a valid source format that will be used to determine the
 -- extension of the snippet files (e.g. "ultisnips")
--- @param source_paths list<string> a list of paths to search for in the runtimepath as
--- well as the system (e.g. "vim-snippets/snippets"); may contain wildcards ("*")
+-- @param source_paths list<string> a list of paths to search for; if a path is a
+-- absolute path to a file it will be added directly, if a path starts with
+-- "./" the search starts in the runtimepath, otherwise the search will start at the given
+-- root directory and match any files with the correct extension
 -- @return list<string> a list containing the absolute paths to the matching snippet files
 M.get_matching_snippet_paths = function(source_format, source_paths)
   local matching_snippet_files = {}

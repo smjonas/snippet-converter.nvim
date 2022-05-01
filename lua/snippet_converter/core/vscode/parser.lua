@@ -73,7 +73,6 @@ local create_snippet = function(snippet_name, trigger, snippet_info, parser, par
 end
 
 M.parse = function(path, parsed_snippets_ptr, parser_errors_ptr, _, parser)
-  print(path)
   local snippet_data = M.get_lines(path)
   if vim.tbl_isempty(snippet_data) then
     return #parsed_snippets_ptr
