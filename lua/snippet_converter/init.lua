@@ -218,4 +218,6 @@ M.convert_snippets = function(args)
   return model
 end
 
+M.version = "1.0.0"
+
 return M
