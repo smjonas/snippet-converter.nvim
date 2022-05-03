@@ -62,6 +62,23 @@ M.parse_bracketed = function(state, parse_fn)
   return false, result
 end
 
+M.parse_placeholder_any = function(state, parse_ptr)
+  local inbetween = M.parse_till_matching_closing_brace(state)
+  local any
+  if inbetween == "" then
+    any = M.new_inner_node(NodeType.TEXT, { text = "" })
+  else
+    local ok
+    ok, any = parse_ptr(inbetween)
+    if not ok then
+      -- Reraise error
+      error(any, 0)
+    end
+  end
+  M.expect(state, "}")
+  return any
+end
+
 M.parse_escaped_text = function(state, escape_pattern, break_pattern)
   local input = state.input
   if input == "" then
@@ -107,9 +124,12 @@ M.parse_till_matching_closing_brace = function(state)
     if char == "{" then
       num_opening_braces = num_opening_braces + 1
     elseif char == "}" then
-      num_opening_braces = num_opening_braces - 1
-      if num_opening_braces == 0 then
-        break
+      -- Only stop when } is not escaped
+      if skipped_chars[#skipped_chars] ~= "\\" then
+        num_opening_braces = num_opening_braces - 1
+        if num_opening_braces == 0 then
+          break
+        end
       end
     end
     skipped_chars[#skipped_chars + 1] = char

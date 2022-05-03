@@ -20,6 +20,8 @@ local NodeType = require("snippet_converter.core.node_type")
 -- int                ::= [0-9]+
 -- text               ::= .*
 
+local parser = {}
+
 local options_pattern = "[^}]*"
 local parse_text = function(state)
   return p.parse_escaped_text(state, ".", "[`${}\\]")
@@ -43,18 +45,6 @@ local parse_transform = function(state)
   return p.new_inner_node(NodeType.TRANSFORM, { regex = regex, replacement = replacement, options = options })
 end
 
-local parse_any
-local parse_placeholder_any = function(state)
-  local any = { parse_any(state) }
-  local pos = 2
-  while state.input:sub(1, 1) ~= "}" do
-    any[pos] = parse_any(state)
-    pos = pos + 1
-  end
-  p.expect(state, "}")
-  return any
-end
-
 -- Starts after "`"
 local parse_code = function(state)
   local code = p.parse_escaped_text(state, "[`]")
@@ -74,7 +64,7 @@ local parse_tabstop_transform = function(state)
   return transform
 end
 
-parse_any = function(state)
+local parse_any = function(state)
   if p.peek(state, "$") then
     local got_bracket = p.peek(state, "{")
     local int = p.peek_pattern(state, "^%d+")
@@ -83,7 +73,11 @@ parse_any = function(state)
         -- tabstop 1
         return p.new_inner_node(NodeType.TABSTOP, { int = int })
       elseif p.peek(state, ":") then
-        local any = parse_placeholder_any(state)
+        local any = p.parse_placeholder_any(state, function(input)
+          -- The snipmate body parser will always succeed, but parse_placeholder_any
+          -- expects a function returning a boolean and a string
+          return true, parser.parse(input)
+        end)
         return p.new_inner_node(NodeType.PLACEHOLDER, { int = int, any = any })
       else
         local transform = parse_tabstop_transform(state)
@@ -117,8 +111,6 @@ parse_any = function(state)
     end
   end
 end
-
-local parser = {}
 
 parser.parse = function(input)
   local state = {

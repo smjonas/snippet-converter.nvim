@@ -1,3 +1,4 @@
+local NodeType = require("snippet_converter.core.node_type")
 local assertions = require("tests.custom_assertions")
 local parser = require("snippet_converter.core.snipmate.parser")
 
@@ -35,10 +36,10 @@ snippet for
       end
 
       parsed_snippets = {}
-      local num_new_snippets = parser.parse("/some/snippet/path.snippets", parsed_snippets, parser_errors)
+      local num_snippets = parser.parse("/some/snippet/path.snippets", parsed_snippets, parser_errors)
 
       assert.are_same({}, parser_errors)
-      assert.are_same(2, num_new_snippets)
+      assert.are_same(2, num_snippets)
 
       -- The pairs function does not specify the order in which the snippets will be traversed in,
       -- so we need to check both of the two possibilities. We don't check the actual
@@ -70,6 +71,97 @@ snippet for
         -- This should never happen unless the parser fails.
         assert.is_false(true)
       end
+    end)
+
+    it("snippet with multi-word description", function()
+      local lines = vim.split(
+        [[
+snippet fn first word, second word
+	function ${1:name}($2)
+		${3:-- code}
+	end]],
+        "\n"
+      )
+      parser.get_lines = function(_)
+        return lines
+      end
+
+      parsed_snippets = {}
+      local num_snippets = parser.parse("/some/snippet/path.snippets", parsed_snippets, parser_errors)
+
+      assert.are_same({}, parser_errors)
+      assert.are_same(1, num_snippets)
+
+      local expected_fn = {
+        trigger = "fn",
+        description = "first word, second word",
+        body_length = 7,
+        path = "/some/snippet/path.snippets",
+        line_nr = 1,
+      }
+      assert.matches_snippet(expected_fn, parsed_snippets[1])
+    end)
+
+    it("snippet with whitespace-only lines", function()
+      local lines = vim.split(
+        [[
+snippet fn
+	line 1
+	
+  
+	line 3]],
+        "\n"
+      )
+      parser.get_lines = function(_)
+        return lines
+      end
+
+      parsed_snippets = {}
+      local num_snippets = parser.parse("/some/snippet/path.snippets", parsed_snippets, parser_errors)
+
+      assert.are_same({}, parser_errors)
+      assert.are_same(1, num_snippets)
+
+      local expected_fn = {
+        trigger = "fn",
+        body = {
+          { type = NodeType.TEXT, text = "line 1\n\n  \nline 3" },
+        },
+        path = "/some/snippet/path.snippets",
+        line_nr = 1,
+      }
+      assert.are_same(expected_fn, parsed_snippets[1])
+    end)
+  end)
+
+  describe("should fail to parse", function()
+    it("snippet with multi-word description", function()
+      local lines = vim.split(
+        [[
+snippet fn first word, second word
+	function ${1:name}($2)
+		${3:-- code}
+	end]],
+        "\n"
+      )
+      parser.get_lines = function(_)
+        return lines
+      end
+
+      parsed_snippets = {}
+      local num_snippets = parser.parse("/some/snippet/path.snippets", parsed_snippets, parser_errors)
+
+      assert.are_same({}, parser_errors)
+      assert.are_same(1, num_snippets)
+
+      local expected_fn = {
+        trigger = "fn",
+        description = "first word, second word",
+        body_length = 7,
+        path = "/some/snippet/path.snippets",
+        line_nr = 1,
+      }
+      assert.matches_snippet(expected_fn, parsed_snippets[1])
     end)
   end)
 end)

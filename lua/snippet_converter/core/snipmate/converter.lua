@@ -35,9 +35,9 @@ M.convert = function(snippet)
     description = " " .. snippet.description:gsub("%s*$", "")
   end
   local body = base_converter.convert_ast(snippet.body, M.visit_node)
-  -- Prepend a tab to every non-'\n' line
-  body = body:gsub("[^\n]+", "\t%1")
-  return string.format("snippet %s%s\n%s", snippet.trigger, description, body)
+  -- Prepend a tab to every line
+  body = body:gsub("\n", "\n\t")
+  return string.format("snippet %s%s\n\t%s", snippet.trigger, description, body)
 end
 
 local HEADER_STRING =
@@ -51,7 +51,7 @@ local HEADER_STRING =
 M.export = function(converted_snippets, filetype, output_path)
   local snippet_lines = export_utils.snippet_strings_to_lines(
     converted_snippets,
-    "\n",
+    "",
     { HEADER_STRING, "" },
     nil
   )

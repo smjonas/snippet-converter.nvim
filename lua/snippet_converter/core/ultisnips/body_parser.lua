@@ -57,37 +57,6 @@ local parse_transform = function(state)
   })
 end
 
--- local parse_any
--- local parse_placeholder_any = function(state)
---   local any = { parse_any(state) }
---   local pos = 2
---   while state.input:sub(1, 1) ~= "}" do
---     any[pos] = parse_any(state)
---     pos = pos + 1
---   end
---   p.expect(state, "}")
---   return any
--- end
-
-local parse_any
-local parse_placeholder_any = function(state)
-  -- local inbetween = p.parse_escaped_text(state, "[}]", "[}]")
-  local inbetween = p.parse_till_matching_closing_brace(state)
-  local any
-  if inbetween == "" then
-    any = p.new_inner_node(NodeType.TEXT, { text = "" })
-  else
-    local ok
-    ok, any = parser.parse(inbetween)
-    if not ok then
-      -- Reraise error
-      error(any, 0)
-    end
-  end
-  p.expect(state, "}")
-  return any
-end
-
 local parse_choice_text = function(state)
   local text = { parse_escaped_choice_text(state) }
   while p.peek(state, ",") do
@@ -124,7 +93,7 @@ local parse_tabstop_transform = function(state)
   return transform
 end
 
-parse_any = function(state)
+local parse_any = function(state)
   if p.peek(state, "$") then
     local got_bracket = p.peek(state, "{")
     local int = p.peek_pattern(state, "^%d+")
@@ -133,7 +102,7 @@ parse_any = function(state)
         -- tabstop 1
         return p.new_inner_node(NodeType.TABSTOP, { int = int })
       elseif p.peek(state, ":") then
-        local any = parse_placeholder_any(state)
+        local any = p.parse_placeholder_any(state, parser.parse)
         return p.new_inner_node(NodeType.PLACEHOLDER, { int = int, any = any })
       elseif p.peek(state, "|") then
         if int == "0" then
