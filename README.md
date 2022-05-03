@@ -2,14 +2,16 @@
 
 # snippet-converter.nvim
 
-Neovim plugin to parse, transform and convert snippets. Supports a variety of formats and snippet engines.
+Parse, transform and convert snippets. Supports a variety of formats and snippet engines.
 
 [![Neovim](https://img.shields.io/badge/Neovim%200.7+-green.svg?style=for-the-badge&logo=neovim)](https://neovim.io)
 [![Lua](https://img.shields.io/badge/Lua-blue.svg?style=for-the-badge&logo=lua)](http://www.lua.org)
 
+<video src="https://user-images.githubusercontent.com/40792180/166674215-61bd1e8c-c307-4db9-bca1-a71f873e00ff.mp4" alt="Demo GIF" width="85%">
+
 </div>
 
-> :warning: This plugin is still in development and not currently usable.\
+> :warning: This plugin is already usable but has not been officially released yet (the docs still need to be completed).\
 > I expect to release the initial 1.0 version in a few weeks! Stay tuned for a Reddit post :smile:!
 
 ## Primary objectives

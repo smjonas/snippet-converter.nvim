@@ -1,19 +1,25 @@
-## Supported snippet formats
+SnippetConverter is a Neovim plugin that allows you to convert snippets (such as VSCode snippets, UltiSnips snippets etc.)
+between different formats. This allows users to reuse their snippets when switching to a different snippet
+engine by first converting them to a supported format.
+The aim of this plugin is to make it easier for users to create and share snippets as they become "snippet-engine-agnostic".
+Additionally, it provides the ability to modify individual snippets using a few lines of Lua code.
 
-SnippetConverter allows you to convert snippets between the following formats:
+# Supported snippet formats
+
+SnippetConverter supports conversion of the folowing formats:
 - [VSCode](https://code.visualstudio.com/docs/editor/userdefinedsnippets) (supported by [vim-vsnip](https://github.com/hrsh7th/vim-vsnip), [LuaSnip](https://github.com/L3MON4D3/LuaSnip))
 - [vsnip](https://github.com/hrsh7th/vim-vsnip) (a superset of VSCode snippets)
 - [UltiSnips](https://github.com/SirVer/ultisnips)
 - [SnipMate](https://github.com/garbas/vim-snipmate)
 
-The following table shows which snippets can be converted to other formats (the first column denotes the source format):
+The following table shows which snippets can be converted to another format (the first column denotes the source format):
 
-| Source format / Target format     | UltiSnips | VSCode | vsnip | SnipMate |
-|-----------------------------------|-----------|--------|-------|----------|
-| UltiSnips                         | ✓         | ✓[1]   | ✓ [2] | ✓ [1]    |
-| VSCode                            | ✓         | ✓      | ✓     | ✓        |
-| vsnip                             | ✓         | ✓ [3]  | ✓     | ✓        |
-| SnipMate                          | ✓         | ✓      | ✓     | ✓        |
+| Source format / Target format     | vscode | vsnip | ultisnips | snipmate |
+|-----------------------------------|--------|-------|-----------|----------|
+| vscode                            | ✓      | ✓     | ✓         | ✓        |
+| vsnip                             | ✓ [3]  | ✓     | ✓         | ✓        |
+| ultisnips                         | ✓ [1]  | ✓ [2] | ✓         | ✓ [1]    |
+| snipmate                          | ✓      | ✓     | ✓         | ✓        |
 
 **Legend:**
 
@@ -28,13 +34,12 @@ The following table shows which snippets can be converted to other formats (the 
 > :bulb: Note that source and target format can be the same.
 > This is useful if you only want to filter certain snippets or apply transformations to them without converting them to a different format.
 
-## Converting snippets
+# Converting snippets
 In order to convert snippets from one supported format to another, create a
 template with the input / output formats and paths and pass it to the `setup` function
 (see [Creating templates](#creating-templates)).
-
-Then run the command `:ConvertSnippets`. A GUI window should pop up that will show you further information
-about the status of the conversion.
+Then run the command `:ConvertSnippets`. A floating window will pop up that shows you further information
+about the status of the conversion, including potential syntax errors.
 
 By default, all templates that have been passed to `setup` will be executed sequentially.
 If you only want to run a single template or a selection of them, pass their names to the
@@ -49,13 +54,26 @@ If you don't want the UI to be shown, use headless mode:
 Alternatively, you can change the default option `headless` globally using the `default_opts` table
 (see [Configuration](#configuration)).
 
-### Creating templates
+## Creating templates
 
-A template is simply a table that can contain any of the following keys:
+A template is simply a table that describes the input / output formats and paths of a conversion.
+Templates must be passed to the `setup` function as a list:
+```lua
+require("snippet_converter").setup {
+  templates = {
+    { --[[the first template--]] },
+    { --[[the second template--]] },
+  }
+}
+```
+It can contain any of the following keys:
+
+---
 
 `sources: table <string, string>`
 
 A table with a list of paths per source format.
+For a list of available source formats, see [Supported snippet formats](#supported-snippet-formats).
 The paths can either be absolute paths or relative paths to folders or files in your Neovim runtimepath.
 They may contain wildcards (`*`).
 All snippet files that match any of the given paths will be parsed and converted to the respective output formats.
@@ -112,7 +130,7 @@ Choosing the correct output paths is important to make the converted snippets av
   vim.fn.stdpath("config") .. "/vscode_snippets"
   ```
 
-## Transforming snippets
+# Transforming snippets
 Before snippets are converted, it is possible to apply a transformation to them. Transformations can be used to either discard specific snippets or modify them arbitrarily.
 They can be specified per template or globally.
 
@@ -125,7 +143,7 @@ If `nil` is returned, the current snippet is discarded, otherwise the snippet is
 
 The available keys in the snippet table are listed below. Optional keys can be nil.
 
-| Key             | Type   | Supported formats         | Optional? |
+| Key             | Type   | Formats                   | Optional? |
 |-----------------|--------|---------------------------|-----------|
 | trigger         | string | All                       | No        |
 | description     | string | All                       | Yes       |
@@ -144,12 +162,12 @@ The `helper` table contains the following entries:
 | source\_format | string   | The input format of the snippet.                                                                |
 | parse          | function | A function that takes a single string as an argument and returns the parsed snippet as a table. This is useful if you don't want to work on the AST directly. |
 
-### Examples
+## Examples
 
 Modify a specific UltiSnips snippet (this effectively reverts [this](https://github.com/honza/vim-snippets/commit/2502f24) vim-snippets commit - see the related issue [#1396](https://github.com/honza/vim-snippets/issues/1396)):
 ```lua
 transform_snippets = function(snippet, helper)
-  if snippet.path:match("vim-snippets/UltiSnips/tex.snippets") and snippet.trigger == "$$" then
+  if snippet.path:find("vim-snippets/.*/tex%.snippets") and snippet.trigger == "$$" then
     return [[
 snippet im "Inline Math" w
 $${1}$
@@ -179,7 +197,7 @@ transform_snippets = function(snippet, helper)
 end
 ```
 
-## Sorting snippets
+# Sorting snippets
 By default, when converting snippets, the output snippets will appear in the same order
 as they were defined in the input files. Snippets defined in JSON format (such as VSCode and vsnip
 snippets) will be sorted alphabetically due to the way JSON files are read by Vim (the
@@ -189,7 +207,7 @@ You can control the sorting behaviour by passing a `sort_snippets` function to t
 The `sort_snippets` function takes as parameters the two snippets to compare and must return a boolean.
 When `true` is returned, the first snippet will be placed before the second one.
 
-### Example
+## Example
 
 Here is an example that puts snippets with a priority value at the top of the output file,
 sorting them by their priority in descending order, then by their trigger in ascending order:
@@ -203,7 +221,7 @@ sort_snippets = function(first, second)
 end,
 ```
 
-## Configuration
+# Configuration
 
 Default config:
 ```lua
