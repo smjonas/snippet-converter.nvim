@@ -18,7 +18,7 @@ M.setup = function(user_config)
       -- This might cause duplicate names but let's not support that case
       template.name = tostring(i)
     end
-    M.config.templates[i] = cfg.merge_template_config(template)
+    M.config.templates[i] = template
   end
   -- Load modules and create controller
   command = require("snippet_converter.command")
@@ -95,28 +95,23 @@ local transform_snippets = function(transformation, snippet, helper)
   if result == nil then -- delete the snippet
     should_delete = true
   elseif type(result) == "table" then -- overwrite the snippet to be converted
-    -- luacheck:ignore 311
     -- Reassign the pointer
+    -- luacheck: ignore 311
     snippet = result
   end
   return should_delete
 end
 
 local sort_snippets = function(format, template, snippets)
-  local sort_by = template.sort_by
-  local compare
-  if not sort_by then
-    sort_by = snippet_engines[format].default_sort_by
-    compare = snippet_engines[format].default_compare
-  else
-    compare = template.compare
-  end
-  -- If not set at this point, don't sort the snippets but output them in the order of appearance
-  if sort_by then
+  -- Template > global > default sorting functions
+  local sort_snippets = template.sort_snippets or M.config.sort_snippets or snippet_engines[format].default_sort_snippets
+
+  if sort_snippets then
     table.sort(snippets, function(a, b)
-      return compare(sort_by(a), sort_by(b))
+      return sort_snippets(a, b)
     end)
   end
+  -- If not set at this point, don't sort the snippets but output them in the order of appearance
 end
 
 local convert_snippets = function(model, snippets, context, template)
@@ -167,8 +162,8 @@ local convert_snippets = function(model, snippets, context, template)
           end
 
           for _, output_path in ipairs(output_paths) do
-            if filetype == snippet_engines[source_format].all_filename then
-              filetype = snippet_engines[target_format].all_filename
+            if filetype == snippet_engines[source_format].global_filename then
+              filetype = snippet_engines[target_format].global_filename
             end
             converter.export(converted_snippets, filetype, output_path, context)
           end

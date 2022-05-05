@@ -7,7 +7,7 @@ Parse, transform and convert snippets. Supports a variety of formats and snippet
 [![Neovim](https://img.shields.io/badge/Neovim%200.7+-green.svg?style=for-the-badge&logo=neovim)](https://neovim.io)
 [![Lua](https://img.shields.io/badge/Lua-blue.svg?style=for-the-badge&logo=lua)](http://www.lua.org)
 
-<video src="https://user-images.githubusercontent.com/40792180/166674215-61bd1e8c-c307-4db9-bca1-a71f873e00ff.mp4" alt="Demo GIF" width="85%">
+<video src="https://user-images.githubusercontent.com/40792180/166674215-61bd1e8c-c307-4db9-bca1-a71f873e00ff.mp4" width="85%">
 
 </div>
 
@@ -72,12 +72,12 @@ use {
   -- version = "*",
   config = function()
     local template = {
-      -- name = "My UltiSnips to VSCode template", (optionally give your template a name to refer to it in the transform stage)
+      -- name = "T1", (optionally give your template a name to refer to it in the `ConvertSnippets` command)
       sources = {
         ultisnips = {
           -- Add snippets from (plugin) folders or individual files on your runtimepath...
-          "vim-snippets/UltiSnips",
-          "latex-snippets/tex.snippets",
+          "./vim-snippets/UltiSnips",
+          "./latex-snippets/tex.snippets",
           -- ...or use absolute paths on your system.
           vim.fn.stdpath("config") .. "/UltiSnips",
         },
@@ -86,7 +86,10 @@ use {
         },
       },
       output = {
-        vscode = vim.fn.stdpath("config") .. "/vscode_snippets",
+        -- Specify the output formats and paths
+        vscode = {
+          vim.fn.stdpath("config") .. "/vscode_snippets",
+        },
       },
     }
 
@@ -106,6 +109,7 @@ snippet engine will find the snippets, have a look at the [Usage Guide](doc/docu
 For more detailed instructions, info about customization and examples check out the
 [documentation](doc/documentation.md).
 
-## Acknowledgements
-I want to thank [William Boman](https://github.com/williamboman) for his plugin [nvim-lsp-installer](https://github.com/williamboman/nvim-lsp-installer).
-The UI for SnippetConverter was heavily inspired by his plugin and his code helped me get started with Neovim's window API.
+## Credits
+I want to thank
+- [williamboman](https://github.com/williamboman) for his plugin [nvim-lsp-installer](https://github.com/williamboman/nvim-lsp-installer).
+  The UI for SnippetConverter was heavily inspired by this plugin and his code helped me get started with Neovim's window API.

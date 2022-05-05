@@ -115,7 +115,7 @@ describe("Snippet converter", function()
     )
   end)
 
-  it("should correctly apply sorting and compare functions", function()
+  it("should correctly apply global sorting and compare functions", function()
     local snippets = {
       ultisnips = {
         lua = {
@@ -135,15 +135,14 @@ describe("Snippet converter", function()
       output = {
         vscode = { "/some/path/lua.json" },
       },
+    }
+    snippet_converter.setup {
+      templates = { template },
       -- Sort by description in descending order
-      sort_by = function(snippet)
-        return snippet.description
-      end,
-      compare = function(first_desc, second_desc)
-        return first_desc:upper() > second_desc:upper()
+      sort_snippets = function(first, second)
+        return first.description:lower() > second.description:lower()
       end,
     }
-    snippet_converter.setup { templates = { template } }
     -- Submit task to ensure that the model is correctly initialized
     model:submit_task(template, "ultisnips", 1, 1, {})
     local stubbed_converter = stub.new(require("tests.init.converter_mock"), "export")
@@ -156,6 +155,57 @@ describe("Snippet converter", function()
         'snippet C "The first (because T > a)"\n\nendsnippet',
         'snippet A "I am second"\n\nendsnippet',
         'snippet B "ay, I should be last"\n\nendsnippet',
+      },
+      match.is_same("lua"),
+      match.is_same("/some/path/lua.json"),
+      match.is_same {}
+    )
+  end)
+
+  it("should correctly apply template sorting and compare functions overriding global functions", function()
+    local snippets = {
+      ultisnips = {
+        lua = {
+          create_test_snippet("A", "b second", {}),
+          create_test_snippet("B", "c last", {}),
+          create_test_snippet("C", "a first", {}),
+        },
+      },
+    }
+
+    local template = {
+      sources = {
+        ultisnips = {
+          "/some/path/lua.snippets",
+        },
+      },
+      output = {
+        vscode = { "/some/path/lua.json" },
+      },
+      -- Sort by description in ascending order in the template...
+      sort_snippets = function(first, second)
+        return first.description < second.description
+      end,
+    }
+    snippet_converter.setup {
+      templates = { template },
+      -- ...overriding the behavior of the global compare function
+      sort_snippets = function(first, second)
+        return first.trigger > second.trigger
+      end,
+    }
+    -- Submit task to ensure that the model is correctly initialized
+    model:submit_task(template, "ultisnips", 1, 1, {})
+    local stubbed_converter = stub.new(require("tests.init.converter_mock"), "export")
+
+    local context = {}
+    snippet_converter._convert_snippets(model, snippets, context, template)
+
+    assert.stub(stubbed_converter).was.called_with(
+      match.is_same {
+        'snippet C "a first"\n\nendsnippet',
+        'snippet A "b second"\n\nendsnippet',
+        'snippet B "c last"\n\nendsnippet',
       },
       match.is_same("lua"),
       match.is_same("/some/path/lua.json"),

@@ -107,15 +107,10 @@ describe("Scenario", function()
     }
     snippet_converter.setup {
       templates = { template },
-      -- In the test, we care about their relative order if two items are the same in lower case
-      compare = function(first, second)
-        return first < second
-      end,
     }
 
     snippet_converter.convert_snippets()
     local actual_output = vim.fn.readfile("tests/scenarios/output/expected_output_vscode_sorted.json")
     assert.are_same(expected_output_vscode_sorted, actual_output)
   end)
-
 end)

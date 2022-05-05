@@ -13,19 +13,9 @@ M.DEFAULT_CONFIG = {
   },
 }
 
-M.DEFAULT_TEMPLATE_CONFIG = {
-  compare = function(first, second)
-    return first:lower() < second:lower()
-  end,
-}
-
 local validate_table = function(name, tbl, is_optional)
   vim.validate {
-    [name] = {
-      tbl,
-      "table",
-      is_optional,
-    },
+    [name] = { tbl, "table", is_optional },
   }
 end
 
@@ -63,10 +53,7 @@ local validate_paths = function(name, paths_for_format, format_name, path_name)
     validate_table("source.paths", paths)
     for _, path in ipairs(paths) do
       vim.validate {
-        [path_name] = {
-          path,
-          "string",
-        },
+        [path_name] = { path, "string" },
       }
     end
   end
@@ -86,11 +73,7 @@ local validate_template = function(template)
   validate_paths("template.sources", template.sources, "source.format", "source.path")
   validate_paths("template.output", template.output, "output.format", "output.path")
   vim.validate {
-    ["template.compare"] = {
-      template.compare,
-      "function",
-      true,
-    },
+    ["template.sort_snippets"] = { template.sort_snippets, "function", true },
   }
 end
 
@@ -109,11 +92,7 @@ local validate_settings = function(settings)
   validate_table("settings.ui", settings.ui, true)
   if settings.ui then
     vim.validate {
-      ["settings.ui.use_nerdfont_icons"] = {
-        settings.ui.use_nerdfont_icons,
-        "boolean",
-        true,
-      },
+      ["settings.ui.use_nerdfont_icons"] = { settings.ui.use_nerdfont_icons, "boolean", true },
     }
   end
 end
@@ -124,10 +103,16 @@ local validate_default_opts = function(default_opts)
   end
   validate_table("default_opts", default_opts, false)
   vim.validate {
-    ["default_opts.headless"] = {
-      default_opts.headless,
-      "boolean",
-    },
+    ["default_opts.headless"] = { default_opts.headless, "boolean" },
+  }
+end
+
+local validate_global_opts = function(user_config)
+  vim.validate {
+    transform_snippets = { user_config.transform_snippets, "function", true },
+  }
+  vim.validate {
+    sort_snippets = { user_config.sort_snippets, "function", true },
   }
 end
 
@@ -136,21 +121,11 @@ M.validate = function(user_config)
   validate_templates(user_config.templates)
   validate_settings(user_config.settings)
   validate_default_opts(user_config.defaults)
-  vim.validate {
-    transform_snippets = {
-      user_config.transform_snippets,
-      "function",
-      true,
-    },
-  }
+  validate_global_opts(user_config)
 end
 
 M.merge_config = function(user_config)
   return vim.tbl_deep_extend("force", M.DEFAULT_CONFIG, user_config)
-end
-
-M.merge_template_config = function(user_template)
-  return vim.tbl_deep_extend("force", M.DEFAULT_TEMPLATE_CONFIG, user_template)
 end
 
 return M

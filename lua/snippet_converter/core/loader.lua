@@ -8,9 +8,9 @@ local find_matching_snippet_files = function(matching_snippet_files, source_form
   -- ./ indicates to look for files in the runtimepath
   local rt_path = source_path:match("%./(.*)")
   if rt_path then
-    -- Turn path into Lua pattern; escape all non-alphanumeric characters to be safe
-    local rt_path_pattern = rt_path:gsub("([^%w%*])", "%%%1"):gsub("%*", ".-")
-    local rtp_files = vim.api.nvim_get_runtime_file("*" .. extension, true)
+    -- Turn path into Lua pattern
+    local rt_path_pattern = vim.pesc(rt_path)
+    local rtp_files = vim.api.nvim_get_runtime_file("*/*" .. extension, true)
     for _, name in ipairs(rtp_files) do
       -- Name can either be a directory or a file name so make sure it is a file
       if name:match(rt_path_pattern) and io.file_exists(name) then
@@ -25,7 +25,7 @@ local find_matching_snippet_files = function(matching_snippet_files, source_form
 end
 
 -- Searches for a set of snippet files on the user's system with a given extension
--- that matches the given paths.
+-- that matches the source format.
 --
 -- @param source_format string a valid source format that will be used to determine the
 -- extension of the snippet files (e.g. "ultisnips")

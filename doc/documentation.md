@@ -6,7 +6,7 @@ Additionally, it provides the ability to modify individual snippets using a few 
 
 # Supported snippet formats
 
-SnippetConverter supports conversion of the folowing formats:
+SnippetConverter supports conversion between the folowing formats:
 - [VSCode](https://code.visualstudio.com/docs/editor/userdefinedsnippets) (supported by [vim-vsnip](https://github.com/hrsh7th/vim-vsnip), [LuaSnip](https://github.com/L3MON4D3/LuaSnip))
 - [vsnip](https://github.com/hrsh7th/vim-vsnip) (a superset of VSCode snippets)
 - [UltiSnips](https://github.com/SirVer/ultisnips)
@@ -39,7 +39,7 @@ In order to convert snippets from one supported format to another, create a
 template with the input / output formats and paths and pass it to the `setup` function
 (see [Creating templates](#creating-templates)).
 Then run the command `:ConvertSnippets`. A floating window will pop up that shows you further information
-about the status of the conversion, including potential syntax errors.
+about the status of the conversion such as syntax errors.
 
 By default, all templates that have been passed to `setup` will be executed sequentially.
 If you only want to run a single template or a selection of them, pass their names to the
@@ -59,10 +59,13 @@ Alternatively, you can change the default option `headless` globally using the `
 A template is simply a table that describes the input / output formats and paths of a conversion.
 Templates must be passed to the `setup` function as a list:
 ```lua
+local template = {
+  -- ...
+}
 require("snippet_converter").setup {
   templates = {
-    { --[[the first template--]] },
-    { --[[the second template--]] },
+    template,
+    -- other templates...
   }
 }
 ```
@@ -70,13 +73,19 @@ It can contain any of the following keys:
 
 ---
 
+`name: string?`
+
+An optional name that can be used as an argument to the `:ConvertSnippets` command.
+If not specified, a default value (the index of the template in the `templates` table passed to `setup`) will be used.
+
+---
+
 `sources: table <string, string>`
 
 A table with a list of paths per source format.
 For a list of available source formats, see [Supported snippet formats](#supported-snippet-formats).
-The paths can either be absolute paths or relative paths to folders or files in your Neovim runtimepath.
-They may contain wildcards (`*`).
-All snippet files that match any of the given paths will be parsed and converted to the respective output formats.
+The paths can either be absolute paths or relative paths to folders or files in your Neovim runtimepath. For the latter, prefix the path with `./`.
+All snippet files that match any of the given paths will be parsed and converted to the specified output formats.
 
 **Example:**
 
@@ -84,8 +93,8 @@ All snippet files that match any of the given paths will be parsed and converted
 sources = {
   ultisnips = {
     -- Folders or files in the runtimepath
-    "vim-snippets/UltiSnips",
-    "latex-snippets/tex.snippets",
+    "./vim-snippets/UltiSnips",
+    "./latex-snippets/tex.snippets",
   },
   vsnip = {
    -- Absolute paths to snippet directories or files
@@ -98,8 +107,8 @@ sources = {
 
 `output: table <string, string>`
 
-A table with a list of paths per output format where the converted snippets will be
-stored. Each path must be an absolute path to a directory.
+A table with a list of paths per output format where the converted snippets will be stored.
+Each path must be an absolute path to a directory.
 If a directory does not exist, it will be created.
 
 ---
@@ -116,22 +125,52 @@ An optional sorting function, see [Sorting snippets](#sorting-snippets).
 
 ## Recommended output paths
 Choosing the correct output paths is important to make the converted snippets available to your snippet engine.
+For details, always refer to the documentation of your snippet engine.
 
-- **LuaSnip**: LuaSnip will load VSCode or SnipMate snippets if they are stored in the Neovim
+### LuaSnip
+
+- LuaSnip will load VSCode or SnipMate snippets if they are stored in your Neovim
   runtimepath. Note: you need to call `require("luasnip.loaders.from_vscode").load(opts)` or
-  `require("luasnip.loaders.from_snipmate").load(opts)`.
+  `require("luasnip.loaders.from_snipmate").load(opts)` in your config.
 
-  To load snippets from different paths, pass the directories to the `opts.paths` table (see `:h luasnip-vscode-snippets-loader` for details).
-
-  For VSCode snippets, SnippetConverter will automatically generate a `package.json` file for you.
-
-  **Example output path:**
+  Therefore, the following is a possible output path to store your generated VSCode snippets:
   ```lua
   vim.fn.stdpath("config") .. "/vscode_snippets"
   ```
 
+  To load snippets from paths outside of your runtimepath, you can pass the directories to the `opts.paths` table.
+  For VSCode snippets, SnippetConverter will automatically generate a `package.json` file in the root directory.
+
+### UltiSnips
+
+- By default, UltiSnips will look for snippets inside `UltiSnips` and `snippets` folders in your runtimepath (the latter is used for SnipMate snippets).
+  Thus, a valid output path is:
+  ```lua
+  vim.fn.stdpath("config") .. "/UltiSnips"
+  ```
+  This can be changed by modifying the global table variable `vim.g.UltiSnipsSnippetDirectories`.
+
+### Vsnip
+
+- Similarly to LuaSnip, vsnip can load VSCode snippets (these may include Vimscript code)
+  that are present in a `snippets` folder in your runtimepath.
+  Custom snippets can be added at the location of `vim.g.vsnip_snippet_dir` (which is `~/.vsnip` by default) by running the `:VsnipOpen` command.
+  So the following are valid output paths:
+  ```lua
+  vim.g.vsnip_snippet_dir
+  -- or
+  vim.fn.stdpath("config") .. "/snippets"
+  ```
+
+### SnipMate
+
+- SnipMate can find snippets inside `snippets` folders in your runtimepath, so a valid output path would be:
+  ```lua
+  vim.fn.stdpath("config") .. "/snippets"
+  ```
+
 # Transforming snippets
-Before snippets are converted, it is possible to apply a transformation to them. Transformations can be used to either discard specific snippets or modify them arbitrarily.
+Before snippets are converted, it is possible to apply a transformation on them. Transformations can be used to either discard specific snippets or modify them arbitrarily.
 They can be specified per template or globally.
 
 The transformation function takes as parameters the `snippet` itself and a `helper` table that provides additional utilities for transforming the snippet.
@@ -143,7 +182,7 @@ If `nil` is returned, the current snippet is discarded, otherwise the snippet is
 
 The available keys in the snippet table are listed below. Optional keys can be nil.
 
-| Key             | Type   | Formats                   | Optional? |
+| Key             | Type   | Source formats            | Optional? |
 |-----------------|--------|---------------------------|-----------|
 | trigger         | string | All                       | No        |
 | description     | string | All                       | Yes       |
@@ -200,16 +239,23 @@ end
 # Sorting snippets
 By default, when converting snippets, the output snippets will appear in the same order
 as they were defined in the input files. Snippets defined in JSON format (such as VSCode and vsnip
-snippets) will be sorted alphabetically due to the way JSON files are read by Vim (the
-order of the JSON objects is not preserved).
+snippets) will be sorted alphabetically due to the way JSON files are read by Neovim (the
+order of JSON keys is not preserved).
 
 You can control the sorting behaviour by passing a `sort_snippets` function to the template or setup functions.
-The `sort_snippets` function takes as parameters the two snippets to compare and must return a boolean.
-When `true` is returned, the first snippet will be placed before the second one.
+This function takes as parameters the two snippets to compare and must return a boolean.
+When `true` is returned, the first snippet will be placed before the second one, otherwise the second one comes before the first one.
 
-## Example
+## Examples
 
-Here is an example that puts snippets with a priority value at the top of the output file,
+The following example will sort the snippets by their trigger in ascending order:
+```lua
+sort_snippets = function(first, second)
+  return first.trigger < second.trigger
+end
+```
+
+A more advanced example puts snippets with a priority value at the top of the output file,
 sorting them by their priority in descending order, then by their trigger in ascending order:
 
 ```lua
@@ -223,20 +269,6 @@ end,
 
 # Configuration
 
-Default config:
-```lua
-M.DEFAULT_CONFIG = {
-  settings = {
-    ui = {
-      use_nerdfont_icons = true,
-    },
-  },
-  default_opts = {
-    headless = false,
-  },
-}
-```
-
 You can pass a settings table to the `setup` function in order to overwrite the default settings or options:
 ```lua
 require("snippet_converter").setup {
@@ -249,9 +281,26 @@ require("snippet_converter").setup {
 }
 ```
 
+Default config:
+```lua
+DEFAULT_CONFIG = {
+  settings = {
+    ui = {
+      use_nerdfont_icons = true,
+    },
+  },
+  default_opts = {
+    headless = false,
+  },
+}
+```
+Here are the available settings:
+
+---
+
 `settings.ui.use_nerdfont_icons: boolean`
 
-Specifies whether [Nerd Fonts](https://github.com/ryanoasis/nerd-fonts) icons should be used for the icons in the UI window. Set this to `false` if you are not using a Nerd Font - otherwise the icons will not be displayed correctly.
+Specifies whether [Nerd Fonts](https://github.com/ryanoasis/nerd-fonts) icons should be used for the icons in the floating window. Set this to `false` if you are not using a Nerd Font - otherwise the icons will not be displayed correctly.
 
 **Default:** `true`
 
@@ -260,6 +309,6 @@ Specifies whether [Nerd Fonts](https://github.com/ryanoasis/nerd-fonts) icons sh
 `default_opts.headless: boolean`
 
 Specifies whether the `:ConvertSnippets` command should run in headless mode.
-If set to `false`, a UI window will show the status of the conversion operation.
+If set to `false`, a floating window will show the status of the conversion operation.
 
 **Default:** `false`
