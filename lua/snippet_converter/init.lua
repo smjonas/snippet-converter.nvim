@@ -48,10 +48,17 @@ local partition_snippet_paths = function(snippet_paths)
   return partitioned_snippet_paths
 end
 
-local load_snippets = function(sources)
+local load_snippets = function(template)
+  local output_paths = {}
+  for _, output in pairs(template.output) do
+    for _, path in ipairs(output) do
+      output_paths[#output_paths + 1] = path
+    end
+  end
+
   local snippet_paths = {}
-  for source_format, source_paths in pairs(sources) do
-    local _snippet_paths = loader.get_matching_snippet_paths(source_format, source_paths)
+  for source_format, source_paths in pairs(template.sources) do
+    local _snippet_paths = loader.get_matching_snippet_paths(source_format, source_paths, output_paths)
     snippet_paths[source_format] = partition_snippet_paths(_snippet_paths)
   end
   return snippet_paths
@@ -104,7 +111,9 @@ end
 
 local sort_snippets = function(format, template, snippets)
   -- Template > global > default sorting functions
-  local sort_snippets = template.sort_snippets or M.config.sort_snippets or snippet_engines[format].default_sort_snippets
+  local sort_snippets = template.sort_snippets
+    or M.config.sort_snippets
+    or snippet_engines[format].default_sort_snippets
 
   if sort_snippets then
     table.sort(snippets, function(a, b)
@@ -204,7 +213,7 @@ M.convert_snippets = function(args)
   end
   vim.schedule(function()
     for _, template in ipairs(parsed_args.templates) do
-      local snippet_paths = load_snippets(template.sources)
+      local snippet_paths = load_snippets(template)
       local snippets, context = parse_snippets(model, snippet_paths, template)
       convert_snippets(model, snippets, context, template)
     end

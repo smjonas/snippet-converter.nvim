@@ -19,7 +19,7 @@ snippet_engines.ultisnips = {
 snippet_engines.vscode = {
   label = "VSCode",
   extension = "json",
-  global_filename = "global",
+  global_filename = "all",
   parser = "snippet_converter.core.vscode.parser",
   converter = "snippet_converter.core.vscode.converter",
   -- When reading the JSON data into a table, the order is not guaranteed.
@@ -32,7 +32,7 @@ snippet_engines.vscode = {
 snippet_engines.vsnip = {
   label = "vsnip",
   extension = "json",
-  global_filename = "global",
+  global_filename = "all",
   parser = "snippet_converter.core.vscode.vsnip.parser",
   converter = "snippet_converter.core.vscode.vsnip.converter",
   -- When reading the JSON data into a table, the order is not guaranteed.

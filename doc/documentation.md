@@ -60,8 +60,19 @@ A template is simply a table that describes the input / output formats and paths
 Templates must be passed to the `setup` function as a list:
 ```lua
 local template = {
-  -- ...
+  sources = {
+    ultisnips = {
+      -- Folders or files in the runtimepath
+      "./vim-snippets/UltiSnips",
+      "./latex-snippets/tex.snippets",
+    },
+    vsnip = {
+    -- Absolute paths to snippet directories or files
+      vim.fn.stdpath("config") .. "/vsnip-snippets",
+    },
+  }
 }
+
 require("snippet_converter").setup {
   templates = {
     template,
@@ -75,7 +86,7 @@ It can contain any of the following keys:
 
 `name: string?`
 
-An optional name that can be used as an argument to the `:ConvertSnippets` command.
+An optional name that can be passed as an argument to the `:ConvertSnippets` command.
 If not specified, a default value (the index of the template in the `templates` table passed to `setup`) will be used.
 
 ---
@@ -85,23 +96,9 @@ If not specified, a default value (the index of the template in the `templates` 
 A table with a list of paths per source format.
 For a list of available source formats, see [Supported snippet formats](#supported-snippet-formats).
 The paths can either be absolute paths or relative paths to folders or files in your Neovim runtimepath. For the latter, prefix the path with `./`.
-All snippet files that match any of the given paths will be parsed and converted to the specified output formats.
 
-**Example:**
-
-```lua
-sources = {
-  ultisnips = {
-    -- Folders or files in the runtimepath
-    "./vim-snippets/UltiSnips",
-    "./latex-snippets/tex.snippets",
-  },
-  vsnip = {
-   -- Absolute paths to snippet directories or files
-    vim.fn.stdpath("config") .. "/vsnip-snippets",
-  },
-}
-```
+All snippet files that match any of the given paths will be parsed and converted to the specified output formats. However, a path that also matches any output
+path of the same template will be ignored! This is to avoid reconverting snippets that have already been converted in a previous run.
 
 ---
 
@@ -110,6 +107,7 @@ sources = {
 A table with a list of paths per output format where the converted snippets will be stored.
 Each path must be an absolute path to a directory.
 If a directory does not exist, it will be created.
+See [Recommended output paths](#transforming-snippets) for advice on how to choose a suitable output path. 
 
 ---
 
@@ -133,13 +131,15 @@ For details, always refer to the documentation of your snippet engine.
   runtimepath. Note: you need to call `require("luasnip.loaders.from_vscode").load(opts)` or
   `require("luasnip.loaders.from_snipmate").load(opts)` in your config.
 
-  Therefore, the following is a possible output path to store your generated VSCode snippets:
+  To load snippets from locations outside of your runtimepath, pass a list of paths to the `opts.paths` table.
+  Example: use `{ paths = "./vscode_snippets" }` to load snippets at `vim.fn.stdpath("config") .. "/vscode_snippets"`.
+
+  Therefore, the following is a suitable output path for your generated snippets:
   ```lua
   vim.fn.stdpath("config") .. "/vscode_snippets"
   ```
 
-  To load snippets from paths outside of your runtimepath, you can pass the directories to the `opts.paths` table.
-  For VSCode snippets, SnippetConverter will automatically generate a `package.json` file in the root directory.
+  For VSCode snippets, SnippetConverter will automatically generate the required `package.json` file in the root directory.
 
 ### UltiSnips
 
@@ -152,8 +152,8 @@ For details, always refer to the documentation of your snippet engine.
 
 ### Vsnip
 
-- Similarly to LuaSnip, vsnip can load VSCode snippets (these may include Vimscript code)
-  that are present in a `snippets` folder in your runtimepath.
+- Similarly to LuaSnip, vsnip can load VSCode snippets that are present in a `snippets` folder in your runtimepath.
+  (SnippetConverter supports snippets that use the Vimscript interpolation feature of vsnip.)
   Custom snippets can be added at the location of `vim.g.vsnip_snippet_dir` (which is `~/.vsnip` by default) by running the `:VsnipOpen` command.
   So the following are valid output paths:
   ```lua
