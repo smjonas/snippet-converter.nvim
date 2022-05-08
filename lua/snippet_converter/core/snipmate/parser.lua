@@ -7,8 +7,8 @@ M.get_lines = function(file)
   return io.read_file(file)
 end
 
-M.parse = function(path, parsed_snippets_ptr, _)
-  local lines = M.get_lines(path)
+M.parse = function(path, parsed_snippets_ptr, _, _, _lines)
+  local lines = _lines or M.get_lines(path)
   local cur_snippet
   local prev_count = #parsed_snippets_ptr
   local pos = prev_count + 1

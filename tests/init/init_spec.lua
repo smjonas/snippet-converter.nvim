@@ -60,6 +60,7 @@ describe("Snippet converter", function()
           create_test_snippet("B"),
           create_test_snippet("C"),
           create_test_snippet("D"),
+          create_test_snippet("E"),
         },
       },
     }
@@ -79,10 +80,16 @@ describe("Snippet converter", function()
           snippet.description = "Updated description"
         elseif snippet.trigger == "C" then
           snippet.description = "Updated by local transform"
+        elseif snippet.trigger == "D" then
+          return {
+            ["if"] = {
+              prefix = "if",
+              body = { "if ${1:condition} then", "\t$0", "end" },
+            },
+          }, { format = "vscode" }
         else
-          return nil
+          return false
         end
-        return snippet
       end,
     }
     snippet_converter.setup {
@@ -108,10 +115,135 @@ describe("Snippet converter", function()
         'snippet B "Updated description"\nif $1 then\n\t$2\nelse\n\t$0\nend\nendsnippet',
         -- Can modify snippet by global transform (global should override local)
         'snippet C "Updated by global transform"\nif $1 then\n\t$2\nelse\n\t$0\nend\nendsnippet',
+        -- Can define snippet in different format
+        "snippet if\nif ${1:condition} then\n\t$0\nend\nendsnippet",
       },
       match.is_same("lua"),
       match.is_same("/some/path/lua.json"),
       match.is_same {}
+    )
+  end)
+
+  it("should support returning snippet string in transformation function", function()
+    local snippets = {
+      ultisnips = {
+        lua = { create_test_snippet("A"), create_test_snippet("B") },
+      },
+    }
+
+    local template = {
+      sources = {
+        ultisnips = {
+          "/some/path/lua.snippets",
+        },
+      },
+      output = {
+        vscode = { "/some/path/lua.json" },
+      },
+      transform_snippets = function(snippet, helper)
+        assert.are_same("ultisnips", helper.source_format)
+        assert.are_same(require("snippet_converter.core.ultisnips.parser"), helper.parser)
+        if snippet.trigger == "A" then
+          -- A should be kept because opts.replace was not specified => default is true
+          return helper.dedent([[
+            snippet new
+            Please parse me :3
+            endsnippet
+
+            snippet new
+            Invalid syntax error: ${0|choice|}
+            endsnippet
+          ]])
+        elseif snippet.trigger == "B" then
+          return helper.dedent([[
+            snippet new
+            Please parse me too :3
+            endsnippet
+          ]]),
+            { replace = false }
+        end
+      end,
+    }
+    snippet_converter.setup {
+      templates = { template },
+    }
+    -- Submit task to ensure that the model is correctly initialized
+    model:submit_task(template, "ultisnips", 1, 1, {})
+    local stubbed_converter = stub.new(require("tests.init.converter_mock"), "export")
+    local stubbed_notify = stub.new(vim, "notify")
+
+    local context = {}
+    snippet_converter._convert_snippets(model, snippets, context, template)
+
+    assert.stub(stubbed_converter).was.called_with(
+      match.is_same {
+        -- Snippet B should be kept
+        'snippet B "if/else statement"\nif $1 then\n\t$2\nelse\n\t$0\nend\nendsnippet',
+        -- Checks that the snippet strings were parsed and successfully converted
+        "snippet new\nPlease parse me :3\nendsnippet",
+        -- New snippets should be placed after the existing snippets
+        "snippet new\nPlease parse me too :3\nendsnippet",
+      },
+      match.is_same("lua"),
+      match.is_same("/some/path/lua.json"),
+      match.is_same {}
+    )
+
+    assert.stub(stubbed_notify).was.called_with(
+      match.is_same(
+        "[snippet-converter.nvim] error while parsing snippet in transform function: choice node placeholder must not be 0 at 'choice|}' (input line: 'Invalid syntax error: ${0|choice|}')"
+      ),
+      match.is_same(vim.log.levels.ERROR)
+    )
+  end)
+
+  it("should show error when no valid snippets were returned in transform function", function()
+    local snippets = {
+      ultisnips = {
+        lua = { create_test_snippet("A") },
+      },
+    }
+
+    local template = {
+      sources = {
+        ultisnips = {
+          "/some/path/lua.snippets",
+        },
+      },
+      output = {
+        vscode = { "/some/path/lua.json" },
+      },
+      transform_snippets = function(snippet, helper)
+        assert.are_same("ultisnips", helper.source_format)
+        return "this is not a valid snippet", { replace = false }
+      end,
+    }
+    snippet_converter.setup {
+      templates = { template },
+    }
+    -- Submit task to ensure that the model is correctly initialized
+    model:submit_task(template, "ultisnips", 1, 1, {})
+    local stubbed_converter = stub.new(require("tests.init.converter_mock"), "export")
+    local stubbed_notify = stub.new(vim, "notify")
+
+    local context = {}
+    snippet_converter._convert_snippets(model, snippets, context, template)
+
+    assert.stub(stubbed_converter).was.called_with(
+      match.is_same {
+        -- Original snippet should be unchanged
+        'snippet A "if/else statement"\nif $1 then\n\t$2\nelse\n\t$0\nend\nendsnippet',
+      },
+      match.is_same("lua"),
+      match.is_same("/some/path/lua.json"),
+      match.is_same {}
+    )
+
+    assert.stub(stubbed_notify).was.called_with(
+      match.is_same(
+        "[snippet-converter.nvim] no valid snippets were found; please return a valid snippet string or table from the transform function"
+      ),
+      match.is_same(vim.log.levels.ERROR)
     )
   end)
 

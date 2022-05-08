@@ -107,7 +107,7 @@ path of the same template will be ignored! This is to avoid reconverting snippet
 A table with a list of paths per output format where the converted snippets will be stored.
 Each path must be an absolute path to a directory.
 If a directory does not exist, it will be created.
-See [Recommended output paths](#transforming-snippets) for advice on how to choose a suitable output path. 
+See [Recommended output paths](#transforming-snippets) for advice on how to choose a suitable output path.
 
 ---
 
@@ -171,14 +171,17 @@ For details, always refer to the documentation of your snippet engine.
 
 # Transforming snippets
 Before snippets are converted, it is possible to apply a transformation on them. Transformations can be used to either discard specific snippets or modify them arbitrarily.
-They can be specified per template or globally.
+They can be specified per template or globally (the global transform function will be run last).
 
 The transformation function takes as parameters the `snippet` itself and a `helper` table that provides additional utilities for transforming the snippet.
-If `nil` is returned, the current snippet is discarded, otherwise the snippet is replaced with the returned table.
-<!-- It may return either `nil` or a table - the type determines how the snippet will be handled: -->
-<!-- - `nil`: the current snippet will be discarded -->
-<!-- - table: the snippet will be replaced with the returned table -->
-<!-- - string: the snippet will skip be replaced  -->
+If `false` is returned, the current snippet is discarded. If a non-nil value is returned, the snippet is replaced with the result of parsing the returned value
+(the snippet format must match the source format). For VSCode snippets, this must be a table, for other formats it is a string (see examples).
+It is possible to return multiple snippets.
+
+> :bulb: It is possible to return multiple snippets. This allows you to turn an existing
+> snippet into multiple new ones. [An example would be great here, let me know if you have one to share!]
+
+In contrast to loaded snippets, any errors that occur during parsing will be shown to the user immediately.
 
 The available keys in the snippet table are listed below. Optional keys can be nil.
 
@@ -199,7 +202,15 @@ The `helper` table contains the following entries:
 | Key            | Type     | Explanation                                                                                     |
 |----------------|----------|-------------------------------------------------------------------------------------------------|
 | source\_format | string   | The input format of the snippet.                                                                |
-| parse          | function | A function that takes a single string as an argument and returns the parsed snippet as a table. This is useful if you don't want to work on the AST directly. |
+| target\_format | string   | The output format of the snippet.                                                               |
+| dedent         | function | A function that takes a single string as an argument and removes leading whitespace from all lines. The indentation is inferred from the first line. This allows for nicer formatting.
+
+Optionally, a table of options can be returned as a second value which may contain any of the following items:
+
+| Key             | Type    | Default                    | Description                                                                                                              |
+|-----------------|---------|----------------------------|--------------------------------------------------------------------------------------------------------------------------|
+| replace         | boolean | `true`                     | If `true`, the current existing snippet will be replaced with the new one(s), otherwise it will be kept.                 |
+| format          | string  | source\_format             | The format of the snippet which determines the parser to be used. Useful if you prefer a particular syntax over another. |
 
 ## Examples
 
@@ -207,12 +218,29 @@ Modify a specific UltiSnips snippet (this effectively reverts [this](https://git
 ```lua
 transform_snippets = function(snippet, helper)
   if snippet.path:find("vim-snippets/.*/tex%.snippets") and snippet.trigger == "$$" then
-    return [[
-snippet im "Inline Math" w
-$${1}$
-endsnippet]]
+    return helper.dedent([[
+      snippet im "Inline Math" w
+      $${1}$
+      endsnippet
+    ]]),
+    -- These are the default options (could be omitted)
+    { replace = true, format = "ultisnips" }
   end
-  return snippet
+end
+```
+
+Here is an example for VSCode snippets (this needs to match the default syntax of VSCode
+snippets, e.g. use `prefix` instead of `trigger`):
+```lua
+transform_snippets = function(snippet, helper)
+  if snippet.trigger == "if" then
+    return {
+      ["if"] = {
+        prefix = "if",
+        body = { "if ${1:condition} then", "\t$0", "end" },
+      }
+    }
+  end
 end
 ```
 
@@ -220,9 +248,8 @@ Delete all snippets with a specific trigger:
 ```lua
 transform_snippets = function(snippet, helper)
   if snippet.trigger == "..." then
-    return nil
+    return false
   end
-  return snippet
 end
 ```
 
@@ -232,7 +259,6 @@ transform_snippets = function(snippet, helper)
   if snippet.options and snippet.options:match("A") then
     snippet.options = snippet.options:gsub("A", "")
   end
-  return snippet
 end
 ```
 

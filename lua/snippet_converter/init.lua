@@ -4,7 +4,7 @@ local M = {
 
 local tbl = require("snippet_converter.utils.table")
 
-local command, snippet_engines, loader, Model
+local command, snippet_engines, loader, Model, string_utils
 local controller
 
 -- Setup function must be called before using the plugin!
@@ -25,6 +25,7 @@ M.setup = function(user_config)
   snippet_engines = require("snippet_converter.snippet_engines")
   loader = require("snippet_converter.core.loader")
   Model = require("snippet_converter.ui.model")
+  string_utils = require("snippet_converter.utils.string")
   controller = require("snippet_converter.ui.controller"):new()
 end
 
@@ -96,15 +97,45 @@ local parse_snippets = function(model, snippet_paths, template)
   return snippets, context
 end
 
-local transform_snippets = function(transformation, snippet, helper)
+local transform_snippets = function(transformation, snippet, helper, snippets_ptr)
   local should_delete = false
-  local result = transformation(snippet, helper)
-  if result == nil then -- delete the snippet
+  -- Can return an optional flag whether to keep the current snippet or
+  -- delete it (effectively replacing it with the new one)
+  local result, opts = transformation(snippet, helper)
+  if result == false then -- delete the snippet
     should_delete = true
-  elseif type(result) == "table" then -- overwrite the snippet to be converted
-    -- Reassign the pointer
-    -- luacheck: ignore 311
-    snippet = result
+  elseif result ~= nil then -- parse the string or table (for VScode snippets) and use the result of that
+    opts = opts or {}
+    local parsed_snippets = {}
+    local parser_errors = {}
+    if type(result) == "string" then
+      result = vim.split(result, "\n")
+    end
+    local parser = require(snippet_engines[opts.format or helper.source_format].parser)
+    parser.parse(nil, parsed_snippets, parser_errors, {}, result)
+    if #parser_errors > 0 then
+      for _, err in ipairs(parser_errors) do
+        local msg = type(err) == "table" and err.msg or err
+        vim.notify(
+          "[snippet-converter.nvim] error while parsing snippet in transform function: " .. msg,
+          vim.log.levels.ERROR
+        )
+      end
+    end
+    if #parsed_snippets == 0 then
+      vim.notify(
+        "[snippet-converter.nvim] no valid snippets were found; please return a valid snippet string or table from the transform function",
+        vim.log.levels.ERROR
+      )
+    else
+      local pos = #snippets_ptr + 1
+      for _, _snippet in ipairs(parsed_snippets) do
+        snippets_ptr[pos] = _snippet
+        pos = pos + 1
+      end
+      -- Default is true
+      should_delete = opts.replace == nil and true or opts.replace
+    end
   end
   return should_delete
 end
@@ -124,7 +155,9 @@ local sort_snippets = function(format, template, snippets)
 end
 
 local convert_snippets = function(model, snippets, context, template)
-  local transform_helper = {}
+  local transform_helper = {
+    dedent = string_utils.dedent,
+  }
   for target_format, output_paths in pairs(template.output) do
     local filetypes = {}
     local converter = require(snippet_engines[target_format].converter)
@@ -136,18 +169,34 @@ local convert_snippets = function(model, snippets, context, template)
         local pos = 1
 
         transform_helper.source_format = source_format
+        transform_helper.target_format = target_format
+        transform_helper.parser = require(snippet_engines[source_format].parser)
+
         for filetype, _snippets in pairs(snippets_for_format) do
           local skip_snippet = {}
           -- Apply local, then global transformations
           if template.transform_snippets or M.config.transform_snippets then
+            local new_snippets = {}
             for i, snippet in ipairs(_snippets) do
               if template.transform_snippets then
-                skip_snippet[i] = transform_snippets(template.transform_snippets, snippet, transform_helper)
+                skip_snippet[i] = transform_snippets(
+                  template.transform_snippets,
+                  snippet,
+                  transform_helper,
+                  new_snippets
+                )
               end
               if M.config.transform_snippets and not skip_snippet[i] then
-                skip_snippet[i] = transform_snippets(M.config.transform_snippets, snippet, transform_helper)
+                skip_snippet[i] = transform_snippets(
+                  M.config.transform_snippets,
+                  snippet,
+                  transform_helper,
+                  new_snippets
+                )
               end
             end
+            -- Append any snippets returned by the transformation functions
+            tbl.concat_arrays(_snippets, new_snippets)
           end
 
           -- Remove skipped snippets

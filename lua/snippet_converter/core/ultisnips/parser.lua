@@ -13,9 +13,10 @@ end
 ---@param parsed_snippets_ptr table contains all previously parsed snippets, any new snippets will be added to the end of it
 ---@param parser_errors_ptr table contains all previously encountered errors, any new errors that occur during parsing will be added to the end of it
 ---@param context_ptr table contains all previously gathered global context, any global Python code found in the input file will be appended to the context.ptr_global_code subtable
+---@param _lines table<string>? if specified, get_lines will not be called
 ---@return number the new number of snippets that have been parsed
-M.parse = function(path, parsed_snippets_ptr, parser_errors_ptr, context_ptr)
-  local lines = M.get_lines(path)
+M.parse = function(path, parsed_snippets_ptr, parser_errors_ptr, context_ptr, _lines)
+  local lines = _lines or M.get_lines(path)
   local cur_snippet
   local found_snippet_header = false
 
