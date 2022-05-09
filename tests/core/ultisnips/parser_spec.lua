@@ -1,5 +1,6 @@
 local assertions = require("tests.custom_assertions")
 local parser = require("snippet_converter.core.ultisnips.parser")
+local NodeType = require("snippet_converter.core.node_type")
 
 describe("UltiSnips parser", function()
   setup(function()
@@ -56,6 +57,42 @@ endsnippet]],
       -- This should never happen unless the parser fails.
       assert.is_false(true)
     end
+  end)
+
+  it("should parse (missing) newlines correctly", function()
+    local lines = vim.split(
+      [[
+snippet a
+
+endsnippet
+snippet b
+endsnippet]],
+      "\n"
+    )
+    parser.get_lines = function(_)
+      return lines
+    end
+
+    local num_snippets = parser.parse("path", parsed_snippets, parser_errors)
+    assert.are_same({}, parser_errors)
+    assert.are_same({}, context)
+    assert.are_same(2, num_snippets)
+    local first = parsed_snippets[1].trigger == "a" and parsed_snippets[1] or parsed_snippets[2]
+    local second = parsed_snippets[1].trigger == "a" and parsed_snippets[2] or parsed_snippets[1]
+
+    assert.are_same({
+      trigger = "a",
+      body = { { type = NodeType.TEXT, text = "\n" } },
+      path = "path",
+      line_nr = 1,
+    }, first)
+
+    assert.are_same({
+      trigger = "b",
+      body = {},
+      path = "path",
+      line_nr = 4,
+    }, second)
   end)
 
   it("should return correct info on header parse failure", function()

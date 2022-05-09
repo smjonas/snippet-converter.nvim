@@ -76,7 +76,17 @@ M.parse = function(path, parsed_snippets_ptr, parser_errors_ptr, context_ptr, li
       -- TODO: handle pre_expand, post_expand:
       -- https://github.com/SirVer/ultisnips/blob/e96733b5db27b48943db86dd8623f1497b860bc6/test/test_ParseSnippets.py#L329
     elseif line:match("^endsnippet") then
-      local ok, result = body_parser.parse(table.concat(cur_snippet.body, "\n"))
+      local ok, result
+      -- Empty snippet body
+      if #cur_snippet.body == 0 then
+        ok, result = true, {}
+      else
+        -- For a snippet that consists of a single empty line the body would be "".
+        -- Make sure to set the body to a newline character in that case.
+        local single_empty_line = #cur_snippet.body == 1 and cur_snippet.body[1] == ""
+        local body = single_empty_line and "\n" or table.concat(cur_snippet.body, "\n")
+        ok, result = body_parser.parse(body)
+      end
       if ok then
         -- TODO: refactor
         if cur_priority then

@@ -157,7 +157,6 @@ M.raise_backtrack_error = function(msg)
 end
 
 M.backtrack = function(state, ast, prev_input, parse_any_ptr)
-  -- TODO: remove assertions on release
   assert(parse_any_ptr)
   state.input = prev_input
   local chars = {}
