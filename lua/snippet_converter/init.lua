@@ -131,6 +131,10 @@ local transform_snippets = function(transformation, snippet, helper, snippets_pt
     else
       local pos = #snippets_ptr + 1
       for _, _snippet in ipairs(parsed_snippets) do
+        -- A bit hacky but it works
+        if helper.target_format == "vscode" or helper.target_format == "vsnip" then
+          _snippet.name = _snippet.trigger
+        end
         snippets_ptr[pos] = _snippet
         pos = pos + 1
       end
