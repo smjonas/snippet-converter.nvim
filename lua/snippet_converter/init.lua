@@ -124,7 +124,8 @@ local transform_snippets = function(transformation, snippet, helper, snippets_pt
     end
     if #parsed_snippets == 0 then
       vim.notify(
-        "[snippet-converter.nvim] no valid snippets were found; please return a valid snippet string or table from the transform function",
+        "[snippet-converter.nvim] no valid snippets were found;"
+          .. " please return a valid snippet string or table from the transform function",
         vim.log.levels.ERROR
       )
     else

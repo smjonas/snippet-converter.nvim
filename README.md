@@ -11,9 +11,6 @@ Parse, transform and convert snippets. Supports a variety of formats and snippet
 
 </div>
 
-> :warning: This plugin is already usable but has not been officially released yet (the docs still need to be completed).\
-> I expect to release the initial 1.0 version in a few weeks! Stay tuned for a Reddit post :smile:!
-
 ## Primary objectives
 - Decouple the functionality of user's snippets from the concrete syntax or snippet engine.
 - Facilitate and encourage creation and sharing of snippet collections.
@@ -25,7 +22,7 @@ There are several cases where this plugin comes in handy:
   hand-crafted snippets:\
   Simply let SnippetConverter convert them to your desired output format.
 - You are using a collection of predefined snippets such as [friendly-snippets](https://github.com/rafamadriz/friendly-snippets) or
-  [vim-snipmate](https://github.com/honza/vim-snippets), however there is that **one snippet
+  [vim-snippets](https://github.com/honza/vim-snippets), however there is that **one snippet
   that always gets in your way:**\
   Instead of maintaining your own fork of the snippet collection, simply remove or modify the snippet with a few lines of Lua code.
 - You **dislike the snippets format** your snippet engine supports or find it **hard to
@@ -72,7 +69,7 @@ use {
   -- version = "*",
   config = function()
     local template = {
-      -- name = "T1", (optionally give your template a name to refer to it in the `ConvertSnippets` command)
+      -- name = "t1", (optionally give your template a name to refer to it in the `ConvertSnippets` command)
       sources = {
         ultisnips = {
           -- Add snippets from (plugin) folders or individual files on your runtimepath...
@@ -95,21 +92,26 @@ use {
 
     require("snippet_converter").setup {
       templates = { template },
-      -- settings = {}, (to change the default settings, see configuration section)
+      -- To change the default settings (see configuration section in the documentation)
+      -- settings = {},
     }
   end
 }
 ```
 Then simply run the command `:ConvertSnippets` to convert all snippets to your specified
-output locations and formats. To see which output folders are suitable so that your
-snippet engine will find the snippets, have a look at the [Usage Guide](doc/documentation#usage-guide).
+output locations and formats. To see which output folders you should choose depending on
+your snippet engine, have a look at the section [Recommended output paths](doc/documentation#recommended-output-paths) in the docs.
 
 ## Documentation
 
 For more detailed instructions, info about customization and examples check out the
-[documentation](doc/documentation.md).
+[documentation](doc/documentation.md) or help file with `:h snippet-converter`.
 
 ## Credits
 I want to thank
+- [L3MON4D3](https://github.com/L3MON4D3) for creating the awesome snippet engine engine [LuaSnip](https://github.com/L3MON4D3/LuaSnip)
+  and [uga-rosa](https://github.com/uga-rosa) for permission to use the `scandir` utility function in my plugin!
+- [ii14](https://github.com/ii14), a contributor to [nvim-lua/nvim-package-specification](https://github.com/nvim-lua/nvim-package-specification)
+  for creating the `dedent` utility function that is used in this plugin after slight modification.
 - [williamboman](https://github.com/williamboman) for his plugin [nvim-lsp-installer](https://github.com/williamboman/nvim-lsp-installer).
   The UI for SnippetConverter was heavily inspired by this plugin and his code helped me get started with Neovim's window API.

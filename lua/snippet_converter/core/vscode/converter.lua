@@ -83,6 +83,9 @@ local get_package_json_string = function(name, filetypes)
   )
 end
 
+-- Expose to tests
+M._get_package_json_string = get_package_json_string
+
 --TODO: from UltiSnips: $VISUAL with transform
 M.convert = function(snippet, visit_node)
   if snippet.options and snippet.options:match("r") then
