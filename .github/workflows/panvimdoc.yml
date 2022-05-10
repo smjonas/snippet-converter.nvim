@@ -17,8 +17,7 @@ jobs:
           description: "Convert snippets to the format of your choice"
           pandoc: doc/documentation.md
           version: "NVIM v0.7"
-      - uses: peter-evans/create-pull-request@v3
+      - uses: stefanzweifel/git-auto-commit-action@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "Auto generate docs"
-          title: "Auto generate docs"
+          commit_message: "Auto generate docs"
