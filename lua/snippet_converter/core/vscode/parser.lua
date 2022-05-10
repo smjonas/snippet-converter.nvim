@@ -8,7 +8,12 @@ M.get_lines = function(path)
   return io.read_json(path)
 end
 
-local verify_snippet_format = function(snippet_name, snippet_info, errors_ptr)
+---@protected
+---@param snippet_name string
+---@param snippet_info table
+---@param errors_ptr table
+---@return boolean ok
+M.verify_snippet_format = function(snippet_name, snippet_info, errors_ptr)
   if type(snippet_info) ~= "table" then
     errors_ptr[#errors_ptr + 1] = "snippet must be a table, got " .. type(snippet_name)
     return false
@@ -55,7 +60,8 @@ local verify_snippet_format = function(snippet_name, snippet_info, errors_ptr)
   return err.assert_all(assertions, errors_ptr)
 end
 
-local create_snippet = function(snippet_name, trigger, snippet_info, parser, parser_errors_ptr)
+---@protected
+M.create_snippet = function(snippet_name, trigger, snippet_info, parser, parser_errors_ptr)
   local body = type(snippet_info.body) == "string" and { snippet_info.body } or snippet_info.body
   parser = parser or body_parser
   local ok, result = parser:parse(table.concat(body, "\n"))
@@ -72,31 +78,26 @@ local create_snippet = function(snippet_name, trigger, snippet_info, parser, par
   }
 end
 
-M.parse = function(path, parsed_snippets_ptr, parser_errors_ptr, _, snippet_data_, parser)
-  local snippet_data = snippet_data_ or M.get_lines(path)
+M.parse = function(path, parsed_snippets_ptr, parser_errors_ptr, args)
+  args = args or {}
+  -- This is a bit ugly but changing all parsers to a class is a lot of effort
+  args.self = args.self or M
+  local snippet_data = args.lines or M.get_lines(path)
   if vim.tbl_isempty(snippet_data) then
     return #parsed_snippets_ptr
   end
   local prev_count = #parsed_snippets_ptr
   local pos = prev_count + 1
   for snippet_name, snippet_info in pairs(snippet_data) do
-    if verify_snippet_format(snippet_name, snippet_info, parser_errors_ptr) then
-      -- The snippet has multiple prefixes.
-      if type(snippet_info.prefix) == "table" then
-        for _, trigger in ipairs(snippet_info.prefix) do
-          local snippet = create_snippet(snippet_name, trigger, snippet_info, parser, parser_errors_ptr)
-          if snippet then
-            snippet.path = path
-            parsed_snippets_ptr[pos] = snippet
-            pos = pos + 1
-          end
-        end
-      else
-        local snippet = create_snippet(
+    if args.self.verify_snippet_format(snippet_name, snippet_info, parser_errors_ptr) then
+      -- The snippet can have multiple prefixes
+      local triggers = type(snippet_info.prefix) == "table" and snippet_info.prefix or { snippet_info.prefix }
+      for _, trigger in ipairs(triggers) do
+        local snippet = args.self.create_snippet(
           snippet_name,
-          snippet_info.prefix,
+          trigger,
           snippet_info,
-          parser,
+          args.parser,
           parser_errors_ptr
         )
         if snippet then

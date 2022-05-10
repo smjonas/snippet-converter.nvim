@@ -19,5 +19,4 @@ jobs:
           version: "NVIM v0.7"
       - uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
           commit_message: "Auto generate docs"

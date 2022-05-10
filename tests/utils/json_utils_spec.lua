@@ -24,6 +24,19 @@ describe("JSON utils should pretty-print", function()
     assert.are_same(expected, json:pretty_print(input))
   end)
 
+  it("booleans", function()
+    local expected = [[
+{
+  "a": true,
+  "b": false
+}]]
+    local input = {
+      a = true,
+      b = false,
+    }
+    assert.are_same(expected, json:pretty_print(input))
+  end)
+
   it("table with simple string key + value pair", function()
     local expected = [[
 {

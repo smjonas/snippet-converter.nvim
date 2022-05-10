@@ -138,56 +138,98 @@ ${1/\w+\s*/\u$0/}
 endsnippet]]
     assert.are_same(expected, actual)
   end)
-end)
 
-describe("convert body from VSCode", function()
-  it("with variable", function()
-    local snippet = {
-      trigger = "test",
-      body = {
-        {
-          type = NodeType.TEXT,
-          text = "current path: ",
+  describe("convert body from VSCode", function()
+    it("with variable", function()
+      local snippet = {
+        trigger = "test",
+        body = {
+          {
+            type = NodeType.TEXT,
+            text = "current path: ",
+          },
+          {
+            type = NodeType.VARIABLE,
+            var = "TM_FILENAME",
+          },
         },
-        {
-          type = NodeType.VARIABLE,
-          var = "TM_FILENAME",
-        },
-      },
-    }
-    local actual = converter.convert(snippet)
-    assert.are_same(
-      [[
+      }
+      local actual = converter.convert(snippet)
+      assert.are_same(
+        [[
 snippet test
 current path: `!v expand('%:t')`
 endsnippet]],
-      actual
-    )
-  end)
+        actual
+      )
+    end)
 
-  it("with nested placeholder", function()
-    local snippet = {
-      trigger = "test",
-      body = {
-        {
-          type = NodeType.PLACEHOLDER,
-          int = "1",
-          any = {
-            {
-              type = NodeType.TABSTOP,
-              int = "2",
+    it("with nested placeholder", function()
+      local snippet = {
+        trigger = "test",
+        body = {
+          {
+            type = NodeType.PLACEHOLDER,
+            int = "1",
+            any = {
+              {
+                type = NodeType.TABSTOP,
+                int = "2",
+              },
             },
           },
         },
-      },
-    }
-    local actual = converter.convert(snippet)
-    assert.are_same(
-      [[
+      }
+      local actual = converter.convert(snippet)
+      assert.are_same(
+        [[
 snippet test
 ${1:$2}
 endsnippet]],
-      actual
-    )
+        actual
+      )
+    end)
+  end)
+
+  describe("VSCode_LuaSnip snippet", function()
+    it("with luasnip.autotrigger key and existing options", function()
+      local snippet = {
+        trigger = "test",
+        body = {},
+        options = "i",
+        luasnip = {
+          autotrigger = true,
+        },
+      }
+      local actual = converter.convert(snippet)
+      assert.are_same(
+        [[
+snippet test iA
+
+endsnippet]],
+        actual
+      )
+      -- TODO: ^ there should not be a new line here
+    end)
+
+    it("with luasnip.autotrigger key and no existing options", function()
+      local snippet = {
+        trigger = "test",
+        body = {},
+        luasnip = {
+          autotrigger = true,
+        },
+      }
+      local actual = converter.convert(snippet)
+      assert.are_same(
+        [[
+snippet test A
+
+endsnippet]],
+        actual
+      )
+      -- TODO: ^ there should not be a new line here
+    end)
+
   end)
 end)

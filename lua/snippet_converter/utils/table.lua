@@ -62,7 +62,9 @@ M.pairs_by_keys = function(tbl, compare)
   -- Return an iterator function
   return function()
     i = i + 1
-    return keys[i] and keys[i], tbl[keys[i]] or nil
+    if keys[i] then
+      return keys[i], tbl[keys[i]]
+    end
   end
 end
 

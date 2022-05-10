@@ -39,8 +39,7 @@ Other reasons may include:
 
 ### Supported snippet engines
 SnippetConverter can convert snippets between the following formats:
-- [VSCode](https://code.visualstudio.com/docs/editor/userdefinedsnippets) (supported by [vim-vsnip](https://github.com/hrsh7th/vim-vsnip), [LuaSnip](https://github.com/L3MON4D3/LuaSnip))
-- [vsnip](https://github.com/hrsh7th/vim-vsnip) (a superset of VSCode snippets)
+- [VSCode](https://code.visualstudio.com/docs/editor/userdefinedsnippets) (as well as separate flavors used by [vim-vsnip](https://github.com/hrsh7th/vim-vsnip) and [LuaSnip](https://github.com/L3MON4D3/LuaSnip))
 - [UltiSnips](https://github.com/SirVer/ultisnips)
 - [SnipMate](https://github.com/garbas/vim-snipmate)
 
@@ -84,8 +83,8 @@ use {
       },
       output = {
         -- Specify the output formats and paths
-        vscode = {
-          vim.fn.stdpath("config") .. "/vscode_snippets",
+        vscode_luasnip = {
+          vim.fn.stdpath("config") .. "/luasnip_snippets",
         },
       },
     }

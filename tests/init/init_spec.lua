@@ -98,7 +98,6 @@ describe("Snippet converter", function()
         if snippet.trigger == "C" then
           snippet.description = "Updated by global transform"
         end
-        return snippet
       end,
     }
     -- Submit task to ensure that the model is correctly initialized

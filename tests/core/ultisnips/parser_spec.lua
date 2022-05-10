@@ -146,7 +146,7 @@ endsnippet]],
       "/some/snippet/path.snippets",
       parsed_snippets,
       parser_errors,
-      context
+      { context = context }
     )
     assert.are_same(1, num_new_snippets)
     assert.are_same("for", parsed_snippets[1].trigger)
@@ -191,7 +191,7 @@ endglobal]],
       "/some/snippet/path.snippets",
       parsed_snippets,
       parser_errors,
-      context
+      { context = context }
     )
     assert.are_same(1, num_new_snippets)
     assert.are_same("for", parsed_snippets[1].trigger)
@@ -251,7 +251,7 @@ priority 50]],
       "/some/snippet/path.snippets",
       parsed_snippets,
       parser_errors,
-      context
+      { context = context }
     )
 
     assert.are_same(2, num_new_snippets)
@@ -296,7 +296,7 @@ endsnippet]],
       "/some/snippet/path.snippets",
       parsed_snippets,
       parser_errors,
-      context
+      { context = context }
     )
     assert.are_same(2, num_new_snippets)
 
@@ -362,7 +362,7 @@ context "1"]],
       "/some/snippet/path.snippets",
       parsed_snippets,
       parser_errors,
-      context
+      { context = context }
     )
 
     assert.are_same(2, num_new_snippets)
@@ -408,7 +408,7 @@ endsnippet]],
       "/some/snippet/path.snippets",
       parsed_snippets,
       parser_errors,
-      context
+      { context = context }
     )
     assert.are_same(2, num_new_snippets)
 

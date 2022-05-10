@@ -82,7 +82,7 @@ local parse_snippets = function(model, snippet_paths, template)
       tbl.make_default_table(snippets[source_format], filetype)
       for _, path in ipairs(paths) do
         num_snippets = num_snippets
-          + parser.parse(path, snippets[source_format][filetype], parser_errors, context)
+          + parser.parse(path, snippets[source_format][filetype], parser_errors, { context = context })
       end
       num_files = num_files + #paths
     end
@@ -112,7 +112,7 @@ local transform_snippets = function(transformation, snippet, helper, snippets_pt
       result = vim.split(result, "\n")
     end
     local parser = require(snippet_engines[opts.format or helper.source_format].parser)
-    parser.parse(nil, parsed_snippets, parser_errors, {}, result)
+    parser.parse(nil, parsed_snippets, parser_errors, { lines = result })
     if #parser_errors > 0 then
       for _, err in ipairs(parser_errors) do
         local msg = type(err) == "table" and err.msg or err
@@ -132,7 +132,7 @@ local transform_snippets = function(transformation, snippet, helper, snippets_pt
       local pos = #snippets_ptr + 1
       for _, _snippet in ipairs(parsed_snippets) do
         -- A bit hacky but it works
-        if helper.target_format == "vscode" or helper.target_format == "vsnip" then
+        if snippet_engines[helper.target_format].base_format == "vscode" then
           _snippet.name = _snippet.trigger
         end
         snippets_ptr[pos] = _snippet

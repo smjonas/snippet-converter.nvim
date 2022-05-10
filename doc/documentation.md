@@ -7,29 +7,36 @@ Additionally, it provides the ability to modify individual snippets using a few 
 # Supported snippet formats
 
 SnippetConverter supports conversion between the folowing formats:
-- [VSCode](https://code.visualstudio.com/docs/editor/userdefinedsnippets) (supported by [vim-vsnip](https://github.com/hrsh7th/vim-vsnip), [LuaSnip](https://github.com/L3MON4D3/LuaSnip))
-- [vsnip](https://github.com/hrsh7th/vim-vsnip) (a superset of VSCode snippets)
-- [UltiSnips](https://github.com/SirVer/ultisnips)
-- [SnipMate](https://github.com/garbas/vim-snipmate)
+- **[VSCode](https://code.visualstudio.com/docs/editor/userdefinedsnippets)** (supported by [vim-vsnip](https://github.com/hrsh7th/vim-vsnip), [LuaSnip](https://github.com/L3MON4D3/LuaSnip))
+- **VSCode LuaSnip**: a superset of VSCode snippets
+
+LuaSnip snippets can contain a custom `luasnip` key. That is why `vscode_luasnip` has been added as a separate format. For example, if converting an UltiSnips snippet,
+and the option `A` is present, the `luasnip.autotrigger` key will be set to `true`.
+
+- **vsnip**: a superset of VSCode snippets (vsnip snippets can contain Vimscript code)
+
+- **[UltiSnips](https://github.com/SirVer/ultisnips)**
+- **[SnipMate](https://github.com/garbas/vim-snipmate)**
 
 The following table shows which snippets can be converted to another format (the first column denotes the source format):
 
-| Source format / Target format     | vscode | vsnip | ultisnips | snipmate |
-|-----------------------------------|--------|-------|-----------|----------|
-| vscode                            | ✓      | ✓     | ✓         | ✓        |
-| vsnip                             | ✓ [3]  | ✓     | ✓         | ✓        |
-| ultisnips                         | ✓ [1]  | ✓ [2] | ✓         | ✓ [1]    |
-| snipmate                          | ✓      | ✓     | ✓         | ✓        |
+| Source format / Target format     | vscode | vscode\_luasnip | vsnip | ultisnips | snipmate |
+|-----------------------------------|--------|-----------------|-------|-----------|----------|
+| vscode                            | ✓      | ✓               | ✓     | ✓         | ✓        |
+| vscode\_luasnip                   | ✓      | ✓               | ✓     | ✓         | ✓        |
+| vsnip                             | ✓ [1]  | ✓ [1]           | ✓     | ✓         | ✓ [1]    |
+| ultisnips                         | ✓ [2]  | ✓ [2]           | ✓ [3] | ✓         | ✓ [2]    |
+| snipmate                          | ✓      | ✓               | ✓     | ✓         | ✓        |
 
 **Legend:**
 
 ✓: All snippets can be converted - no exceptions.
 
-✓ [1]: All snippets except snippets with python / vimscript / shell code or regular expression triggers.
+✓ [1]: All except snippets with vimscript code.
 
-✓ [2]: All except snippets with python / shell code or regular expression triggers / transformations.
+✓ [2]: All snippets except snippets with python / vimscript / shell code or regular expression triggers.
 
-✓ [3]: All except snippets with vimscript code.
+✓ [3]: All except snippets with python / shell code or regular expression triggers / transformations.
 
 > :bulb: Note that source and target format can be the same.
 > This is useful if you only want to filter certain snippets or apply transformations to them without converting them to a different format.
