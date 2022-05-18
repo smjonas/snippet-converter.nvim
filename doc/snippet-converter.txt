@@ -260,16 +260,18 @@ shown to the user immediately.
 The available keys in the snippet table are listed below. Optional keys can be
 nil.
 
-│     Key      │ Type │     Source formats      │Optional?│
-│trigger       │string│All                      │No       │
-│description   │string│All                      │Yes      │
-│body          │table │All                      │No       │
-│scope         │table │VSCode / vsnip           │Yes      │
-│path          │string│All                      │No       │
-│line_nr       │int   │All except VSCode / vsnip│No       │
-│options       │string│UltiSnips                │Yes      │
-│custom_context│string│UltiSnips                │Yes      │
-│priority      │string│UltiSnips                │Yes      │
+│        Key        │ Type  │                    Source formats                    │Optional?│
+│trigger            │string │All                                                   │No       │
+│description        │string │All                                                   │Yes      │
+│body               │table  │All                                                   │No       │
+│scope              │table  │vscode / vscode_luasnip / vsnip                       │Yes      │
+│luasnip.autotrigger│boolean│vscode_luasnip                                        │Yes      │
+│luasnip.priority   │number │vscode_luasnip                                        │Yes      │
+│path               │string │All                                                   │No       │
+│line_nr            │int    │All except vscode / vscode_luasnip / vsnip            │No       │
+│options            │string │ultisnips                                             │Yes      │
+│custom_context     │string │ultisnips                                             │Yes      │
+│priority           │number │ultisnips                                             │Yes      │
 
 
 The `helper` table contains the following entries:
