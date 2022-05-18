@@ -197,9 +197,7 @@ endsnippet]],
         trigger = "test",
         body = {},
         options = "i",
-        luasnip = {
-          autotrigger = true,
-        },
+        autotrigger = true,
       }
       local actual = converter.convert(snippet)
       assert.are_same(
@@ -216,9 +214,7 @@ endsnippet]],
       local snippet = {
         trigger = "test",
         body = {},
-        luasnip = {
-          autotrigger = true,
-        },
+        autotrigger = true,
       }
       local actual = converter.convert(snippet)
       assert.are_same(
@@ -231,13 +227,11 @@ endsnippet]],
       -- TODO: ^ there should not be a new line here
     end)
 
-    it("with luasnip.priority key", function()
+    it("with priority key", function()
       local snippet = {
         trigger = "test",
         body = { { type = NodeType.TEXT, text = "text" } },
-        luasnip = {
-          priority = 100,
-        },
+        priority = 100,
       }
       local actual = converter.convert(snippet)
       assert.are_same(

@@ -276,6 +276,13 @@ M.convert_snippets = function(args)
   return model
 end
 
-M.version = "1.0.0"
+-- ## 1.1.0 (May 2022)
+-- Added vscode_luasnip flavor which correctly handles luasnip-specific keys such as
+-- autotrigger and priorities.
+
+-- ## 1.0.0 (May 2022)
+-- Initial release of SnippetConverter! Currently supports UltiSnips, LuaSnip, SnipMate,
+-- VSCode and vsnip snippets.
+M.version = "1.1.0"
 
 return M

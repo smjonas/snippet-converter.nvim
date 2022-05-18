@@ -3,6 +3,17 @@ local err = require("snippet_converter.utils.error")
 
 local M = setmetatable({}, { __index = vscode_parser })
 
+M.create_snippet = function(snippet_name, trigger, snippet_info, parser, parser_errors_ptr)
+  local snippet = vscode_parser.create_snippet(snippet_name, trigger, snippet_info, parser, parser_errors_ptr)
+  if snippet_info.luasnip then
+    snippet.priority = snippet_info.luasnip.priority
+    if snippet_info.luasnip.autotrigger == true then
+      snippet.autotrigger = true
+    end
+  end
+  return snippet
+end
+
 M.parse = function(path, parsed_snippets_ptr, parser_errors_ptr)
   return vscode_parser.parse(path, parsed_snippets_ptr, parser_errors_ptr, { self = M })
 end

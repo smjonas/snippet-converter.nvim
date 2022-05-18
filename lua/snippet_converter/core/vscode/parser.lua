@@ -61,6 +61,7 @@ M.verify_snippet_format = function(snippet_name, snippet_info, errors_ptr)
 end
 
 ---@protected
+---@return table
 M.create_snippet = function(snippet_name, trigger, snippet_info, parser, parser_errors_ptr)
   local body = type(snippet_info.body) == "string" and { snippet_info.body } or snippet_info.body
   parser = parser or body_parser

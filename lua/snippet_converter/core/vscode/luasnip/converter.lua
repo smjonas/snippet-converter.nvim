@@ -8,7 +8,7 @@ local M = setmetatable({}, { __index = vscode_converter })
 M.convert = function(snippet, visit_node)
   local result = vscode_converter.convert(snippet, visit_node)
   result.luasnip = tbl.make_default_table({}, "luasnip")
-  if result.options and result.options:match("A") then
+  if result.autotrigger or result.options and result.options:match("A") then
     result.luasnip.autotrigger = true
   end
   if result.priority then

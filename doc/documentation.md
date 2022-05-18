@@ -198,13 +198,12 @@ The available keys in the snippet table are listed below. Optional keys can be n
 | description         | string  | All                                              | Yes       |
 | body                | table   | All                                              | No        |
 | scope               | table   | `vscode` / `vscode_luasnip` / `vsnip`            | Yes       |
-| luasnip.autotrigger | boolean | `vscode_luasnip`                                 | Yes       |
-| luasnip.priority    | number  | `vscode_luasnip`                                 | Yes       |
 | path                | string  | All                                              | No        |
 | line\_nr            | int     | All except `vscode` / `vscode_luasnip` / `vsnip` | No        |
 | options             | string  | ultisnips                                        | Yes       |
 | custom\_context     | string  | ultisnips                                        | Yes       |
-| priority            | number  | ultisnips                                        | Yes       |
+| priority            | number  | `vscode_luasnip` / ultisnips                     | Yes       |
+| autotrigger         | boolean | `vscode_luasnip`                                 | Yes       |
 
 The `helper` table contains the following entries:
 

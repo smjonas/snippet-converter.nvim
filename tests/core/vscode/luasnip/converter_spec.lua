@@ -15,7 +15,7 @@ describe("VSCode_LuaSnip converter ", function()
     assert.are_same(expected, actual)
   end)
 
-  it("should convert autotrigger option", function()
+  it("should convert autotrigger key from options", function()
     local snippet = {
       trigger = "fn",
       body = {},
@@ -28,8 +28,27 @@ describe("VSCode_LuaSnip converter ", function()
     local expected = {
       trigger = "fn",
       body = "",
-      -- Original key is not modified
+      -- Original key is not modified (but ignored during export)
       options = "iA",
+      luasnip = {
+        autotrigger = true,
+      },
+    }
+    assert.are_same(expected, actual)
+  end)
+
+  it("should convert autotrigger flag", function()
+    local snippet = {
+      trigger = "fn",
+      body = {},
+      autotrigger = true,
+    }
+    local actual = converter.convert(snippet)
+    local expected = {
+      trigger = "fn",
+      body = "",
+      -- Original key is not modified
+      autotrigger = true,
       luasnip = {
         autotrigger = true,
       },

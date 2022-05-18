@@ -1,5 +1,5 @@
 describe("Scenario", function()
-  local expected_output_ultisnips, expected_output_snipmate, expected_output_vscode, expected_output_vscode_sorted, expected_output_vscode_luasnip
+  local expected_output_ultisnips, expected_output_ultisnips_from_vscode_luasnip, expected_output_snipmate, expected_output_vscode, expected_output_vscode_sorted, expected_output_vscode_luasnip
   setup(function()
     -- Mock vim.schedule
     vim.schedule = function(fn)
@@ -15,6 +15,9 @@ describe("Scenario", function()
     end
 
     expected_output_ultisnips = vim.fn.readfile("tests/scenarios/expected_output_ultisnips.snippets")
+    expected_output_ultisnips_from_vscode_luasnip = vim.fn.readfile(
+      "tests/scenarios/expected_output_ultisnips_from_vscode_luasnip.snippets"
+    )
     expected_output_snipmate = vim.fn.readfile("tests/scenarios/expected_output_snipmate.snippets")
     expected_output_vscode = vim.fn.readfile("tests/scenarios/expected_output_vscode.json")
     expected_output_vscode_luasnip = vim.fn.readfile("tests/scenarios/expected_output_vscode_luasnip.json")
@@ -77,6 +80,27 @@ describe("Scenario", function()
     assert.are_same(expected_output_vscode_luasnip, actual_output)
   end)
 
+  it("VSCode_LuaSnip to UltiSnips", function()
+    local snippet_converter = require("snippet_converter")
+    local template = {
+      sources = {
+        vscode_luasnip = {
+          "tests/scenarios/expected_output_vscode_luasnip.json",
+        },
+      },
+      output = {
+        ultisnips = { "tests/scenarios/output" },
+      },
+    }
+    snippet_converter.setup {
+      templates = { template },
+    }
+
+    snippet_converter.convert_snippets()
+    local actual_output = vim.fn.readfile("tests/scenarios/output/expected_output_vscode_luasnip.snippets")
+    assert.are_same(expected_output_ultisnips_from_vscode_luasnip, actual_output)
+  end)
+
   it("UltiSnips to SnipMate", function()
     local snippet_converter = require("snippet_converter")
     local template = {
@@ -133,4 +157,5 @@ describe("Scenario", function()
     local actual_output = vim.fn.readfile("tests/scenarios/output/expected_output_vscode_sorted.json")
     assert.are_same(expected_output_vscode_sorted, actual_output)
   end)
+
 end)
