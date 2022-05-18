@@ -59,15 +59,12 @@ M.parse = function(path, parsed_snippets_ptr, parser_errors_ptr, args)
       elseif line:match("^extends") then
         local fts = line:match("^extends (.+)")
         if fts then
-          args.context.include_filetypes = vim.tbl_map(
-            vim.trim,
-            vim.split(fts, ",%s", { trim_empty = true })
-          )
+          args.context.include_filetypes = vim.tbl_map(vim.trim, vim.split(fts, ",%s", { trim_empty = true }))
         end
       else
         local priority = line:match("^priority (-?%d+)")
         if priority then
-          cur_priority = priority
+          cur_priority = tonumber(priority)
         elseif line:match("^priority") then
           parser_errors_ptr[#parser_errors_ptr + 1] = err.new_parser_error(
             path,

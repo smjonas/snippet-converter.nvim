@@ -57,4 +57,20 @@ describe("VSCode_LuaSnip parser should fail to parse", function()
     assert.are_same({}, parsed_snippets)
     assert.are_same({ "luasnip.autotrigger must be a boolean, got string" }, parser_errors)
   end)
+
+  it("when luasnip.priority is not a number", function()
+    data = {
+      fn = {
+        prefix = "fn",
+        body = "body",
+        luasnip = {
+          priority = "",
+        },
+      },
+    }
+    local num_snippets = parser.parse("some/path", parsed_snippets, parser_errors)
+    assert.are_same(0, num_snippets)
+    assert.are_same({}, parsed_snippets)
+    assert.are_same({ "luasnip.priority must be a number, got string" }, parser_errors)
+  end)
 end)

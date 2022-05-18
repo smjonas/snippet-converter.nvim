@@ -234,7 +234,7 @@ priority 50]],
       description = "function",
       options = "bA",
       body_length = 7,
-      priority = "100",
+      priority = 100,
       path = "/some/snippet/path.snippets",
       line_nr = 3,
     }
@@ -242,7 +242,7 @@ priority 50]],
     local expected_for = {
       trigger = "for",
       body_length = 9,
-      priority = "-50",
+      priority = -50,
       path = "/some/snippet/path.snippets",
       line_nr = 10,
     }

@@ -192,25 +192,27 @@ In contrast to loaded snippets, any errors that occur during parsing will be sho
 
 The available keys in the snippet table are listed below. Optional keys can be nil.
 
-| Key             | Type   | Source formats            | Optional? |
-|-----------------|--------|---------------------------|-----------|
-| trigger         | string | All                       | No        |
-| description     | string | All                       | Yes       |
-| body            | table  | All                       | No        |
-| scope           | table  | VSCode / vsnip            | Yes       |
-| path            | string | All                       | No        |
-| line\_nr        | int    | All except VSCode / vsnip | No        |
-| options         | string | UltiSnips                 | Yes       |
-| custom\_context | string | UltiSnips                 | Yes       |
-| priority        | string | UltiSnips                 | Yes       |
+| Key                 | Type    | Source formats                                   | Optional? |
+|---------------------|---------|--------------------------------------------------|-----------|
+| trigger             | string  | All                                              | No        |
+| description         | string  | All                                              | Yes       |
+| body                | table   | All                                              | No        |
+| scope               | table   | `vscode` / `vscode_luasnip` / `vsnip`            | Yes       |
+| luasnip.autotrigger | boolean | `vscode_luasnip`                                 | Yes       |
+| luasnip.priority    | number  | `vscode_luasnip`                                 | Yes       |
+| path                | string  | All                                              | No        |
+| line\_nr            | int     | All except `vscode` / `vscode_luasnip` / `vsnip` | No        |
+| options             | string  | ultisnips                                        | Yes       |
+| custom\_context     | string  | ultisnips                                        | Yes       |
+| priority            | number  | ultisnips                                        | Yes       |
 
 The `helper` table contains the following entries:
 
-| Key            | Type     | Explanation                                                                                     |
-|----------------|----------|-------------------------------------------------------------------------------------------------|
-| source\_format | string   | The input format of the snippet.                                                                |
-| target\_format | string   | The output format of the snippet.                                                               |
-| dedent         | function | A function that takes a single string as an argument and removes leading whitespace from all lines. The indentation is inferred from the first line. This allows for nicer formatting.
+| Key            | Type     | Explanation                                                                                                                                                                            |
+|----------------|----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| source\_format | string   | The input format of the snippet.                                                                                                                                                       |
+| target\_format | string   | The output format of the snippet.                                                                                                                                                      |
+| dedent         | function | A function that takes a single string as an argument and removes leading whitespace from all lines. The indentation is inferred from the first line. This allows for nicer formatting. |
 
 Optionally, a table of options can be returned as a second value which may contain any of the following items:
 

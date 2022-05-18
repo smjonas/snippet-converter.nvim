@@ -99,7 +99,7 @@ use {
 ```
 Then simply run the command `:ConvertSnippets` to convert all snippets to your specified
 output locations and formats. To see which output folders you should choose depending on
-your snippet engine, have a look at the section [Recommended output paths](doc/documentation#recommended-output-paths) in the docs.
+your snippet engine, have a look at the section [Recommended output paths](doc/documentation.md#recommended-output-paths) in the docs.
 
 ## Documentation
 

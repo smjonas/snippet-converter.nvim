@@ -47,7 +47,8 @@
     "description": "ldots",
     "body": "\\ldots",
     "luasnip": {
-      "autotrigger": true
+      "autotrigger": true,
+      "priority": 100
     }
   },
   "enum": {
@@ -128,7 +129,10 @@
   "math": {
     "prefix": "math",
     "description": "mathematicablock",
-    "body": "math $1 math$0"
+    "body": "math $1 math$0",
+    "luasnip": {
+      "priority": 1000
+    }
   },
   "==": {
     "prefix": "==",
@@ -425,7 +429,8 @@
     "description": "cdot",
     "body": "\\cdot",
     "luasnip": {
-      "autotrigger": true
+      "autotrigger": true,
+      "priority": 100
     }
   },
   "norm": {
@@ -441,7 +446,8 @@
     "description": "to",
     "body": "\\to",
     "luasnip": {
-      "autotrigger": true
+      "autotrigger": true,
+      "priority": 100
     }
   },
   "<->": {
@@ -449,7 +455,8 @@
     "description": "leftrightarrow",
     "body": "\\leftrightarrow",
     "luasnip": {
-      "autotrigger": true
+      "autotrigger": true,
+      "priority": 200
     }
   },
   "!>": {

@@ -14,6 +14,8 @@ M.verify_snippet_format = function(snippet_name, snippet_info, errors_ptr)
   end
   local got_luasnips_key = type(snippet_info.luasnip) == "table"
   local autotrigger = got_luasnips_key and snippet_info.luasnip.autotrigger
+  local priority = got_luasnips_key and snippet_info.luasnip.priority
+
   local assertions = {
     {
       predicate = got_luasnips_key,
@@ -22,9 +24,15 @@ M.verify_snippet_format = function(snippet_name, snippet_info, errors_ptr)
       end,
     },
     {
-      predicate = (not got_luasnips_key and true) or type(autotrigger) == "boolean",
+      predicate = (not got_luasnips_key and true) or autotrigger == nil or type(autotrigger) == "boolean",
       msg = function()
         return "luasnip.autotrigger must be a boolean, got " .. type(snippet_name)
+      end,
+    },
+    {
+      predicate = (not got_luasnips_key and true) or priority == nil or type(priority) == "number",
+      msg = function()
+        return "luasnip.priority must be a number, got " .. type(snippet_name)
       end,
     },
   }

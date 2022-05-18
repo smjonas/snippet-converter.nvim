@@ -1,15 +1,22 @@
 local io = require("snippet_converter.utils.io")
 local json_utils = require("snippet_converter.utils.json_utils")
+local tbl = require("snippet_converter.utils.table")
 
 local vscode_converter = require("snippet_converter.core.vscode.converter")
 local M = setmetatable({}, { __index = vscode_converter })
 
 M.convert = function(snippet, visit_node)
   local result = vscode_converter.convert(snippet, visit_node)
+  result.luasnip = tbl.make_default_table({}, "luasnip")
   if result.options and result.options:match("A") then
-    result.luasnip = {
-      autotrigger = true,
-    }
+    result.luasnip.autotrigger = true
+  end
+  if result.priority then
+    result.luasnip.priority = result.priority
+  end
+  if vim.tbl_isempty(result.luasnip) then
+    -- Delete if empty
+    result.luasnip = nil
   end
   return result
 end

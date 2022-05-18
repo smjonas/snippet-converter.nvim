@@ -80,7 +80,7 @@ function M:format_value(value, add_indent)
   local _type = type(value)
   if _type == "string" then
     self:format_string(value)
-  elseif _type == "number"  then
+  elseif _type == "number" then
     self:emit(tostring(value), add_indent)
   elseif _type == "boolean" then
     self:emit(value == true and "true" or "false", add_indent)

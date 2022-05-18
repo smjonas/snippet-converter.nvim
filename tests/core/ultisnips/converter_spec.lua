@@ -231,5 +231,23 @@ endsnippet]],
       -- TODO: ^ there should not be a new line here
     end)
 
+    it("with luasnip.priority key", function()
+      local snippet = {
+        trigger = "test",
+        body = { { type = NodeType.TEXT, text = "text" } },
+        luasnip = {
+          priority = 100,
+        },
+      }
+      local actual = converter.convert(snippet)
+      assert.are_same(
+        [[
+priority 100
+snippet test
+text
+endsnippet]],
+        actual
+      )
+    end)
   end)
 end)
