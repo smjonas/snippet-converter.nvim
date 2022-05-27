@@ -1,8 +1,32 @@
 local M = {}
 
+local tbl = require("snippet_converter.utils.table")
+
 local CmdOpts = {
   headless = 1,
 }
+
+--- Creates the ConvertSnippets user command.
+---@param template_names table<string> a list of template_names to complete
+---@param options table<string> a list of options to complete
+M.create_user_command = function(template_names, options)
+  tbl.concat_arrays(template_names, options)
+  vim.api.nvim_create_user_command("ConvertSnippets", function(result)
+    require("snippet_converter").convert_snippets(result.fargs)
+  end, {
+    nargs = "*",
+    complete = function(arglead, _, _)
+      -- Currently there is only one option
+      if arglead:find("^headless=") then
+        return { "headless=true", "headless=false" }
+      end
+      -- Only complete arguments that start with arglead
+      return vim.tbl_filter(function(arg)
+        return arg:match("^" .. arglead)
+      end, template_names)
+    end,
+  })
+end
 
 ---@return boolean ok
 ---@return table | string templates and opts table or error message

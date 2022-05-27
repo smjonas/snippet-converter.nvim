@@ -12,12 +12,14 @@ M.setup = function(user_config)
   local cfg = require("snippet_converter.config")
   M.config = cfg.merge_config(user_config)
   cfg.validate(M.config)
-  -- Template names are optional, in that case use an integer
+  local template_names = {}
   for i, template in ipairs(M.config.templates) do
+    -- Template names are optional, in that case use an integer
     if not template.name then
       -- This might cause duplicate names but let's not support that case
       template.name = tostring(i)
     end
+    template_names[i] = template.name
     M.config.templates[i] = template
   end
   -- Load modules and create controller
@@ -27,6 +29,8 @@ M.setup = function(user_config)
   Model = require("snippet_converter.ui.model")
   string_utils = require("snippet_converter.utils.string")
   controller = require("snippet_converter.ui.controller"):new()
+
+  command.create_user_command(template_names, { "headless=" })
 end
 
 -- Partitions the snippet paths into a table of <filetype, [snippet_paths]>
@@ -277,8 +281,7 @@ M.convert_snippets = function(args)
 end
 
 -- ## 1.1.0 (May 2022)
--- Added vscode_luasnip flavor which correctly handles luasnip-specific keys such as
--- autotrigger and priorities.
+-- Added vscode_luasnip flavor which supports luasnip-specific keys such as autotrigger and priorities.
 
 -- ## 1.0.0 (May 2022)
 -- Initial release of SnippetConverter! Currently supports UltiSnips, LuaSnip, SnipMate,
