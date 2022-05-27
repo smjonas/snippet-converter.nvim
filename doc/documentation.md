@@ -200,10 +200,12 @@ The available keys in the snippet table are listed below. Optional keys can be n
 | scope               | table   | `vscode` / `vscode_luasnip` / `vsnip`            | Yes       |
 | path                | string  | All                                              | No        |
 | line\_nr            | int     | All except `vscode` / `vscode_luasnip` / `vsnip` | No        |
-| options             | string  | ultisnips                                        | Yes       |
-| custom\_context     | string  | ultisnips                                        | Yes       |
-| priority            | number  | `vscode_luasnip` / ultisnips                     | Yes       |
+| options             | string  | `ultisnips`                                      | Yes       |
+| custom\_context     | string  | `ultisnips`                                      | Yes       |
+| priority            | number  | `vscode_luasnip` / `ultisnips` / `snipmate`\*    | Yes       |
 | autotrigger         | boolean | `vscode_luasnip`                                 | Yes       |
+
+\*:  Snippet priorities are not an official SnipMate feature. However, LuaSnip supports them.
 
 The `helper` table contains the following entries:
 

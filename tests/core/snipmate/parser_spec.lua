@@ -132,6 +132,67 @@ snippet fn
       }
       assert.are_same(expected_fn, parsed_snippets[1])
     end)
+
+    it("should parse priorities and store them in snippet definition", function()
+      local lines = vim.split(
+        [[
+priority 100
+
+snippet fn function
+	function ${1:name}($2)
+		${3:-- code}
+	end
+
+priority -50
+snippet for
+	for ${1:i}=${2:1},${3:10} do
+		${0:print(i)}
+	end
+priority 50]],
+        "\n"
+      )
+      parser.get_lines = function(_)
+        return lines
+      end
+
+      local expected_fn = {
+        trigger = "fn",
+        description = "function",
+        body_length = 7,
+        priority = 100,
+        path = "/some/snippet/path.snippets",
+        line_nr = 3,
+      }
+
+      local expected_for = {
+        trigger = "for",
+        body_length = 9,
+        priority = -50,
+        path = "/some/snippet/path.snippets",
+        line_nr = 9,
+      }
+
+      local num_new_snippets = parser.parse(
+        "/some/snippet/path.snippets",
+        parsed_snippets,
+        parser_errors,
+        { context = {} }
+      )
+
+      assert.are_same(2, num_new_snippets)
+      assert.are_same({}, parser_errors)
+
+      if parsed_snippets[1].trigger == "fn" then
+        assert.matches_snippet(expected_fn, parsed_snippets[1])
+        assert.matches_snippet(expected_for, parsed_snippets[2])
+      elseif parsed_snippets[1].trigger == "for" then
+        assert.matches_snippet(expected_for, parsed_snippets[1])
+        assert.matches_snippet(expected_fn, parsed_snippets[2])
+      else
+        -- This should never happen unless the parser fails.
+        assert.is_false(true)
+      end
+    end)
   end)
 
   describe("should fail to parse", function()
@@ -163,5 +224,49 @@ snippet fn first word, second word
       }
       assert.matches_snippet(expected_fn, parsed_snippets[1])
     end)
+  end)
+
+  it("snippet with invalid priorities", function()
+    local lines = vim.split(
+      [[
+priority
+
+snippet fn function
+	function ${1:name}($2)
+		${3:-- code}
+	end
+
+priority - 50
+snippet for
+	for ${1:i}=${2:1},${3:10} do
+		${0:print(i)}
+	end]],
+      "\n"
+    )
+    parser.get_lines = function(_)
+      return lines
+    end
+
+    local num_new_snippets = parser.parse(
+      "/some/snippet/path.snippets",
+      parsed_snippets,
+      parser_errors,
+      { context = {} }
+    )
+    assert.are_same(2, num_new_snippets)
+
+    local expected_errors = {
+      {
+        line_nr = 1,
+        msg = [[invalid priority "priority"]],
+        path = "/some/snippet/path.snippets",
+      },
+      {
+        line_nr = 8,
+        msg = [[invalid priority "priority - 50"]],
+        path = "/some/snippet/path.snippets",
+      },
+    }
+    assert.are_same(expected_errors, parser_errors)
   end)
 end)
