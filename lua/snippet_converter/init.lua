@@ -167,7 +167,8 @@ local convert_snippets = function(model, snippets, context, template)
   local transform_helper = {
     dedent = string_utils.dedent,
   }
-  for target_format, output_paths in pairs(template.output) do
+  local output_files = {}
+  for target_format, output_dirs in pairs(template.output) do
     local filetypes = {}
     local converter = require(snippet_engines[target_format].converter)
 
@@ -228,24 +229,26 @@ local convert_snippets = function(model, snippets, context, template)
             end
           end
 
-          for _, output_path in ipairs(output_paths) do
+          for _, output_path in ipairs(output_dirs) do
             if filetype == snippet_engines[source_format].global_filename then
               filetype = snippet_engines[target_format].global_filename
             end
-            converter.export(converted_snippets, filetype, output_path, context)
+            local path = converter.export(converted_snippets, filetype, output_path, context)
+            output_files[#output_files + 1] = { format = target_format, path = path }
           end
           -- Store filetype in case they are needed (e.g. for creating package.json files)
           filetypes[#filetypes + 1] = filetype
         end
-        model:complete_task(template, source_format, target_format, #output_paths, converter_errors)
+        model:complete_task(template, source_format, target_format, output_dirs, converter_errors)
       end
     end
     if converter.post_export then
-      for _, output_path in ipairs(output_paths) do
+      for _, output_path in ipairs(output_dirs) do
         converter.post_export(template, filetypes, output_path, context)
       end
     end
   end
+  model.output_files = output_files
 end
 
 -- Expose functions to tests

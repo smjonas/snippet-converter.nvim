@@ -33,6 +33,10 @@ View.new = function(settings)
       -- no-op: disable potential user keymap to avoid issues
       -- when <c-q> is remapped to toggle the quickfix list
     end,
+    ["<c-o>"] = function()
+      self._window.close()
+      self:show_output_paths_in_qflist()
+    end,
   }
   display.register_global_keymaps(global_keymaps)
   return setmetatable(self, { __index = View })
@@ -85,12 +89,29 @@ function View:get_status_node_icon(status)
   }
 end
 
-local amount_to_files_string = function(amount)
+local files_string_from_amount = function(amount)
   return amount == 1 and "file" or "files"
 end
 
 local amount_to_snippets_string = function(amount)
   return amount == 1 and "snippet" or "snippets"
+end
+
+function View:show_output_paths_in_qflist()
+  local qf_entries = {}
+  for i, file in ipairs(self.model.output_files) do
+    qf_entries[i] = {
+      filename = vim.fn.expand(file.path),
+      lnum = 1,
+      text = ("%s (%s)"):format(vim.fn.fnamemodify(file.path, ":t"), file.format),
+    }
+  end
+  print(#qf_entries)
+  vim.fn.setqflist({}, "r", {
+    items = qf_entries,
+    title = "Snippet output paths",
+  })
+  vim.cmd("copen")
 end
 
 local show_failures_in_qflist = function(failures, source_format, target_format, start_idx)
@@ -178,7 +199,10 @@ function View:create_task_node(template, task, source_format)
       source_format,
       ": ",
       "no snippets converted ",
-      ("(%s input %s)"):format(tostring(task.num_input_files), amount_to_files_string(task.num_input_files)),
+      ("(%s input %s)"):format(
+        tostring(task.num_input_files),
+        files_string_from_amount(task.num_input_files)
+      ),
     }
     highlights = { "", status_icon.hl_group, "Statement", "", "healthError", "Comment" }
   else
@@ -190,7 +214,10 @@ function View:create_task_node(template, task, source_format)
       " / ",
       tostring(task.num_snippets),
       " snippets ",
-      ("(%s input %s)"):format(tostring(task.num_input_files), amount_to_files_string(task.num_input_files)),
+      ("(%s input %s)"):format(
+        tostring(task.num_input_files),
+        files_string_from_amount(task.num_input_files)
+      ),
     }
     highlights = {
       status_icon.hl_group,
@@ -212,14 +239,14 @@ function View:create_task_node(template, task, source_format)
   table.insert(highlights, 2, "")
   local child_nodes = {}
   for target_format, failures in pairs(task.converter_errors) do
-    local num_output_files = task.num_output_files[target_format]
+    local num_output_dirs = #task.output_dirs[target_format]
 
     local task_texts = {
       self:get_node_icon(false),
       source_format,
       self.settings.ui.use_nerdfont_icons and " → " or " -> ",
       target_format,
-      (" (%d output %s)"):format(num_output_files, amount_to_files_string(num_output_files)),
+      (" (%d output %s)"):format(num_output_dirs, files_string_from_amount(num_output_dirs)),
     }
 
     local num_failures = #failures
@@ -272,6 +299,40 @@ function View:create_skipped_task_node(reason, source_format)
   )
 end
 
+function View:get_help_scene_nodes()
+  if self._help_scene_nodes then
+    return self._help_scene_nodes
+  end
+  local expand_node = Node.MultiHlTextNode({
+    "<cr> (enter)",
+    ("  Toggle a %snode."):format(self:get_node_icon(false)),
+  }, { "Statement", "" }, Node.Style.Padding(2))
+
+  local errors_to_qflist_node = Node.MultiHlTextNode({
+    "<c-q>",
+    "         Send the errors under the cursor to the quickfix list and close this window.",
+  }, { "Statement", "" }, Node.Style.Padding(2))
+
+  local output_to_qflist_node = Node.MultiHlTextNode({
+    "<c-o>",
+    "         Send all output files to the quickfix list and close this window.",
+  }, { "Statement", "" }, Node.Style.Padding(2))
+
+  local close_node = Node.MultiHlTextNode(
+    { "<esc> / q", "     Close this window." },
+    { "Statement", "" },
+    Node.Style.Padding(2)
+  )
+
+  self._help_scene_nodes = Node.RootNode {
+    expand_node,
+    errors_to_qflist_node,
+    output_to_qflist_node,
+    close_node,
+  }
+  return self._help_scene_nodes
+end
+
 function View:create_task_nodes(scene)
   local model = self.model
   local nodes = self:get_header_nodes(self.current_scene, model.is_converting)
@@ -284,6 +345,7 @@ function View:create_task_nodes(scene)
       for source_format, task in tbl.pairs_by_keys(model.tasks[name] or {}) do
         template_nodes[#template_nodes + 1] = self:create_task_node(template, task, source_format)
       end
+
       local amount_string = model.total_num_snippets == 1 and "snippet" or "snippets"
       local template_title_texts = {
         self:get_node_icon(true),
@@ -303,20 +365,7 @@ function View:create_task_nodes(scene)
       nodes[#nodes + 1] = Node.NewLine()
     end
   elseif scene == Scene.Help then
-    local expand_node = Node.MultiHlTextNode({
-      "<cr> (enter)",
-      ("  Toggle a %snode."):format(self:get_node_icon(false)),
-    }, { "Statement", "" }, Node.Style.Padding(2))
-    local qflist_node = Node.MultiHlTextNode({
-      "<c-q>",
-      "         Send the errors under the cursor to the quickfix list and close this window.",
-    }, { "Statement", "" }, Node.Style.Padding(2))
-    local close_node = Node.MultiHlTextNode(
-      { "<esc> / q", "     Close this window." },
-      { "Statement", "" },
-      Node.Style.Padding(2)
-    )
-    nodes[#nodes + 1] = Node.RootNode { expand_node, qflist_node, close_node }
+    nodes[#nodes + 1] = self:get_help_scene_nodes()
   end
   return nodes
 end

@@ -157,5 +157,4 @@ describe("Scenario", function()
     local actual_output = vim.fn.readfile("tests/scenarios/output/expected_output_vscode_sorted.json")
     assert.are_same(expected_output_vscode_sorted, actual_output)
   end)
-
 end)

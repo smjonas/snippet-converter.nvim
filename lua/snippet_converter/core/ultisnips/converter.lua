@@ -98,6 +98,7 @@ M.export = function(converted_snippets, filetype, output_path, context)
   )
   output_path = ("%s/%s.%s"):format(output_path, filetype, "snippets")
   io.write_file(snippet_lines, output_path)
+  return output_path
 end
 
 return M

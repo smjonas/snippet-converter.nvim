@@ -7,6 +7,7 @@ local make_default_table = require("snippet_converter.utils.table").make_default
 ---@field skipped_tasks table
 ---@field total_num_snippets integer
 ---@field total_num_failures integer
+---@field output_files table<string>
 ---@field is_converting boolean
 local Model = {}
 
@@ -28,6 +29,7 @@ Model.new = function()
     skipped_tasks = {},
     total_num_snippets = 0,
     total_num_failures = 0,
+    output_files = {},
     is_converting = true,
   }, { __index = Model })
 end
@@ -49,7 +51,7 @@ function Model:submit_task(template, source_format, num_snippets, num_input_file
   make_default_table(self.tasks, template.name)[snippet_engines[source_format].label] = {
     num_snippets = num_snippets,
     num_input_files = num_input_files,
-    num_output_files = {},
+    output_dirs = {},
     num_failures = 0,
     parser_errors = parser_errors,
     converter_errors = {},
@@ -58,7 +60,7 @@ function Model:submit_task(template, source_format, num_snippets, num_input_file
   }
 end
 
-function Model:complete_task(template, source_format, target_format, num_output_files, converter_errors)
+function Model:complete_task(template, source_format, target_format, output_dirs, converter_errors)
   local source_label = snippet_engines[source_format].label
   local target_label = snippet_engines[target_format].label
   local tasks = self.tasks[template.name][source_label]
@@ -79,7 +81,7 @@ function Model:complete_task(template, source_format, target_format, num_output_
   tasks.conversion_status[target_label] = status
   tasks.max_conversion_status = math.max(tasks.max_conversion_status, status)
 
-  tasks.num_output_files[target_label] = num_output_files
+  tasks.output_dirs[target_label] = output_dirs
   self.max_num_failures = math.max(self.max_num_failures or 0, #converter_errors)
 end
 
