@@ -31,8 +31,8 @@ M.convert = function(snippet)
   end
   local description = ""
   if snippet.description then
-    -- Remove trailing whitespace
-    description = " " .. snippet.description:gsub("%s*$", "")
+    -- Replace newline characters with spaces and remove trailing whitespace
+    description = " " .. snippet.description:gsub("\n", " "):gsub("%s*$", "")
   end
   local body = base_converter.convert_ast(snippet.body, M.visit_node)
   -- Prepend a tab to every line

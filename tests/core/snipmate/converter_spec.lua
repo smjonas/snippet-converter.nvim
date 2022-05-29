@@ -81,4 +81,19 @@ snippet fn desc
 	body]]
     assert.are_same(expected, actual)
   end)
+
+  it("replace newline characters with whitespace in description #1", function()
+    local snippet = {
+      trigger = "fn",
+      description = [[
+First line
+Second line]],
+      body = { { type = NodeType.TEXT, text = "body" } },
+    }
+    local actual = converter.convert(snippet)
+    local expected = [[
+snippet fn First line Second line
+	body]]
+    assert.are_same(expected, actual)
+  end)
 end)
