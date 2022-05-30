@@ -12,11 +12,11 @@ end
 ---@param path string the path to the snippet file used by get_lines
 ---@param parsed_snippets_ptr table contains all previously parsed snippets, any new snippets will be added to the end of it
 ---@param parser_errors_ptr table contains all previously encountered errors, any new errors that occur during parsing will be added to the end of it
----@param args table? args.context contains all previously gathered global context, any global Python code found in the input file will be appended to the args.context.global_code subtable; if args.lines is specified, get_lines will not be called
+---@param opts table? opts.context contains all previously gathered global context, any global Python code found in the input file will be appended to the opts.context.global_code subtable; if opts.lines is specified, get_lines will not be called
 ---@return number the new number of snippets that have been parsed
-M.parse = function(path, parsed_snippets_ptr, parser_errors_ptr, args)
-  args = args or {}
-  local lines = args.lines or M.get_lines(path)
+M.parse = function(path, parsed_snippets_ptr, parser_errors_ptr, opts)
+  opts = opts or {}
+  local lines = opts.lines or M.get_lines(path)
   local cur_snippet
   local found_snippet_header = false
 
@@ -51,7 +51,7 @@ M.parse = function(path, parsed_snippets_ptr, parser_errors_ptr, args)
       elseif line:match("^global !p") then
         found_global_python_code = true
       elseif line:match("^endglobal") then
-        table.insert(args.context.global_code, cur_global_code)
+        table.insert(opts.context.global_code, cur_global_code)
         cur_global_code = {}
         found_global_python_code = false
       elseif found_global_python_code then
@@ -59,7 +59,7 @@ M.parse = function(path, parsed_snippets_ptr, parser_errors_ptr, args)
       elseif line:match("^extends") then
         local fts = line:match("^extends (.+)")
         if fts then
-          args.context.include_filetypes = vim.tbl_map(vim.trim, vim.split(fts, ",%s", { trim_empty = true }))
+          opts.context.include_filetypes = vim.tbl_map(vim.trim, vim.split(fts, ",%s", { trim_empty = true }))
         end
       else
         local priority = line:match("^priority (%-?%d+)")

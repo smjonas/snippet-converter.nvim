@@ -76,6 +76,9 @@ local parse_snippets = function(model, snippet_paths, template)
     include_filetypes = nil,
   }
   for source_format, _ in pairs(template.sources) do
+    local format_opts = snippet_engines[source_format].format_opts
+    local flavor = format_opts and format_opts.flavor
+
     snippets[source_format] = {}
     local num_snippets = 0
     local num_files = 0
@@ -86,7 +89,12 @@ local parse_snippets = function(model, snippet_paths, template)
       tbl.make_default_table(snippets[source_format], filetype)
       for _, path in ipairs(paths) do
         num_snippets = num_snippets
-          + parser.parse(path, snippets[source_format][filetype], parser_errors, { context = context })
+          + parser.parse(
+            path,
+            snippets[source_format][filetype],
+            parser_errors,
+            { context = context, flavor = flavor }
+          )
       end
       num_files = num_files + #paths
     end
@@ -171,6 +179,7 @@ local convert_snippets = function(model, snippets, context, template)
   for target_format, output_dirs in pairs(template.output) do
     local filetypes = {}
     local converter = require(snippet_engines[target_format].converter)
+    local format_opts = snippet_engines[target_format].format_opts
 
     for source_format, snippets_for_format in pairs(snippets) do
       if not model:did_skip_task(template, source_format) then
@@ -216,7 +225,7 @@ local convert_snippets = function(model, snippets, context, template)
 
           for _, snippet in ipairs(_snippets) do
             if not skip_snippet[snippet] then
-              local ok, converted_snippet = pcall(converter.convert, snippet)
+              local ok, converted_snippet = pcall(converter.convert, snippet, nil, format_opts)
               if not ok then
                 converter_errors[#converter_errors + 1] = {
                   msg = converted_snippet,

@@ -25,7 +25,7 @@ describe("SnipMate converter should", function()
         { type = NodeType.TEXT, text = "\nend" },
       },
     }
-    local actual = converter.convert(snippet, "")
+    local actual = converter.convert(snippet)
     local expected = [[
 snippet fn a function
 	function ${1:name}($2)
@@ -82,7 +82,7 @@ snippet fn desc
     assert.are_same(expected, actual)
   end)
 
-  it("replace newline characters with whitespace in description #1", function()
+  it("replace newline characters with whitespace in description #3", function()
     local snippet = {
       trigger = "fn",
       description = [[

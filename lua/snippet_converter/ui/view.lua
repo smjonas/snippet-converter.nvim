@@ -106,7 +106,6 @@ function View:show_output_paths_in_qflist()
       text = ("%s (%s)"):format(vim.fn.fnamemodify(file.path, ":t"), file.format),
     }
   end
-  print(#qf_entries)
   vim.fn.setqflist({}, "r", {
     items = qf_entries,
     title = "Snippet output paths",

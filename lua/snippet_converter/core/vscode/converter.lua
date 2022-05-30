@@ -87,7 +87,8 @@ end
 M._get_package_json_string = get_package_json_string
 
 --TODO: from UltiSnips: $VISUAL with transform
-M.convert = function(snippet, visit_node)
+M.convert = function(snippet, visit_node, opts)
+  opts = opts or {}
   if snippet.options and snippet.options:match("r") then
     err.raise_converter_error("regex trigger")
   end
@@ -97,6 +98,20 @@ M.convert = function(snippet, visit_node)
     snippet.body = snippet.body[1]
   end
   snippet.scope = snippet.scope and table.concat(snippet.scope, ",")
+
+  if opts.flavor == "luasnip" then
+    snippet.luasnip = tbl.make_default_table({}, "luasnip")
+    if snippet.autotrigger or snippet.options and snippet.options:match("A") then
+      snippet.luasnip.autotrigger = true
+    end
+    if snippet.priority then
+      snippet.luasnip.priority = snippet.priority
+    end
+    if vim.tbl_isempty(snippet.luasnip) then
+      -- Delete if empty
+      snippet.luasnip = nil
+    end
+  end
   return snippet
 end
 
@@ -105,9 +120,9 @@ end
 -- @param filetype string @The filetype of the snippets
 -- @param output_dir string @The absolute path to the directory to write the snippets to
 ---@return string output path
-M.export = function(converted_snippets, filetype, output_path, _)
+M.export = function(converted_snippets, filetype, output_dir, _)
   local table_to_export = {}
-  local order = { [1] = {}, [2] = { "prefix", "description", "scope", "body" } }
+  local order = { [1] = {}, [2] = { "prefix", "description", "scope", "body", "luasnip" } }
   for i, snippet in ipairs(converted_snippets) do
     local key = snippet.name or snippet.trigger
     order[1][i] = key
@@ -117,10 +132,11 @@ M.export = function(converted_snippets, filetype, output_path, _)
       description = snippet.description,
       scope = snippet.scope,
       body = snippet.body,
+      luasnip = snippet.luasnip,
     }
   end
   local output_string = json_utils:pretty_print(table_to_export, order, true)
-  output_path = ("%s/%s.%s"):format(output_path, filetype, "json")
+  local output_path = ("%s/%s.%s"):format(output_dir, filetype, "json")
   io.write_file(vim.split(output_string, "\n"), output_path)
   return output_path
 end

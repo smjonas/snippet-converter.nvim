@@ -74,7 +74,7 @@ local HEADER_STRING =
 -- @param filetype string @The filetype of the snippets
 -- @param output_dir string @The absolute path to the directory to write the snippets to
 -- @param context []? @A table of additional snippet contexts optionally provided the source parser (e.g. global code)
-M.export = function(converted_snippets, filetype, output_path, context)
+M.export = function(converted_snippets, filetype, output_dir, context)
   local output_strings = {}
   if context then
     for i, code in ipairs(context.global_code) do
@@ -96,7 +96,7 @@ M.export = function(converted_snippets, filetype, output_path, context)
     { HEADER_STRING, "" },
     nil
   )
-  output_path = ("%s/%s.%s"):format(output_path, filetype, "snippets")
+  local output_path = ("%s/%s.%s"):format(output_dir, filetype, "snippets")
   io.write_file(snippet_lines, output_path)
   return output_path
 end

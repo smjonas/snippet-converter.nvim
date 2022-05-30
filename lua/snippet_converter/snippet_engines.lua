@@ -14,6 +14,15 @@ snippet_engines.snipmate = {
   converter = "snippet_converter.core.snipmate.converter",
 }
 
+snippet_engines.snipmate_luasnip = {
+  label = "SnipMate (LuaSnip)",
+  format_opts = { flavor = "luasnip" },
+  extension = "snippets",
+  global_filename = "_",
+  parser = "snippet_converter.core.snipmate.parser",
+  converter = "snippet_converter.core.snipmate.converter",
+}
+
 snippet_engines.ultisnips = {
   label = "UltiSnips",
   extension = "snippets",
@@ -34,11 +43,12 @@ snippet_engines.vscode = {
 
 snippet_engines.vscode_luasnip = {
   label = "VSCode (LuaSnip)",
+  format_opts = { flavor = "luasnip" },
   base_format = "vscode",
   extension = "json",
   global_filename = "all",
-  parser = "snippet_converter.core.vscode.luasnip.parser",
-  converter = "snippet_converter.core.vscode.luasnip.converter",
+  parser = "snippet_converter.core.vscode.parser",
+  converter = "snippet_converter.core.vscode.converter",
   default_sort_snippets = json_sort_snippets,
 }
 
