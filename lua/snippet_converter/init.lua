@@ -184,14 +184,15 @@ local convert_snippets = function(model, snippets, context, template)
     for source_format, snippets_for_format in pairs(snippets) do
       if not model:did_skip_task(template, source_format) then
         local converter_errors = {}
-        local converted_snippets = {}
-        local pos = 1
 
         transform_helper.source_format = source_format
         transform_helper.target_format = target_format
         transform_helper.parser = require(snippet_engines[source_format].parser)
 
         for filetype, _snippets in pairs(snippets_for_format) do
+          -- Contains converted snippets per filetype
+          local converted_snippets = {}
+          local pos = 1
           local skip_snippet = {}
           -- Apply local, then global transformations
           if template.transform_snippets or M.config.transform_snippets then
