@@ -57,6 +57,23 @@ snippet fn
     assert.are_same(expected, actual)
   end)
 
+  it("convert VimScript code", function()
+    local snippet = {
+      trigger = "fn",
+      body = {
+        {
+          type = NodeType.VIMSCRIPT_CODE,
+          code = [[strftime("%H:%M")]],
+        },
+      },
+    }
+    local actual = converter.convert(snippet)
+    local expected = [[
+snippet fn
+	`strftime("%H:%M")`]]
+    assert.are_same(expected, actual)
+  end)
+
   it("escape ambiguous chars", function()
     local snippet = {
       trigger = "fn",
@@ -95,5 +112,52 @@ Second line]],
 snippet fn First line Second line
 	body]]
     assert.are_same(expected, actual)
+  end)
+
+  it("fail to convert regex trigger code", function()
+    local snippet = {
+      trigger = "fu?n",
+      options = "r",
+      body = {},
+    }
+    local ok, actual = pcall(converter.convert, snippet)
+    assert.is_false(ok)
+    assert.are_same([[conversion of regex trigger is not supported]], actual)
+  end)
+end)
+
+describe("SnipMate converter (LuaSnip flavor) should", function()
+  it("convert snippet priorities", function()
+    local snippet = {
+      trigger = "fn",
+      priority = -100,
+      body = {
+        {
+          type = NodeType.TEXT,
+          text = "body",
+        },
+      },
+    }
+    local actual = converter.convert(snippet, { flavor = "luasnip" })
+    local expected = [[
+priority -100
+snippet fn
+	body]]
+    assert.are_same(expected, actual)
+  end)
+
+  it("fail to convert Vimscript code", function()
+    local snippet = {
+      trigger = "fn",
+      body = {
+        {
+          type = NodeType.VIMSCRIPT_CODE,
+          code = [[strftime("%H:%M")]],
+        },
+      },
+    }
+    local ok, actual = pcall(converter.convert, snippet, { flavor = "luasnip" })
+    assert.is_false(ok)
+    assert.are_same([[conversion of Vimscript code is not supported]], actual)
   end)
 end)

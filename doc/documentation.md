@@ -20,13 +20,14 @@ and the option `A` is present, the `luasnip.autotrigger` key will be set to `tru
 
 The following table shows which snippets can be converted to another format (the first column denotes the source format):
 
-| Source format / Target format     | vscode | vscode\_luasnip | vsnip | ultisnips | snipmate |
-|-----------------------------------|--------|-----------------|-------|-----------|----------|
-| vscode                            | ✓      | ✓               | ✓     | ✓         | ✓        |
-| vscode\_luasnip                   | ✓      | ✓               | ✓     | ✓         | ✓        |
-| vsnip                             | ✓ [1]  | ✓ [1]           | ✓     | ✓         | ✓ [1]    |
-| ultisnips                         | ✓ [2]  | ✓ [2]           | ✓ [3] | ✓         | ✓ [2]    |
-| snipmate                          | ✓      | ✓               | ✓     | ✓         | ✓        |
+| Source format / Target format     | vscode | vscode\_luasnip | vsnip | ultisnips | snipmate | snipmate\_luasnip |
+|-----------------------------------|--------|-----------------|-------|-----------|----------|-------------------|
+| vscode                            | ✓      | ✓               | ✓     | ✓         | ✓        | ✓                 |
+| vscode\_luasnip                   | ✓      | ✓               | ✓     | ✓         | ✓        | ✓                 |
+| vsnip                             | ✓ [1]  | ✓ [1]           | ✓     | ✓         | ✓ [1]    | ✓ [1]             |
+| ultisnips                         | ✓ [2]  | ✓ [2]           | ✓ [3] | ✓         | ✓ [2]    | ✓ [2]             |
+| snipmate                          | ✓      | ✓               | ✓     | ✓         | ✓        | ✓ [1]             |
+| snipmate\_luasnip                 | ✓      | ✓               | ✓     | ✓         | ✓        | ✓                 |
 
 **Legend:**
 
@@ -192,20 +193,18 @@ In contrast to loaded snippets, any errors that occur during parsing will be sho
 
 The available keys in the snippet table are listed below. Optional keys can be nil.
 
-| Key                 | Type    | Source formats                                   | Optional? |
-|---------------------|---------|--------------------------------------------------|-----------|
-| trigger             | string  | All                                              | No        |
-| description         | string  | All                                              | Yes       |
-| body                | table   | All                                              | No        |
-| scope               | table   | `vscode` / `vscode_luasnip` / `vsnip`            | Yes       |
-| path                | string  | All                                              | No        |
-| line\_nr            | int     | All except `vscode` / `vscode_luasnip` / `vsnip` | No        |
-| options             | string  | `ultisnips`                                      | Yes       |
-| custom\_context     | string  | `ultisnips`                                      | Yes       |
-| priority            | number  | `vscode_luasnip` / `ultisnips` / `snipmate`\*    | Yes       |
-| autotrigger         | boolean | `vscode_luasnip`                                 | Yes       |
-
-\*:  Snippet priorities are not an official SnipMate feature. However, LuaSnip supports them.
+| Key             | Type    | Source formats                                      | Optional? |
+|-----------------|---------|-----------------------------------------------------|-----------|
+| trigger         | string  | All                                                 | No        |
+| description     | string  | All                                                 | Yes       |
+| body            | table   | All                                                 | No        |
+| scope           | table   | `vscode` / `vscode_luasnip` / `vsnip`               | Yes       |
+| path            | string  | All                                                 | No        |
+| line\_nr        | int     | All except `vscode` / `vscode_luasnip` / `vsnip`    | No        |
+| options         | string  | `ultisnips`                                         | Yes       |
+| custom\_context | string  | `ultisnips`                                         | Yes       |
+| priority        | number  | `vscode_luasnip` / `ultisnips` / `snipmate_luasnip` | Yes       |
+| autotrigger     | boolean | `vscode_luasnip`                                    | Yes       |
 
 The `helper` table contains the following entries:
 

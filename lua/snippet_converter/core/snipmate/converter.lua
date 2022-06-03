@@ -4,28 +4,32 @@ local err = require("snippet_converter.utils.error")
 local io = require("snippet_converter.utils.io")
 local export_utils = require("snippet_converter.utils.export_utils")
 
-local M = {}
-
-local node_visitor = {
-  [NodeType.TRANSFORM] = function(node)
-    return ("/%s/%s/%s"):format(node.regex, node.replacement, node.options)
-  end,
-  -- TODO: support Filename() inside ``
-  [NodeType.VIMSCRIPT_CODE] = function(node)
-    return ("`%s`"):format(node.code)
-  end,
-  [NodeType.TRANSFORM] = function(node)
-    return ("/%s/%s/%s"):format(node.regex, node.replacement, node.options)
-  end,
-  [NodeType.TEXT] = function(node)
-    -- Escape ambiguous chars and backslashes
-    return node.text:gsub([[\]], [[\\]]):gsub("%$", "\\%$"):gsub("`", "\\`")
-  end,
+local M = {
+  node_visitor = {},
 }
 
-M.visit_node = setmetatable(node_visitor, { __index = base_converter.visit_node(node_visitor) })
+local create_node_visitor = function(opts)
+  return {
+    [NodeType.TRANSFORM] = function(node)
+      return ("/%s/%s/%s"):format(node.regex, node.replacement, node.options)
+    end,
+    -- TODO: support Filename() inside ``
+    [NodeType.VIMSCRIPT_CODE] = function(node)
+      -- LuaSnip does not support VimScript code
+      if opts.flavor == "luasnip" then
+        err.raise_converter_error(NodeType.to_string(node.type))
+      end
+      return ("`%s`"):format(node.code)
+    end,
+    [NodeType.TEXT] = function(node)
+      -- Escape ambiguous chars and backslashes
+      return node.text:gsub([[\]], [[\\]]):gsub("%$", "\\%$"):gsub("`", "\\`")
+    end,
+  }
+end
 
-M.convert = function(snippet)
+M.convert = function(snippet, opts)
+  opts = opts or {}
   if snippet.options and snippet.options:match("r") then
     err.raise_converter_error("regex trigger")
   end
@@ -34,10 +38,18 @@ M.convert = function(snippet)
     -- Replace newline characters with spaces and remove trailing whitespace
     description = " " .. snippet.description:gsub("\n", " "):gsub("%s*$", "")
   end
+  M.node_visitor = create_node_visitor(opts)
+  M.visit_node = setmetatable(M.node_visitor, { __index = base_converter.visit_node(M.node_visitor) })
+
   local body = base_converter.convert_ast(snippet.body, M.visit_node)
   -- Prepend a tab to every line
   body = body:gsub("\n", "\n\t")
-  return string.format("snippet %s%s\n\t%s", snippet.trigger, description, body)
+  -- LuaSnip supports snippet priorities
+  local priority = opts.flavor == "luasnip"
+      and snippet.priority
+      and ("priority %s\n"):format(snippet.priority)
+    or ""
+  return string.format("%ssnippet %s%s\n\t%s", priority, snippet.trigger, description, body)
 end
 
 local HEADER_STRING =
