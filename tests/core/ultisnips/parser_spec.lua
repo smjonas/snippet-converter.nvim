@@ -59,6 +59,34 @@ endsnippet]],
     end
   end)
 
+  it("should not skip literal endsnippet", function()
+    local lines = vim.split(
+      [[
+snippet snip "UltiSnips snippet definition" b
+endsnippet$0
+endsnippet]],
+      "\n"
+    )
+
+    parser.get_lines = function(_)
+      return lines
+    end
+
+    local num_snippets = parser.parse("path", parsed_snippets, parser_errors)
+    assert.are_same({}, parser_errors)
+    assert.are_same({}, context)
+    assert.are_same(1, num_snippets)
+
+    assert.matches_snippet({
+      trigger = "snip",
+      description = "UltiSnips snippet definition",
+      options = "b",
+      body_length = 2,
+      path = "path",
+      line_nr = 1,
+    }, parsed_snippets[1])
+  end)
+
   it("should parse (missing) newlines correctly", function()
     local lines = vim.split(
       [[
