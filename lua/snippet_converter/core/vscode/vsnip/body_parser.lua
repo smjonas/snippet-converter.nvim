@@ -30,7 +30,9 @@ local NodeType = require("snippet_converter.core.node_type")
 local VSnipParser = VSCodeParser:new {
   Variable = setmetatable(VSCodeParser.Variable, { __index = { VIM = "VIM" } }),
 }
-VSnipParser.variable_tokens = { table.unpack(VSCodeParser.variable_tokens) }
+
+local unpack = table.unpack or unpack
+VSnipParser.variable_tokens = { unpack(VSCodeParser.variable_tokens) }
 table.insert(VSnipParser.variable_tokens, "VIM")
 
 local var_pattern = "[_a-zA-Z][_a-zA-Z0-9]*"
