@@ -84,6 +84,79 @@ describe("VSCode converter should", function()
     local actual = converter.convert(snippet)
     assert.are_same(expected, actual)
   end)
+
+  local function create_format_snippet(replacement)
+    return {
+      trigger = "fn",
+      body = {
+        {
+          int = "1",
+          transform = {
+            regex = "",
+            regex_kind = NodeType.RegexKind.JAVASCRIPT,
+            options = "",
+            replacement = replacement,
+            type = NodeType.TRANSFORM,
+          },
+          type = NodeType.TABSTOP,
+        },
+      },
+    }
+  end
+
+  it("convert format node with format modifier", function()
+    local snippet = create_format_snippet {
+      { int = "2", format_modifier = "upcase", type = NodeType.FORMAT },
+    }
+    local expected = {
+      trigger = "fn",
+      body = "${1//${2:/upcase}/}",
+    }
+    local actual = converter.convert(snippet)
+    assert.are_same(expected, actual)
+  end)
+
+  it("convert format node without if and else text", function()
+    local snippet = create_format_snippet { { int = "2", type = NodeType.FORMAT } }
+    local expected = {
+      trigger = "fn",
+      body = "${1//$2/}",
+    }
+    local actual = converter.convert(snippet)
+    assert.are_same(expected, actual)
+  end)
+
+  it("convert format node with if text", function()
+    local snippet = create_format_snippet { { if_text = "if_text", int = "2", type = NodeType.FORMAT } }
+    local expected = {
+      trigger = "fn",
+      body = "${1//${2:+if_text}/}",
+    }
+    local actual = converter.convert(snippet)
+    assert.are_same(expected, actual)
+  end)
+
+  it("convert format node with else text", function()
+    local snippet = create_format_snippet { { else_text = "else_text", int = "2", type = NodeType.FORMAT } }
+    local expected = {
+      trigger = "fn",
+      body = "${1//${2:-else_text}/}",
+    }
+    local actual = converter.convert(snippet)
+    assert.are_same(expected, actual)
+  end)
+
+  it("convert format node with if and else text", function()
+    local snippet = create_format_snippet {
+      { if_text = "if_text", else_text = "else_text", int = "2", type = NodeType.FORMAT },
+    }
+    local expected = {
+      trigger = "fn",
+      body = "${1//${2:?if_text:else_text}/}",
+    }
+    local actual = converter.convert(snippet)
+    assert.are_same(expected, actual)
+  end)
 end)
 
 describe("VSCode converter should fail to convert", function()

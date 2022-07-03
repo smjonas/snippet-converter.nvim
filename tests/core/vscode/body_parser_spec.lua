@@ -42,6 +42,73 @@ describe("VSCode body parser should", function()
     assert.are_same(expected, actual)
   end)
 
+  it("parse format with if text", function()
+    local input = [[${1//${2:+if_text}/}]]
+    local expected = {
+      {
+        int = "1",
+        transform = {
+          regex = "",
+          regex_kind = NodeType.RegexKind.JAVASCRIPT,
+          options = "",
+          replacement = {
+            { ["if"] = "if_text", int = "2", type = NodeType.FORMAT },
+          },
+          type = NodeType.TRANSFORM,
+        },
+        type = NodeType.TABSTOP,
+      },
+    }
+    local ok, actual = parser:parse(input)
+    assert.is_true(ok)
+    assert.are_same(expected, actual)
+  end)
+
+  it("parse format with if and else text", function()
+    local input = [[${1//${2:?if_text:else_text}/}]]
+    local expected = {
+      {
+        int = "1",
+        transform = {
+          regex = "",
+          regex_kind = NodeType.RegexKind.JAVASCRIPT,
+          options = "",
+          replacement = {
+            { ["if"] = "if_text", ["else"] = "else_text", int = "2", type = NodeType.FORMAT },
+          },
+          type = NodeType.TRANSFORM,
+        },
+        type = NodeType.TABSTOP,
+      },
+    }
+    local ok, actual = parser:parse(input)
+    assert.is_true(ok)
+    assert.are_same(expected, actual)
+  end)
+
+  it("parse format with else texts", function()
+    local input = [[${1//${2:else_text 1}${3:-else_text 2}/}]]
+    local expected = {
+      {
+        int = "1",
+        transform = {
+          regex = "",
+          regex_kind = NodeType.RegexKind.JAVASCRIPT,
+          options = "",
+          replacement = {
+            { ["else"] = "else_text 1", int = "2", type = NodeType.FORMAT },
+            { ["else"] = "else_text 2", int = "3", type = NodeType.FORMAT },
+          },
+          type = NodeType.TRANSFORM,
+        },
+        type = NodeType.TABSTOP,
+      },
+    }
+    local ok, actual = parser:parse(input)
+    assert.is_true(ok)
+    assert.are_same(expected, actual)
+  end)
+
   it("parse choice node", function()
     local input = "${1|🠂,⇨|}"
     local expected = {

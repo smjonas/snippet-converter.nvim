@@ -28,7 +28,7 @@ M.node_visitor = {
     local converted_options = node.options:gsub("[^gim]", "")
 
     local replacements = {}
-    for i, replacement in pairs(replacements) do
+    for i, replacement in ipairs(node.replacement) do
       -- Text or format nodes
       replacements[i] = M.node_visitor[replacement.type](replacement)
     end
@@ -36,10 +36,18 @@ M.node_visitor = {
   end,
   [NodeType.FORMAT] = function(node)
     if not node.format_modifier then
-      return "$" .. node.int
+      if not (node.if_text or node.else_text) then
+        return "$" .. node.int
+      end
+      if node.if_text and node.else_text then
+        return ("${%s:?%s:%s}"):format(node.int, node.if_text, node.else_text)
+      elseif node.if_text then
+        return ("${%s:+%s}"):format(node.int, node.if_text)
+      else
+        return ("${%s:-%s}"):format(node.int, node.else_text)
+      end
     end
-    -- TODO: handle if / else
-    return ("${%s:/}"):format(node.format_modifier)
+    return ("${%s:/%s}"):format(node.int, node.format_modifier)
   end,
   [NodeType.CHOICE] = function(node)
     return ("${%s|%s|}"):format(node.int, table.concat(node.text, ","))
