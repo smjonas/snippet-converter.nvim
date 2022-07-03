@@ -115,29 +115,29 @@ function VSCodeParser:parse_format()
     -- format 1 / 2
     return p.new_inner_node(NodeType.FORMAT, { int = int })
   else
-    local format_modifier, _if, _else
+    local format_modifier, if_text, else_text
     if self:peek(":/") then
       -- format 3
       format_modifier = self:parse_format_modifier()
     elseif self:peek(":+") then
       -- format 4
-      _if = self:parse_escaped_text("[\\}]", "[}]")
+      if_text = self:parse_escaped_text("[\\}]", "[}]")
     elseif self:peek(":?") then
       -- format 5
-      _if = self:parse_escaped_text("[\\}]", "[:]")
+      if_text = self:parse_escaped_text("[\\}]", "[:]")
       self:expect(":")
-      _else = self:parse_escaped_text("[\\}]", "[}]")
+      else_text = self:parse_escaped_text("[\\}]", "[}]")
     elseif self:peek(":") then
       -- format 6 / 7
       self:peek("-")
-      _else = self:parse_escaped_text("[\\}]", "[}]")
+      else_text = self:parse_escaped_text("[\\}]", "[}]")
     end
     self:expect("}")
     return p.new_inner_node(NodeType.FORMAT, {
       int = int,
       format_modifier = format_modifier,
-      ["if"] = _if,
-      ["else"] = _else,
+      if_text = if_text,
+      else_text = else_text,
     })
   end
 end

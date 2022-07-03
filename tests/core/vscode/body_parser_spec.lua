@@ -52,7 +52,7 @@ describe("VSCode body parser should", function()
           regex_kind = NodeType.RegexKind.JAVASCRIPT,
           options = "",
           replacement = {
-            { ["if"] = "if_text", int = "2", type = NodeType.FORMAT },
+            { if_text = "if_text", int = "2", type = NodeType.FORMAT },
           },
           type = NodeType.TRANSFORM,
         },
@@ -74,7 +74,7 @@ describe("VSCode body parser should", function()
           regex_kind = NodeType.RegexKind.JAVASCRIPT,
           options = "",
           replacement = {
-            { ["if"] = "if_text", ["else"] = "else_text", int = "2", type = NodeType.FORMAT },
+            { if_text = "if_text", else_text = "else_text", int = "2", type = NodeType.FORMAT },
           },
           type = NodeType.TRANSFORM,
         },
@@ -96,8 +96,8 @@ describe("VSCode body parser should", function()
           regex_kind = NodeType.RegexKind.JAVASCRIPT,
           options = "",
           replacement = {
-            { ["else"] = "else_text 1", int = "2", type = NodeType.FORMAT },
-            { ["else"] = "else_text 2", int = "3", type = NodeType.FORMAT },
+            { else_text = "else_text 1", int = "2", type = NodeType.FORMAT },
+            { else_text = "else_text 2", int = "3", type = NodeType.FORMAT },
           },
           type = NodeType.TRANSFORM,
         },
