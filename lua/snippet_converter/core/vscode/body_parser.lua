@@ -86,11 +86,6 @@ function VSCodeParser:parse_text()
   return self:parse_escaped_text("[$}]")
 end
 
-function VSCodeParser:parse_if()
-  return self:parse_escaped_text("[\\}]", "}")
-end
-VSCodeParser.parse_else = VSCodeParser.parse_text
-
 function VSCodeParser:parse_escaped_choice_text()
   return self:parse_escaped_text("[%$}\\,|]")
 end
