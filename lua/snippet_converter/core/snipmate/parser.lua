@@ -47,11 +47,8 @@ M.parse = function(path, parsed_snippets_ptr, parser_errors_ptr, _, lines_)
         if priority then
           cur_priority = tonumber(priority)
         elseif line:match("^priority") then
-          parser_errors_ptr[#parser_errors_ptr + 1] = err.new_parser_error(
-            path,
-            line_nr,
-            ([[invalid priority "%s"]]):format(line)
-          )
+          parser_errors_ptr[#parser_errors_ptr + 1] =
+            err.new_parser_error(path, line_nr, ([[invalid priority "%s"]]):format(line))
         end
       end
     end

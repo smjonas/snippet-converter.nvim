@@ -42,11 +42,8 @@ M.parse = function(path, parsed_snippets_ptr, parser_errors_ptr, opts)
         if context then
           cur_context = context
         else
-          parser_errors_ptr[#parser_errors_ptr + 1] = err.new_parser_error(
-            path,
-            line_nr,
-            ([[invalid context "%s"]]):format(line)
-          )
+          parser_errors_ptr[#parser_errors_ptr + 1] =
+            err.new_parser_error(path, line_nr, ([[invalid context "%s"]]):format(line))
         end
       elseif line:match("^global !p") then
         found_global_python_code = true
@@ -66,11 +63,8 @@ M.parse = function(path, parsed_snippets_ptr, parser_errors_ptr, opts)
         if priority then
           cur_priority = tonumber(priority)
         elseif line:match("^priority") then
-          parser_errors_ptr[#parser_errors_ptr + 1] = err.new_parser_error(
-            path,
-            line_nr,
-            ([[invalid priority "%s"]]):format(line)
-          )
+          parser_errors_ptr[#parser_errors_ptr + 1] =
+            err.new_parser_error(path, line_nr, ([[invalid priority "%s"]]):format(line))
         end
       end
       -- TODO: handle pre_expand, post_expand:

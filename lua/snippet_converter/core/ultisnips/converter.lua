@@ -90,12 +90,8 @@ M.export = function(converted_snippets, filetype, output_dir, context)
     output_strings = converted_snippets
   end
 
-  local snippet_lines = export_utils.snippet_strings_to_lines(
-    output_strings,
-    "\n",
-    { HEADER_STRING, "" },
-    nil
-  )
+  local snippet_lines =
+    export_utils.snippet_strings_to_lines(output_strings, "\n", { HEADER_STRING, "" }, nil)
   local output_path = ("%s/%s.%s"):format(output_dir, filetype, "snippets")
   io.write_file(snippet_lines, output_path)
   return output_path

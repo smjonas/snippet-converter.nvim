@@ -159,11 +159,8 @@ end
 function View:get_header_nodes(scene, is_converting)
   local header_nodes = {}
   local header_title = Node.HlTextNode("snippet-converter.nvim", "Title", Node.Style.Centered())
-  local header_url = Node.HlTextNode(
-    "https://github.com/smjonas/snippet-converter.nvim",
-    "Comment",
-    Node.Style.Centered()
-  )
+  local header_url =
+    Node.HlTextNode("https://github.com/smjonas/snippet-converter.nvim", "Comment", Node.Style.Centered())
   local header_text = scene == Scene.Main and " to view keyboard shortcuts" or " to go back"
   local header_toggle_keymaps = Node.MultiHlTextNode(
     { "Press ", "?", header_text },

@@ -199,20 +199,12 @@ local convert_snippets = function(model, snippets, context, template)
             local new_snippets = {}
             for i, snippet in ipairs(_snippets) do
               if template.transform_snippets then
-                skip_snippet[i] = transform_snippets(
-                  template.transform_snippets,
-                  snippet,
-                  transform_helper,
-                  new_snippets
-                )
+                skip_snippet[i] =
+                  transform_snippets(template.transform_snippets, snippet, transform_helper, new_snippets)
               end
               if M.config.transform_snippets and not skip_snippet[i] then
-                skip_snippet[i] = transform_snippets(
-                  M.config.transform_snippets,
-                  snippet,
-                  transform_helper,
-                  new_snippets
-                )
+                skip_snippet[i] =
+                  transform_snippets(M.config.transform_snippets, snippet, transform_helper, new_snippets)
               end
             end
             -- Append any snippets returned by the transformation functions
