@@ -34,30 +34,44 @@ M.visit_node = setmetatable(node_visitor, {
 
 M.convert = function(snippet)
   local trigger = snippet.trigger
+
+  if snippet.autotrigger == true then
+    snippet.options = (snippet.options or "") .. "A"
+  end
+
+  local options = snippet.options or ""
+  if snippet.options then
+    options = " " .. options
+    -- Remove unnecessary regex trigger
+    if options:find("r") and trigger:find("^[%a%d ]*$") then
+      options = options:gsub("r", "")
+      -- If r was the only option, clear all options
+      if options == " " then
+        options = ""
+      end
+    end
+  end
+
   -- Literal " in trigger
   if trigger:match([["]]) then
     trigger = string.format("!%s!", trigger)
     -- Multi-word or regex trigger
-  elseif trigger:match("%s") or snippet.options and snippet.options:match("r") then
+  elseif trigger:match("%s") or options:match("r") then
     trigger = string.format([["%s"]], trigger)
-  end
-
-  local options = snippet.options and " " .. snippet.options or ""
-  if snippet.autotrigger == true then
-    options = options .. (snippet.options and "A" or " A")
   end
 
   -- Description must be quoted
   local description = snippet.description and string.format([[ "%s"]], snippet.description) or ""
   -- If options are set, description must be set too
-  if snippet.options and description == "" then
+  if options ~= "" and description == "" then
     description = [[ ""]]
   end
+
+  -- TODO: remove r from options if only alphanumeric characters
 
   local body = base_converter.convert_ast(snippet.body, M.visit_node)
   local priority = snippet.priority and ("priority %s\n"):format(snippet.priority) or ""
   local custom_context = snippet.custom_context and ('context "%s"\n'):format(snippet.custom_context) or ""
-  -- TODO: remove r from options if only alphanumeric characters
 
   return string.format(
     "%s%ssnippet %s%s%s\n%s\nendsnippet",

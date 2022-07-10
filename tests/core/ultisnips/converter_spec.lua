@@ -99,6 +99,34 @@ endsnippet]]
     assert.are_same(expected, actual)
   end)
 
+  it("remove unnecessary regex trigger", function()
+    local snippet = {
+      trigger = "abc 123",
+      body = { { type = NodeType.TEXT, text = "body" } },
+      options = "r",
+    }
+    local actual = converter.convert(snippet)
+    local expected = [[
+snippet "abc 123"
+body
+endsnippet]]
+    assert.are_same(expected, actual)
+  end)
+
+  it("not remove necessary regex trigger", function()
+    local snippet = {
+      trigger = "fu?n",
+      body = { { type = NodeType.TEXT, text = "body" } },
+      options = "r",
+    }
+    local actual = converter.convert(snippet)
+    local expected = [[
+snippet "fu?n" "" r
+body
+endsnippet]]
+    assert.are_same(expected, actual)
+  end)
+
   it("convert choice node", function()
     local snippet = {
       trigger = "fn",
@@ -233,7 +261,7 @@ endsnippet]],
       local actual = converter.convert(snippet)
       assert.are_same(
         [[
-snippet test A
+snippet test "" A
 
 endsnippet]],
         actual
