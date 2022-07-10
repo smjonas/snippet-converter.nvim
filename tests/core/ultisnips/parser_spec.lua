@@ -35,12 +35,8 @@ endsnippet]],
       return lines
     end
 
-    local num_new_snippets = parser.parse(
-      "/some/snippet/path.snippets",
-      parsed_snippets,
-      parser_errors,
-      context
-    )
+    local num_new_snippets =
+      parser.parse("/some/snippet/path.snippets", parsed_snippets, parser_errors, context)
     assert.are_same(2, num_new_snippets)
     assert.are_same({}, parser_errors)
 
@@ -170,12 +166,8 @@ endsnippet]],
     end
 
     context.include_filetypes = {}
-    local num_new_snippets = parser.parse(
-      "/some/snippet/path.snippets",
-      parsed_snippets,
-      parser_errors,
-      { context = context }
-    )
+    local num_new_snippets =
+      parser.parse("/some/snippet/path.snippets", parsed_snippets, parser_errors, { context = context })
     assert.are_same(1, num_new_snippets)
     assert.are_same("for", parsed_snippets[1].trigger)
     assert.are_same({}, parser_errors)
@@ -215,12 +207,8 @@ endglobal]],
     end
 
     context.global_code = {}
-    local num_new_snippets = parser.parse(
-      "/some/snippet/path.snippets",
-      parsed_snippets,
-      parser_errors,
-      { context = context }
-    )
+    local num_new_snippets =
+      parser.parse("/some/snippet/path.snippets", parsed_snippets, parser_errors, { context = context })
     assert.are_same(1, num_new_snippets)
     assert.are_same("for", parsed_snippets[1].trigger)
     assert.are_same({}, parser_errors)
@@ -275,12 +263,8 @@ priority 50]],
       line_nr = 10,
     }
 
-    local num_new_snippets = parser.parse(
-      "/some/snippet/path.snippets",
-      parsed_snippets,
-      parser_errors,
-      { context = context }
-    )
+    local num_new_snippets =
+      parser.parse("/some/snippet/path.snippets", parsed_snippets, parser_errors, { context = context })
 
     assert.are_same(2, num_new_snippets)
     assert.are_same({}, parser_errors)
@@ -320,12 +304,8 @@ endsnippet]],
       return lines
     end
 
-    local num_new_snippets = parser.parse(
-      "/some/snippet/path.snippets",
-      parsed_snippets,
-      parser_errors,
-      { context = context }
-    )
+    local num_new_snippets =
+      parser.parse("/some/snippet/path.snippets", parsed_snippets, parser_errors, { context = context })
     assert.are_same(2, num_new_snippets)
 
     local expected_errors = {
@@ -386,12 +366,8 @@ context "1"]],
     }
 
     context.priorities = {}
-    local num_new_snippets = parser.parse(
-      "/some/snippet/path.snippets",
-      parsed_snippets,
-      parser_errors,
-      { context = context }
-    )
+    local num_new_snippets =
+      parser.parse("/some/snippet/path.snippets", parsed_snippets, parser_errors, { context = context })
 
     assert.are_same(2, num_new_snippets)
     assert.are_same({}, parser_errors)
@@ -432,12 +408,8 @@ endsnippet]],
       return lines
     end
 
-    local num_new_snippets = parser.parse(
-      "/some/snippet/path.snippets",
-      parsed_snippets,
-      parser_errors,
-      { context = context }
-    )
+    local num_new_snippets =
+      parser.parse("/some/snippet/path.snippets", parsed_snippets, parser_errors, { context = context })
     assert.are_same(2, num_new_snippets)
 
     local expected_errors = {

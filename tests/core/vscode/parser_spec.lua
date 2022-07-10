@@ -3,6 +3,8 @@ local NodeType = require("snippet_converter.core.node_type")
 local parser = require("snippet_converter.core.vscode.parser")
 
 describe("VSCode parser", function()
+  local orig_get_lines = parser.get_lines
+
   local data
   setup(function()
     assertions.register(assert)

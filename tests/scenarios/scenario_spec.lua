@@ -15,9 +15,8 @@ describe("Scenario", function()
     end
 
     expected_output_ultisnips = vim.fn.readfile("tests/scenarios/expected_output_ultisnips.snippets")
-    expected_output_ultisnips_from_vscode_luasnip = vim.fn.readfile(
-      "tests/scenarios/expected_output_ultisnips_from_vscode_luasnip.snippets"
-    )
+    expected_output_ultisnips_from_vscode_luasnip =
+      vim.fn.readfile("tests/scenarios/expected_output_ultisnips_from_vscode_luasnip.snippets")
     expected_output_snipmate = vim.fn.readfile("tests/scenarios/expected_output_snipmate.snippets")
     expected_output_vscode = vim.fn.readfile("tests/scenarios/expected_output_vscode.json")
     expected_output_vscode_luasnip = vim.fn.readfile("tests/scenarios/expected_output_vscode_luasnip.json")

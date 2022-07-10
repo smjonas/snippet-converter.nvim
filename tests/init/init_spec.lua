@@ -49,7 +49,8 @@ describe("Snippet converter", function()
   local model
   setup(function()
     model = Model.new()
-    snippet_engines["vscode"].converter = "tests.init.converter_mock"
+    -- snippet_engines["vscode"].parser = "tests.init.parser_stub"
+    snippet_engines["vscode"].converter = "tests.init.converter_stub"
   end)
 
   it("should correctly apply local + global snippet transforms", function()
@@ -102,7 +103,7 @@ describe("Snippet converter", function()
     }
     -- Submit task to ensure that the model is correctly initialized
     model:submit_task(template, "ultisnips", 1, 1, {})
-    local stubbed_converter = stub.new(require("tests.init.converter_mock"), "export")
+    local stubbed_converter = stub.new(require("tests.init.converter_stub"), "export")
 
     local context = {}
     snippet_converter._convert_snippets(model, snippets, context, template)
@@ -168,7 +169,7 @@ describe("Snippet converter", function()
     }
     -- Submit task to ensure that the model is correctly initialized
     model:submit_task(template, "ultisnips", 1, 1, {})
-    local stubbed_converter = stub.new(require("tests.init.converter_mock"), "export")
+    local stubbed_converter = stub.new(require("tests.init.converter_stub"), "export")
     local stubbed_notify = stub.new(vim, "notify")
 
     local context = {}
@@ -222,7 +223,7 @@ describe("Snippet converter", function()
     }
     -- Submit task to ensure that the model is correctly initialized
     model:submit_task(template, "ultisnips", 1, 1, {})
-    local stubbed_converter = stub.new(require("tests.init.converter_mock"), "export")
+    local stubbed_converter = stub.new(require("tests.init.converter_stub"), "export")
     local stubbed_notify = stub.new(vim, "notify")
 
     local context = {}
@@ -276,7 +277,7 @@ describe("Snippet converter", function()
     }
     -- Submit task to ensure that the model is correctly initialized
     model:submit_task(template, "ultisnips", 1, 1, {})
-    local stubbed_converter = stub.new(require("tests.init.converter_mock"), "export")
+    local stubbed_converter = stub.new(require("tests.init.converter_stub"), "export")
 
     local context = {}
     snippet_converter._convert_snippets(model, snippets, context, template)
@@ -327,7 +328,7 @@ describe("Snippet converter", function()
     }
     -- Submit task to ensure that the model is correctly initialized
     model:submit_task(template, "ultisnips", 1, 1, {})
-    local stubbed_converter = stub.new(require("tests.init.converter_mock"), "export")
+    local stubbed_converter = stub.new(require("tests.init.converter_stub"), "export")
 
     local context = {}
     snippet_converter._convert_snippets(model, snippets, context, template)
@@ -342,5 +343,51 @@ describe("Snippet converter", function()
       match.is_same("/some/path/lua.json"),
       match.is_same {}
     )
+  end)
+
+  it("#xxx should skip package.json input file when using vscode format", function()
+    local package_snippet = create_test_snippet("B", "", {})
+    package_snippet.path = "some/path/package.json"
+
+    local snippets = {
+      vscode = {
+        lua = {
+          create_test_snippet("A", "", {}),
+        },
+        package = {
+          package_snippet,
+        },
+      },
+    }
+
+    local template = {
+      sources = {
+        vscode = {
+          "/some/path",
+        },
+      },
+      output = {
+        ultisnips = { "/some/output_path" },
+      },
+    }
+    snippet_converter.setup {
+      templates = { template },
+    }
+    -- Submit task to ensure that the model is correctly initialized
+    model:submit_task(template, "vscode", 1, 1, {})
+    local stubbed_converter = stub.new(require("tests.init.converter_stub"), "export")
+
+    local snippet_paths = {
+      vscode = { package = { "some/path/package.json" }, lua = { "some/path/lua.json" } },
+    }
+    local stubbed_parser = stub.new(require("tests.init.parser_stub"), "export")
+
+    -- What is returned by the mocked parser here is the list of file paths passed to it
+    local snippets, context = snippet_converter._parse_snippets(model, snippet_paths, template)
+    assert.are_same(snippets, { vscode = {
+      lua = { "some/path/lua.json" },
+      package = {},
+    } })
+    assert.are_same(context, { global_code = {} })
   end)
 end)

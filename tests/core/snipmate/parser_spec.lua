@@ -172,12 +172,8 @@ priority 50]],
         line_nr = 9,
       }
 
-      local num_new_snippets = parser.parse(
-        "/some/snippet/path.snippets",
-        parsed_snippets,
-        parser_errors,
-        { context = {} }
-      )
+      local num_new_snippets =
+        parser.parse("/some/snippet/path.snippets", parsed_snippets, parser_errors, { context = {} })
 
       assert.are_same(2, num_new_snippets)
       assert.are_same({}, parser_errors)
@@ -247,12 +243,8 @@ snippet for
       return lines
     end
 
-    local num_new_snippets = parser.parse(
-      "/some/snippet/path.snippets",
-      parsed_snippets,
-      parser_errors,
-      { context = {} }
-    )
+    local num_new_snippets =
+      parser.parse("/some/snippet/path.snippets", parsed_snippets, parser_errors, { context = {} })
     assert.are_same(2, num_new_snippets)
 
     local expected_errors = {

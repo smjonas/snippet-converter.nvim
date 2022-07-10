@@ -4,6 +4,12 @@ local err = require("snippet_converter.utils.error")
 
 local M = {}
 
+M.filter_paths = function(paths)
+  return vim.tbl_filter(function(path)
+    return not path:find("package%.json$")
+  end, paths)
+end
+
 M.get_lines = function(path)
   return io.read_json(path)
 end
@@ -89,7 +95,7 @@ M.verify_snippet_format = function(snippet_name, snippet_info, errors_ptr, opts)
   return err.assert_all(assertions, errors_ptr)
 end
 
----@return table
+---@return table|nil
 M.create_snippet = function(snippet_name, trigger, snippet_info, parser, parser_errors_ptr, opts)
   local body = type(snippet_info.body) == "string" and { snippet_info.body } or snippet_info.body
   parser = parser or body_parser
@@ -125,10 +131,12 @@ M.parse = function(path, parsed_snippets_ptr, parser_errors_ptr, opts)
   opts = opts or {}
   -- This is a bit ugly but changing all parsers to a class is a lot of effort
   opts.self = opts.self or M
+
   local snippet_data = opts.lines or M.get_lines(path)
   if vim.tbl_isempty(snippet_data) then
     return #parsed_snippets_ptr
   end
+
   local prev_count = #parsed_snippets_ptr
   local pos = prev_count + 1
   for snippet_name, snippet_info in pairs(snippet_data) do

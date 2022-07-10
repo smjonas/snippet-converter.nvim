@@ -87,6 +87,10 @@ local parse_snippets = function(model, snippet_paths, template)
     local parser_errors = {}
     for filetype, paths in pairs(snippet_paths[source_format]) do
       tbl.make_default_table(snippets[source_format], filetype)
+      if parser.filter_paths then
+        paths = parser.filter_paths(paths)
+      end
+
       for _, path in ipairs(paths) do
         num_snippets = num_snippets
           + parser.parse(
@@ -254,6 +258,7 @@ local convert_snippets = function(model, snippets, context, template)
 end
 
 -- Expose functions to tests
+M._parse_snippets = parse_snippets
 M._convert_snippets = convert_snippets
 
 M.convert_snippets = function(args)
