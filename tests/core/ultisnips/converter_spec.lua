@@ -85,6 +85,20 @@ endsnippet]]
     assert.are_same(expected, actual)
   end)
 
+  it("add empty description if options are present", function()
+    local snippet = {
+      trigger = "fu?n",
+      body = { { type = NodeType.TEXT, text = "body" } },
+      options = "r",
+    }
+    local actual = converter.convert(snippet)
+    local expected = [[
+snippet "fu?n" "" r
+body
+endsnippet]]
+    assert.are_same(expected, actual)
+  end)
+
   it("convert choice node", function()
     local snippet = {
       trigger = "fn",
@@ -202,7 +216,7 @@ endsnippet]],
       local actual = converter.convert(snippet)
       assert.are_same(
         [[
-snippet test iA
+snippet test "" iA
 
 endsnippet]],
         actual

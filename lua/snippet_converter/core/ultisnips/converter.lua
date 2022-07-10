@@ -41,12 +41,17 @@ M.convert = function(snippet)
   elseif trigger:match("%s") or snippet.options and snippet.options:match("r") then
     trigger = string.format([["%s"]], trigger)
   end
-  -- Description must be quoted
-  local description = snippet.description and string.format([[ "%s"]], snippet.description) or ""
 
   local options = snippet.options and " " .. snippet.options or ""
   if snippet.autotrigger == true then
     options = options .. (snippet.options and "A" or " A")
+  end
+
+  -- Description must be quoted
+  local description = snippet.description and string.format([[ "%s"]], snippet.description) or ""
+  -- If options are set, description must be set too
+  if snippet.options and description == "" then
+    description = [[ ""]]
   end
 
   local body = base_converter.convert_ast(snippet.body, M.visit_node)
