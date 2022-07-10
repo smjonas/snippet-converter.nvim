@@ -100,15 +100,15 @@ local parse_snippets = function(model, snippet_paths, template)
             { context = context, flavor = flavor }
           )
       end
-
-      tbl.concat_arrays(
-        all_input_files,
-        vim.tbl_map(function(path)
-          return { format = source_format, path = path }
-        end, paths)
-      )
+      tbl.concat_arrays(all_input_files, paths)
     end
-    model.input_files = tbl.concat_arrays(model.input_files, all_input_files)
+
+    model.input_files = tbl.concat_arrays(
+      model.input_files,
+      vim.tbl_map(function(path)
+        return { format = source_format, path = path }
+      end, all_input_files)
+    )
 
     local num_files = #all_input_files
     if num_files == 0 then

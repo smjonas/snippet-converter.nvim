@@ -151,6 +151,10 @@ end
 
 -- @param context []? @A table of additional snippet contexts optionally provided the source parser (e.g. extends directives from UltiSnips)
 M.post_export = function(template, filetypes, output_path, context)
+  filetypes = vim.tbl_filter(function(ft)
+    return ft ~= "package"
+  end, filetypes)
+
   local json_string =
     get_package_json_string(template.name, tbl.concat_arrays(filetypes, context.include_filetypes or {}))
   local lines = export_utils.snippet_strings_to_lines { json_string }

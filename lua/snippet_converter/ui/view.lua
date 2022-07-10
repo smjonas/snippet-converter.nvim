@@ -118,11 +118,11 @@ local show_files_in_qflist = function(files, qf_title)
 end
 
 function View:show_input_paths_in_qflist()
-  show_files_in_qflist(self.model.input_files)
+  show_files_in_qflist(self.model.input_files, "Snippet input paths")
 end
 
 function View:show_output_paths_in_qflist()
-  show_files_in_qflist(self.model.output_files)
+  show_files_in_qflist(self.model.output_files, "Snippet output paths")
 end
 
 local show_failures_in_qflist = function(failures, source_format, target_format, start_idx)
