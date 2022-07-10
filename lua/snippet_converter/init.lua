@@ -81,10 +81,10 @@ local parse_snippets = function(model, snippet_paths, template)
 
     snippets[source_format] = {}
     local num_snippets = 0
-    local num_files = 0
 
     local parser = require(snippet_engines[source_format].parser)
     local parser_errors = {}
+    local all_input_files = {}
     for filetype, paths in pairs(snippet_paths[source_format]) do
       tbl.make_default_table(snippets[source_format], filetype)
       if parser.filter_paths then
@@ -100,8 +100,17 @@ local parse_snippets = function(model, snippet_paths, template)
             { context = context, flavor = flavor }
           )
       end
-      num_files = num_files + #paths
+
+      tbl.concat_arrays(
+        all_input_files,
+        vim.tbl_map(function(path)
+          return { format = source_format, path = path }
+        end, paths)
+      )
     end
+    model.input_files = tbl.concat_arrays(model.input_files, all_input_files)
+
+    local num_files = #all_input_files
     if num_files == 0 then
       model:skip_task(template, source_format, model.Reason.NO_INPUT_FILES)
     elseif num_snippets == 0 then

@@ -33,6 +33,10 @@ View.new = function(settings)
       -- no-op: disable potential user keymap to avoid issues
       -- when <c-q> is remapped to toggle the quickfix list
     end,
+    ["<c-i>"] = function()
+      self._window.close()
+      self:show_input_paths_in_qflist()
+    end,
     ["<c-o>"] = function()
       self._window.close()
       self:show_output_paths_in_qflist()
@@ -97,9 +101,9 @@ local amount_to_snippets_string = function(amount)
   return amount == 1 and "snippet" or "snippets"
 end
 
-function View:show_output_paths_in_qflist()
+local show_files_in_qflist = function(files, qf_title)
   local qf_entries = {}
-  for i, file in ipairs(self.model.output_files) do
+  for i, file in ipairs(files) do
     qf_entries[i] = {
       filename = vim.fn.expand(file.path),
       lnum = 1,
@@ -108,9 +112,17 @@ function View:show_output_paths_in_qflist()
   end
   vim.fn.setqflist({}, "r", {
     items = qf_entries,
-    title = "Snippet output paths",
+    title = qf_title,
   })
   vim.cmd("copen")
+end
+
+function View:show_input_paths_in_qflist()
+  show_files_in_qflist(self.model.input_files)
+end
+
+function View:show_output_paths_in_qflist()
+  show_files_in_qflist(self.model.output_files)
 end
 
 local show_failures_in_qflist = function(failures, source_format, target_format, start_idx)
@@ -306,12 +318,17 @@ function View:get_help_scene_nodes()
 
   local errors_to_qflist_node = Node.MultiHlTextNode({
     "<c-q>",
-    "         Send the errors under the cursor to the quickfix list and close this window.",
+    "         Send the errors under the cursor to the quickfix list.",
+  }, { "Statement", "" }, Node.Style.Padding(2))
+
+  local input_to_qflist_node = Node.MultiHlTextNode({
+    "<c-i>",
+    "         Send all input files to the quickfix list.",
   }, { "Statement", "" }, Node.Style.Padding(2))
 
   local output_to_qflist_node = Node.MultiHlTextNode({
     "<c-o>",
-    "         Send all output files to the quickfix list and close this window.",
+    "         Send all output files to the quickfix list.",
   }, { "Statement", "" }, Node.Style.Padding(2))
 
   local close_node = Node.MultiHlTextNode(
@@ -323,6 +340,7 @@ function View:get_help_scene_nodes()
   self._help_scene_nodes = Node.RootNode {
     expand_node,
     errors_to_qflist_node,
+    input_to_qflist_node,
     output_to_qflist_node,
     close_node,
   }

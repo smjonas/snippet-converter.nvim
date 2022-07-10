@@ -7,6 +7,7 @@ local make_default_table = require("snippet_converter.utils.table").make_default
 ---@field skipped_tasks table
 ---@field total_num_snippets integer
 ---@field total_num_failures integer
+---@field input_files table<string>
 ---@field output_files table<string>
 ---@field is_converting boolean
 local Model = {}
@@ -29,6 +30,7 @@ Model.new = function()
     skipped_tasks = {},
     total_num_snippets = 0,
     total_num_failures = 0,
+    input_files = {},
     output_files = {},
     is_converting = true,
   }, { __index = Model })
