@@ -68,25 +68,26 @@ M.verify_snippet_format = function(snippet_name, snippet_info, errors_ptr, opts)
   end
 
   -- flavor == "luasnip"
-  local got_luasnips_key = type(snippet_info.luasnip) == "table"
+  -- Somehow the type of 'nil' can be 'table' so also add a nil-check...
+  local got_luasnips_key = snippet_info.luasnip ~= nil and type(snippet_info.luasnip) == "table"
   local autotrigger = got_luasnips_key and snippet_info.luasnip.autotrigger
   local priority = got_luasnips_key and snippet_info.luasnip.priority
 
   assertions = {
     {
-      predicate = got_luasnips_key,
+      predicate = (snippet_info.luasnip == nil) or got_luasnips_key,
       msg = function()
         return "luasnip must be a table, got " .. type(snippet_info.luasnip)
       end,
     },
     {
-      predicate = (not got_luasnips_key and true) or autotrigger == nil or type(autotrigger) == "boolean",
+      predicate = not got_luasnips_key or autotrigger == nil or type(autotrigger) == "boolean",
       msg = function()
         return "luasnip.autotrigger must be a boolean, got " .. type(snippet_name)
       end,
     },
     {
-      predicate = (not got_luasnips_key and true) or priority == nil or type(priority) == "number",
+      predicate = not got_luasnips_key or priority == nil or type(priority) == "number",
       msg = function()
         return "luasnip.priority must be a number, got " .. type(snippet_name)
       end,

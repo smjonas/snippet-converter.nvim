@@ -67,8 +67,6 @@ M.convert = function(snippet)
     description = [[ ""]]
   end
 
-  -- TODO: remove r from options if only alphanumeric characters
-
   local body = base_converter.convert_ast(snippet.body, M.visit_node)
   local priority = snippet.priority and ("priority %s\n"):format(snippet.priority) or ""
   local custom_context = snippet.custom_context and ('context "%s"\n'):format(snippet.custom_context) or ""
