@@ -175,6 +175,12 @@ snippet cvec "column vector" A
 \begin{pmatrix} ${1:x}_${2:1}\\\\ \vdots\\\\ $1_${2:n} \end{pmatrix}
 endsnippet
 
+snippet desc "Description"
+\begin{description}
+	\item[$1] $0
+\end{description}
+endsnippet
+
 snippet enum "Enumerate" A
 \begin{enumerate}
 	\item $0
@@ -205,6 +211,14 @@ endsnippet
 
 snippet letw "let omega" A
 Let \$\Omega \subset \C\$ be open.
+endsnippet
+
+snippet lim "limit"
+\lim_{${1:n} \to ${2:\infty}}
+endsnippet
+
+snippet limsup "limsup"
+\limsup_{${1:n} \to ${2:\infty}}
 endsnippet
 
 snippet lll "l" A
@@ -240,12 +254,41 @@ snippet ooo "\infty" A
 \infty
 endsnippet
 
+snippet pac "Package"
+\usepackage[${1:options}]{${2:package}}$0
+endsnippet
+
+snippet part "d/dx"
+\frac{\partial ${1:V}}{\partial ${2:x}} $0
+endsnippet
+
+snippet plot "Plot"
+\begin{figure}[$1]
+	\centering
+	\begin{tikzpicture}
+		\begin{axis}[
+			xmin= ${2:-10}, xmax= ${3:10},
+			ymin= ${4:-10}, ymax = ${5:10},
+			axis lines = middle,
+		]
+			\addplot[domain=$2:$3, samples=${6:100}]{$7};
+		\end{axis}
+	\end{tikzpicture}
+	\caption{$8}
+	\label{${9:$8}}
+\end{figure}
+endsnippet
+
 snippet pmat "pmat" A
 \begin{pmatrix} $1 \end{pmatrix} $0
 endsnippet
 
 snippet rd "to the ... power" A
 ^{($1)}$0
+endsnippet
+
+snippet rij "mrij"
+(${1:x}_${2:n})_{${3:$2}\in${4:\N}}$0
 endsnippet
 
 snippet set "set" A
@@ -256,8 +299,48 @@ snippet sr "^2" A
 ^2
 endsnippet
 
+snippet sum "sum"
+\sum_{n=${1:1}}^{${2:\infty}} ${3:a_n z^n}
+endsnippet
+
+snippet sympy "sympyblock "
+sympy $1 sympy$0
+endsnippet
+
+snippet taylor "taylor"
+\sum_{${1:k}=${2:0}}^{${3:\infty}} ${4:c_$1} (x-a)^$1 $0
+endsnippet
+
 snippet td "to the ... power" A
 ^{$1}$0
+endsnippet
+
+snippet template "Basic template"
+\documentclass[a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{textcomp}
+\usepackage[dutch]{babel}
+\usepackage{amsmath, amssymb}
+
+
+% figure support
+\usepackage{import}
+\usepackage{xifthen}
+\pdfminorversion=7
+\usepackage{pdfpages}
+\usepackage{transparent}
+\newcommand{\incfig}[1]{%
+	\def\svgwidth{\columnwidth}
+	\import{./figures/}{#1.pdf_tex}
+}
+
+\pdfsuppresswarningpagegroup=1
+
+\begin{document}
+	$0
+\end{document}
 endsnippet
 
 snippet tt "text" A
