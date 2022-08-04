@@ -4,16 +4,16 @@ local NodeType = require("snippet_converter.core.node_type")
 local Variable = require("snippet_converter.core.vscode.body_parser").Variable
 local err = require("snippet_converter.utils.error")
 
-M.convert_ast = function(ast, node_visitor)
+M.convert_ast = function(ast, node_visitor, opts)
   local result = {}
   for _, node in ipairs(ast) do
-    result[#result + 1] = node_visitor[node.type](node)
+    result[#result + 1] = node_visitor[node.type](node, opts)
   end
   return table.concat(result)
 end
 
 -- TODO: make SnipMate a subclass of UltiSnips
--- Converts a VSCode variable to equivalent VimScript code
+-- Converts a VSCode variable to equivalent Vimscript code
 local convert_variable = setmetatable({
   [Variable.TM_FILENAME] = [[`!v expand('%:t')`]],
   [Variable.TM_FILENAME_BASE] = [[`!v expand('%:t:r')`]],
@@ -21,7 +21,7 @@ local convert_variable = setmetatable({
   [Variable.TM_FILEPATH] = [[`!v expand('%:p')`]],
   [Variable.RELATIVE_FILEPATH] = [[`!v expand(':~:.')`]],
   [Variable.CLIPBOARD] = [[`!v getreg(v:register)`]],
-  [Variable.CURRENT_YEAR] = [[`!v !v strftime('%Y')`]],
+  [Variable.CURRENT_YEAR] = [[`!v strftime('%Y')`]],
   [Variable.CURRENT_YEAR_SHORT] = [[`!v strftime('%y')`]],
   [Variable.CURRENT_MONTH] = [[`!v strftime('%m')`]],
   [Variable.CURRENT_MONTH_NAME] = [[`!v strftime('%B')`]],

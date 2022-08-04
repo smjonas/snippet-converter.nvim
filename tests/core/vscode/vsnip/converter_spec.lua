@@ -2,7 +2,7 @@ local NodeType = require("snippet_converter.core.node_type")
 local converter = require("snippet_converter.core.vscode.vsnip.converter")
 
 describe("vsnip converter", function()
-  it("should convert VimScript code", function()
+  it("should convert Vimscript code", function()
     local snippet = {
       name = "user",
       trigger = "username",

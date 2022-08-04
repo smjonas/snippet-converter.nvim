@@ -15,7 +15,7 @@ local create_node_visitor = function(opts)
     end,
     -- TODO: support Filename() inside ``
     [NodeType.VIMSCRIPT_CODE] = function(node)
-      -- LuaSnip does not support VimScript code
+      -- LuaSnip does not support Vimscript code
       if opts.flavor == "luasnip" then
         err.raise_converter_error(NodeType.to_string(node.type))
       end

@@ -257,4 +257,32 @@ describe("VSCode converter (luasnip flavor) should", function()
     }
     assert.are_same(expected, actual)
   end)
+
+  it("not convert variable nodes to Vimscript", function()
+    local snippet = {
+      trigger = "fn",
+      body = {
+        { type = NodeType.VARIABLE, var = "CURRENT_YEAR" },
+        {
+          type = NodeType.VARIABLE,
+          var = "CURRENT_YEAR",
+          any = {
+            { type = NodeType.TEXT, text = "txt" },
+          },
+        },
+        {
+          type = NodeType.VARIABLE,
+          var = "CURRENT_YEAR",
+          any = {
+            { type = NodeType.VARIABLE, var = "CURRENT_MONTH" },
+          },
+        },
+      },
+    }
+    local actual = converter.convert(snippet, nil, { flavor = "luasnip" })
+    assert.are_same({
+      trigger = "fn",
+      body = "${CURRENT_YEAR}${CURRENT_YEAR:txt}${CURRENT_YEAR:${CURRENT_MONTH}}",
+    }, actual)
+  end)
 end)

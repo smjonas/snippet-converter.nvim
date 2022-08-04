@@ -52,6 +52,20 @@ M.node_visitor = {
   [NodeType.CHOICE] = function(node)
     return ("${%s|%s|}"):format(node.int, table.concat(node.text, ","))
   end,
+  [NodeType.VARIABLE] = function(node, opts)
+    -- Don't convert variable to Vimscript when the target flavor is luasnip
+    if opts.flavor == "luasnip" then
+      if node.transform then
+        err.raise_converter_error("transform")
+      end
+      if node.any then
+        local any = base_converter.convert_ast(node.any, M.node_visitor, opts)
+        return string.format("${%s:%s}", node.var, any)
+      end
+      return ("${%s}"):format(node.var)
+    end
+    return base_converter.visit_node(M.node_visitor)
+  end,
   [NodeType.VISUAL_PLACEHOLDER] = function(_)
     err.raise_converter_error(NodeType.to_string(NodeType.VISUAL_PLACEHOLDER))
   end,
@@ -101,7 +115,7 @@ M.convert = function(snippet, visit_node, opts)
     err.raise_converter_error("regex trigger")
   end
   -- Prepare snippet for export
-  snippet.body = vim.split(base_converter.convert_ast(snippet.body, visit_node or M.visit_node), "\n")
+  snippet.body = vim.split(base_converter.convert_ast(snippet.body, visit_node or M.visit_node, opts), "\n")
   if #snippet.body == 1 then
     snippet.body = snippet.body[1]
   end

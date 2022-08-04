@@ -57,7 +57,7 @@ snippet fn
     assert.are_same(expected, actual)
   end)
 
-  it("convert VimScript code", function()
+  it("convert Vimscript code", function()
     local snippet = {
       trigger = "fn",
       body = {
