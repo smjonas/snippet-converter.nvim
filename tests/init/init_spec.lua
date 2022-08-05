@@ -345,7 +345,7 @@ describe("Snippet converter", function()
     )
   end)
 
-  it("#xxx should skip package.json input file when using vscode format", function()
+  it("should skip package.json input file when using vscode format", function()
     local package_snippet = create_test_snippet("B", "", {})
     package_snippet.path = "some/path/package.json"
 

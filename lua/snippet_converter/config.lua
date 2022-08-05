@@ -13,6 +13,10 @@ M.DEFAULT_CONFIG = {
   },
 }
 
+local DEFAULT_FORMAT_OPTS = {
+  generate_package_json = true,
+}
+
 local validate_table = function(name, tbl, is_optional)
   vim.validate {
     [name] = { tbl, "table", is_optional },
@@ -72,6 +76,13 @@ local validate_template = function(template)
   }
   validate_paths("template.sources", template.sources, "source.format", "source.path")
   validate_paths("template.output", template.output, "output.format", "output.path")
+  for output_format, output in pairs(template.output) do
+    validate_table(("template.output.%s.opts"):format(output_format), output.opts, true)
+    if output.opts then
+      output.opts = vim.tbl_deep_extend("force", DEFAULT_FORMAT_OPTS, output.opts)
+    end
+  end
+
   vim.validate {
     ["template.sort_snippets"] = { template.sort_snippets, "function", true },
   }
