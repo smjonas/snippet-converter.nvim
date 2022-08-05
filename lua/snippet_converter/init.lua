@@ -259,7 +259,13 @@ local convert_snippets = function(model, snippets, context, template)
     end
     if converter.post_export then
       for _, output_path in ipairs(output_dirs) do
-        converter.post_export(template, filetypes, output_path, context)
+        converter.post_export(
+          template.name,
+          filetypes,
+          output_path,
+          context,
+          template.output[target_format].opts
+        )
       end
     end
   end

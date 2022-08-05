@@ -164,13 +164,17 @@ M.export = function(converted_snippets, filetype, output_dir, _)
 end
 
 -- @param context []? @A table of additional snippet contexts optionally provided the source parser (e.g. extends directives from UltiSnips)
-M.post_export = function(template, filetypes, output_path, context)
+M.post_export = function(template_name, filetypes, output_path, context, template_opts)
+  if template_opts and not template_opts.generate_package_json then
+    return
+  end
+
   filetypes = vim.tbl_filter(function(ft)
     return ft ~= "package"
   end, filetypes)
 
   local json_string =
-    get_package_json_string(template.name, tbl.concat_arrays(filetypes, context.include_filetypes or {}))
+    get_package_json_string(template_name, tbl.concat_arrays(filetypes, context.include_filetypes or {}))
   local lines = export_utils.snippet_strings_to_lines { json_string }
   io.write_file(lines, io.get_containing_folder(output_path) .. "/package.json")
 end

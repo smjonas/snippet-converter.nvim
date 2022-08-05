@@ -99,7 +99,7 @@ If not specified, a default value (the index of the template in the `templates` 
 
 ---
 
-`sources: table <string, string>`
+`sources: table <string, string[]>`
 
 A table with a list of paths per source format.
 For a list of available source formats, see [Supported snippet formats](#supported-snippet-formats).
@@ -110,11 +110,11 @@ path of the same template will be ignored! This is to avoid reconverting snippet
 
 ---
 
-`output: table <string, string>`
+`output: table<string, string[] | table>`
 
 A table with a list of paths per output format where the converted snippets will be stored.
-Each path must be an absolute path to a directory.
-If a directory does not exist, it will be created.
+Each path must be an absolute path to a directory. If a directory does not exist, it will be created.
+Can optionally contain an `opts` table with additional options (see [Output format options](#output-format-options)).
 See [Recommended output paths](#transforming-snippets) for advice on how to choose a suitable output path.
 
 ---
@@ -176,6 +176,23 @@ For details, always refer to the documentation of your snippet engine.
   ```lua
   vim.fn.stdpath("config") .. "/snippets"
   ```
+
+## Output format options
+You can set additional options by passing an `opts` table to the output format.
+Currently there is only one option which is useful for `vscode` or `vscode_luasnip` output formats:
+```lua
+output = {
+  vscode_luasnip = {
+    vim.fn.stdpath("config") .. "/vscode_snippets",
+    opts = {
+      -- Whether a package.json file should be generated in the output root directory.
+      -- This is useful if you only want to modify existing VSCode snippets without overwriting the package.json file.
+      -- Default: `true`
+      generate_package_json = false, 
+    },
+  },
+}
+```
 
 # Transforming snippets
 Before snippets are converted, it is possible to apply a transformation on them. Transformations can be used to either discard specific snippets or modify them arbitrarily.
