@@ -7,6 +7,7 @@ Table of Contents                        *snippet-converter-table-of-contents*
 2. Converting snippets                 |snippet-converter-converting-snippets|
   - Creating templates                  |snippet-converter-creating-templates|
   - Recommended output paths      |snippet-converter-recommended-output-paths|
+  - Output format options            |snippet-converter-output-format-options|
 3. Transforming snippets             |snippet-converter-transforming-snippets|
   - Examples                                      |snippet-converter-examples|
 4. Sorting snippets                       |snippet-converter-sorting-snippets|
@@ -136,7 +137,7 @@ command. If not specified, a default value (the index of the template in the
 
 ------------------------------------------------------------------------------
 
-`sources: table <string, string>`
+`sources: table <string, string[]>`
 
 A table with a list of paths per source format. For a list of available source
 formats, see |snippet-converter-supported-snippet-formats|. The paths can
@@ -150,12 +151,13 @@ reconverting snippets that have already been converted in a previous run.
 
 ------------------------------------------------------------------------------
 
-`output: table <string, string>`
+`output: table<string, string[] | table>`
 
 A table with a list of paths per output format where the converted snippets
 will be stored. Each path must be an absolute path to a directory. If a
-directory does not exist, it will be created. See
-|snippet-converter-recommended-output-paths| for advice on how to choose a
+directory does not exist, it will be created. Can optionally contain an `opts`
+table with additional options (see |snippet-converter-output-format-options|).
+See |snippet-converter-recommended-output-paths| for advice on how to choose a
 suitable output path.
 
 ------------------------------------------------------------------------------
@@ -231,6 +233,27 @@ SNIPMATE ~
     >
         vim.fn.stdpath("config") .. "/snippets"
     <
+
+
+OUTPUT FORMAT OPTIONS                *snippet-converter-output-format-options*
+
+You can set additional options by passing an `opts` table to the output format.
+Currently there is only one option which is useful for `vscode` or
+`vscode_luasnip` output formats:
+
+>
+    output = {
+      vscode_luasnip = {
+        vim.fn.stdpath("config") .. "/vscode_snippets",
+        opts = {
+          -- Whether a package.json file should be generated in the output root directory.
+          -- This is useful if you only want to modify existing VSCode snippets without overwriting the package.json file.
+          -- Default: `true`
+          generate_package_json = false, 
+        },
+      },
+    }
+<
 
 
 ==============================================================================
