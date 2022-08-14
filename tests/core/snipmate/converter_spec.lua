@@ -145,19 +145,4 @@ snippet fn
 	body]]
     assert.are_same(expected, actual)
   end)
-
-  it("fail to convert Vimscript code", function()
-    local snippet = {
-      trigger = "fn",
-      body = {
-        {
-          type = NodeType.VIMSCRIPT_CODE,
-          code = [[strftime("%H:%M")]],
-        },
-      },
-    }
-    local ok, actual = pcall(converter.convert, snippet, { flavor = "luasnip" })
-    assert.is_false(ok)
-    assert.are_same([[conversion of Vimscript code is not supported]], actual)
-  end)
 end)

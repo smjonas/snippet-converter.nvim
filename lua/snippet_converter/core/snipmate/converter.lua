@@ -8,17 +8,13 @@ local M = {
   node_visitor = {},
 }
 
-local create_node_visitor = function(opts)
+local create_node_visitor = function()
   return {
     [NodeType.TRANSFORM] = function(node)
       return ("/%s/%s/%s"):format(node.regex, node.replacement, node.options)
     end,
-    -- TODO: support Filename() inside ``
+    -- TODO: support Filename() inside Vimscript ``
     [NodeType.VIMSCRIPT_CODE] = function(node)
-      -- LuaSnip does not support Vimscript code
-      if opts.flavor == "luasnip" then
-        err.raise_converter_error(NodeType.to_string(node.type))
-      end
       return ("`%s`"):format(node.code)
     end,
     [NodeType.TEXT] = function(node)
@@ -38,7 +34,7 @@ M.convert = function(snippet, opts)
     -- Replace newline characters with spaces and remove trailing whitespace
     description = " " .. snippet.description:gsub("\n", " "):gsub("%s*$", "")
   end
-  M.node_visitor = create_node_visitor(opts)
+  M.node_visitor = create_node_visitor()
   M.visit_node = setmetatable(M.node_visitor, { __index = base_converter.visit_node(M.node_visitor) })
 
   local body = base_converter.convert_ast(snippet.body, M.visit_node)
