@@ -20,14 +20,14 @@ and the option `A` is present, the `luasnip.autotrigger` key will be set to `tru
 
 The following table shows which snippets can be converted to another format (the first column denotes the source format):
 
-| Source format / Target format     | vscode | vscode\_luasnip | vsnip | ultisnips | snipmate | snipmate\_luasnip |
-|-----------------------------------|--------|-----------------|-------|-----------|----------|-------------------|
-| vscode                            | ✓      | ✓               | ✓     | ✓         | ✓        | ✓                 |
-| vscode\_luasnip                   | ✓      | ✓               | ✓     | ✓         | ✓        | ✓                 |
-| vsnip                             | ✓ [1]  | ✓ [1]           | ✓     | ✓         | ✓ [1]    | ✓ [1]             |
-| ultisnips                         | ✓ [2]  | ✓ [2]           | ✓ [3] | ✓         | ✓ [2]    | ✓ [2]             |
-| snipmate                          | ✓      | ✓               | ✓     | ✓         | ✓        | ✓ [1]             |
-| snipmate\_luasnip                 | ✓      | ✓               | ✓     | ✓         | ✓        | ✓                 |
+| Source format / Target format | vscode | vscode\_luasnip | vsnip | ultisnips | snipmate | snipmate\_luasnip |
+|-------------------------------|--------|-----------------|-------|-----------|----------|-------------------|
+| vscode                        | ✓      | ✓               | ✓     | ✓         | ✓        | ✓                 |
+| vscode\_luasnip               | ✓      | ✓               | ✓     | ✓         | ✓        | ✓                 |
+| vsnip                         | ✓ [1]  | ✓ [1]           | ✓     | ✓         | ✓ [1]    | ✓                 |
+| ultisnips                     | ✓ [2]  | ✓ [2]           | ✓ [3] | ✓         | ✓ [4]    | ✓ [4]             |
+| snipmate                      | ✓      | ✓               | ✓     | ✓         | ✓        | ✓                 |
+| snipmate\_luasnip             | ✓      | ✓               | ✓     | ✓         | ✓        | ✓                 |
 
 **Legend:**
 
@@ -35,9 +35,11 @@ The following table shows which snippets can be converted to another format (the
 
 ✓ [1]: All except snippets with vimscript code.
 
-✓ [2]: All snippets except snippets with python / vimscript / shell code or regular expression triggers.
+✓ [2]: All except snippets with python / vimscript / shell code or regular expression triggers.
 
 ✓ [3]: All except snippets with python / shell code or regular expression triggers / transformations.
+
+✓ [4]: All except snippets with python / shell code or regular expression triggers.
 
 > :bulb: Note that source and target format can be the same.
 > This is useful if you only want to filter certain snippets or apply transformations to them without converting them to a different format.
@@ -188,7 +190,7 @@ output = {
       -- Whether a package.json file should be generated in the output root directory.
       -- This is useful if you only want to modify existing VSCode snippets without overwriting the package.json file.
       -- Default: `true`
-      generate_package_json = false, 
+      generate_package_json = false,
     },
   },
 }
