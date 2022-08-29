@@ -49,9 +49,9 @@ The following table shows which snippets can be converted to another format
 │Source format / Target format│vscode │vscode_luasnip│ vsnip │ultisnips│snipmate│snipmate_luasnip│
 │vscode                       │✓    │✓           │✓    │✓      │✓     │✓             │
 │vscode_luasnip               │✓    │✓           │✓    │✓      │✓     │✓             │
-│vsnip                        │✓ [1]│✓ [1]       │✓    │✓      │✓ [1] │✓ [1]         │
-│ultisnips                    │✓ [2]│✓ [2]       │✓ [3]│✓      │✓ [2] │✓ [2]         │
-│snipmate                     │✓    │✓           │✓    │✓      │✓     │✓ [1]         │
+│vsnip                        │✓ [1]│✓ [1]       │✓    │✓      │✓ [1] │✓             │
+│ultisnips                    │✓ [2]│✓ [2]       │✓ [3]│✓      │✓ [4] │✓ [4]         │
+│snipmate                     │✓    │✓           │✓    │✓      │✓     │✓             │
 │snipmate_luasnip             │✓    │✓           │✓    │✓      │✓     │✓             │
 
 
@@ -61,11 +61,14 @@ The following table shows which snippets can be converted to another format
 
 ✓ [1]: All except snippets with vimscript code.
 
-✓ [2]: All snippets except snippets with python / vimscript / shell code or
-regular expression triggers.
+✓ [2]: All except snippets with python / vimscript / shell code or regular
+expression triggers.
 
 ✓ [3]: All except snippets with python / shell code or regular expression
 triggers / transformations.
+
+✓ [4]: All except snippets with python / shell code or regular expression
+triggers.
 
 
   :bulb: Note that source and target format can be the same. This is useful if
@@ -249,7 +252,7 @@ Currently there is only one option which is useful for `vscode` or
           -- Whether a package.json file should be generated in the output root directory.
           -- This is useful if you only want to modify existing VSCode snippets without overwriting the package.json file.
           -- Default: `true`
-          generate_package_json = false, 
+          generate_package_json = false,
         },
       },
     }
