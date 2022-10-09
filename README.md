@@ -67,7 +67,7 @@ use {
   "smjonas/snippet-converter.nvim",
   -- SnippetConverter uses semantic versioning. Example: use version = "1.*" to avoid breaking changes on version 1.
   -- Uncomment the next line to follow stable releases only.
-  -- version = "*",
+  -- tag = "*",
   config = function()
     local template = {
       -- name = "t1", (optionally give your template a name to refer to it in the `ConvertSnippets` command)
