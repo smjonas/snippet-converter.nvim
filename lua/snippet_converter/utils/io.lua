@@ -1,5 +1,7 @@
 local M = {}
 
+local tbl = require("snippet_converter.utils.table")
+
 local uv = vim.loop
 
 M.file_exists = function(path)
@@ -20,11 +22,15 @@ M.join = function(...)
   return table.concat({ ... }, "/")
 end
 
--- Recursively scans the given root directory for files with the specified extension and returns them.
+-- Scans the given root directory for files with the specified extension and returns them.
 ---@param root string
+---@param opts table? with the following keys:
+--        - recursive (boolean) if true, all subdirectories will be scanned as well
 ---@return string[] files
-M.scan_dir = function(root, extension)
+M.scan_dir = function(root, extension, opts)
+  opts = opts or {}
   local files = {}
+  local dirs = {}
   local fs = uv.fs_scandir(root)
   if fs then
     local name = ""
@@ -33,10 +39,17 @@ M.scan_dir = function(root, extension)
       name, type = uv.fs_scandir_next(fs)
       local path = M.join(root, name)
       if type == "file" then
-        local _, ext = path:match("(.*)%.(.+)")
-        if ext == extension then
-          files[#files + 1] = path
+        -- Match file without extension
+        if extension == "" and path:match("[^.]+") then
+          table.insert(files, path)
+        else
+          local _, ext = path:match("(.*)%.(.+)")
+          if ext == extension then
+            table.insert(files, path)
+          end
         end
+      elseif type == "directory" then
+        table.insert(dirs, path)
       elseif type == "link" then
         local followed_path = uv.fs_realpath(path)
         if followed_path then
@@ -44,14 +57,22 @@ M.scan_dir = function(root, extension)
           if stat.type == "file" then
             local _, ext = path:match("(.*)%.(.+)")
             if ext == extension then
-              files[#files + 1] = path
+              table.insert(files, path)
             end
           end
         end
       end
     end
   end
-  return files
+
+  if opts.recursive then
+    for _, sub_dir in ipairs(dirs) do
+      local sub_files, sub_dirs = M.scan_dir(sub_dir, extension, opts)
+      files = tbl.concat_arrays(files, sub_files)
+      dirs = tbl.concat_arrays(dirs, sub_dirs)
+    end
+  end
+  return files, dirs
 end
 
 M.read_file = function(path)

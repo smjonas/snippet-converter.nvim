@@ -114,15 +114,37 @@ snippet fn First line Second line
     assert.are_same(expected, actual)
   end)
 
-  it("fail to convert regex trigger code", function()
-    local snippet = {
-      trigger = "fu?n",
-      options = "r",
-      body = {},
-    }
-    local ok, actual = pcall(converter.convert, snippet)
-    assert.is_false(ok)
-    assert.are_same([[conversion of regex trigger is not supported]], actual)
+  describe("fail to convert", function()
+    it("fail to convert regex trigger code", function()
+      local snippet = {
+        trigger = "fu?n",
+        options = "r",
+        body = {},
+      }
+      local ok, actual = pcall(converter.convert, snippet)
+      assert.is_false(ok)
+      assert.are_same([[conversion of regex trigger is not supported]], actual)
+    end)
+
+    it("fail to convert snippet with YASnippet transform node", function()
+      local snippet = {
+        trigger = "fn",
+        body = {
+          {
+            type = NodeType.TABSTOP,
+            int = "2",
+            -- YASnippet transform nodes only have a replacement attribute
+            transform = {
+              type = NodeType.TRANSFORM,
+              replacement = "capitalize yas-text",
+            },
+          },
+        },
+      }
+      local ok, msg = pcall(converter.convert, snippet)
+      assert.is_false(ok)
+      assert.are_same("conversion of YASnippet transform node is not supported", msg)
+    end)
   end)
 end)
 

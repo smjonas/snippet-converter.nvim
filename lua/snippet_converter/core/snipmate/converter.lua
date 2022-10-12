@@ -11,6 +11,10 @@ local M = {
 local create_node_visitor = function()
   return {
     [NodeType.TRANSFORM] = function(node)
+      -- YASnippet snippets only specify a replacement attribute
+      if not node.regex then
+        err.raise_converter_error("YASnippet transform node")
+      end
       return ("/%s/%s/%s"):format(node.regex, node.replacement, node.options)
     end,
     -- TODO: support Filename() inside Vimscript ``
@@ -41,6 +45,7 @@ M.convert = function(snippet, opts)
   -- Prepend a tab to every line
   body = body:gsub("\n", "\n\t")
   -- LuaSnip supports snippet priorities
+  -- TODO: add snippet_engine directly to snippet table
   local priority = opts.flavor == "luasnip"
       and snippet.priority
       and ("priority %s\n"):format(snippet.priority)
@@ -53,9 +58,9 @@ local HEADER_STRING =
 
 -- Takes a list of converted snippets for a particular filetype,
 -- separates them by newlines and exports them to a file.
--- @param converted_snippets string[] @A list of snippet tables where each item is a snippet table to be exported
--- @param filetype string @The filetype of the snippets
--- @param output_dir string @The absolute path to the directory to write the snippets to
+-- @param converted_snippets string[] A list of snippet tables where each item is a snippet string to be exported
+-- @param filetype string The filetype of the snippets
+-- @param output_dir string The absolute path to the directory to write the snippets to
 M.export = function(converted_snippets, filetype, output_path)
   local snippet_lines =
     export_utils.snippet_strings_to_lines(converted_snippets, "", { HEADER_STRING, "" }, nil)

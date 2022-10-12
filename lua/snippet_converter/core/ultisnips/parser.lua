@@ -2,7 +2,6 @@ local header_parser = require("snippet_converter.core.ultisnips.header_parser")
 local body_parser = require("snippet_converter.core.ultisnips.body_parser")
 local io = require("snippet_converter.utils.io")
 local err = require("snippet_converter.utils.error")
-local tbl = require("snippet_converter.utils.table")
 
 local M = {}
 
@@ -23,6 +22,7 @@ M.parse = function(path, parsed_snippets_ptr, parser_errors_ptr, opts)
 
   local found_global_python_code = false
   local cur_global_code = {}
+  local cur_extends
   local cur_priority
   local cur_context
 
@@ -57,8 +57,7 @@ M.parse = function(path, parsed_snippets_ptr, parser_errors_ptr, opts)
       elseif line:match("^extends") then
         local fts = line:match("^extends (.+)")
         if fts then
-          opts.context.extend_filetypes[opts.filetype] =
-            { opts.filetype, tbl.unpack(vim.tbl_map(vim.trim, vim.split(fts, ",%s", { trim_empty = true }))) }
+          cur_extends = fts
         end
       else
         local priority = line:match("^priority (%-?%d+)")
@@ -103,6 +102,15 @@ M.parse = function(path, parsed_snippets_ptr, parser_errors_ptr, opts)
       found_snippet_header = false
     else
       table.insert(cur_snippet.body, line)
+    end
+  end
+
+  if cur_extends then
+    for _, sub_ft in ipairs(vim.split(cur_extends, ",%s", { trim_empty = true })) do
+      if not opts.context.langs_per_filetype[sub_ft] then
+        opts.context.langs_per_filetype[sub_ft] = { sub_ft }
+      end
+      table.insert(opts.context.langs_per_filetype[sub_ft], opts.filetype)
     end
   end
   return pos - 1

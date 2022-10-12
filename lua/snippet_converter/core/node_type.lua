@@ -14,6 +14,8 @@ local NodeType = {
   SHELL_CODE = 10,
   -- UltiSnips / SnipMate / vsnip
   VIMSCRIPT_CODE = 11,
+  -- YASnippet
+  EMACS_LISP_CODE = 12,
 }
 
 local _to_string = {
@@ -28,6 +30,7 @@ local _to_string = {
   "Python code",
   "shell code",
   "Vimscript code",
+  "Emacs-Lisp code",
 }
 
 NodeType.to_string = function(type)

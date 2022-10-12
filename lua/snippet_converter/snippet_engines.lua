@@ -14,6 +14,14 @@ snippet_engines.snipmate = {
   converter = "snippet_converter.core.snipmate.converter",
 }
 
+snippet_engines.yasnippet = {
+  label = "YASnippet",
+  extension = "",
+  global_filename = "fundamental",
+  parser = "snippet_converter.core.snipmate.yasnippet.parser",
+  converter = "snippet_converter.core.snipmate.yasnippet.converter",
+}
+
 snippet_engines.snipmate_luasnip = {
   label = "SnipMate (LuaSnip)",
   format_opts = { flavor = "luasnip" },

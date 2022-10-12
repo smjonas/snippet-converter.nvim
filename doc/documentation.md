@@ -17,17 +17,19 @@ and the option `A` is present, the `luasnip.autotrigger` key will be set to `tru
 
 - **[UltiSnips](https://github.com/SirVer/ultisnips)**
 - **[SnipMate](https://github.com/garbas/vim-snipmate)**
+- **[YASnippet](https://joaotavora.github.io/yasnippet/)** (an Emacs snippet engine)
 
 The following table shows which snippets can be converted to another format (the first column denotes the source format):
 
-| Source format / Target format | vscode | vscode\_luasnip | vsnip | ultisnips | snipmate | snipmate\_luasnip |
-|-------------------------------|--------|-----------------|-------|-----------|----------|-------------------|
-| vscode                        | ✓      | ✓               | ✓     | ✓         | ✓        | ✓                 |
-| vscode\_luasnip               | ✓      | ✓               | ✓     | ✓         | ✓        | ✓                 |
-| vsnip                         | ✓ [1]  | ✓ [1]           | ✓     | ✓         | ✓ [1]    | ✓                 |
-| ultisnips                     | ✓ [2]  | ✓ [2]           | ✓ [3] | ✓         | ✓ [4]    | ✓ [4]             |
-| snipmate                      | ✓      | ✓               | ✓     | ✓         | ✓        | ✓                 |
-| snipmate\_luasnip             | ✓      | ✓               | ✓     | ✓         | ✓        | ✓                 |
+| Source format / Target format | vscode | vscode\_luasnip | vsnip | ultisnips | snipmate | snipmate\_luasnip | yasnippet |
+|-------------------------------|--------|-----------------|-------|-----------|----------|-------------------|-----------|
+| vscode                        | ✓      | ✓               | ✓     | ✓         | ✓        | ✓                 | ✓         |
+| vscode\_luasnip               | ✓      | ✓               | ✓     | ✓         | ✓        | ✓                 | ✓         |
+| vsnip                         | ✓ [1]  | ✓ [1]           | ✓     | ✓         | ✓ [1]    | ✓                 | ✓ [1]     |
+| ultisnips                     | ✓ [2]  | ✓ [2]           | ✓ [3] | ✓         | ✓ [4]    | ✓ [4]             | ✓ [2]     |
+| snipmate                      | ✓      | ✓               | ✓     | ✓         | ✓        | ✓                 | ✓         |
+| snipmate\_luasnip             | ✓      | ✓               | ✓     | ✓         | ✓        | ✓                 | ✓         |
+| yasnippet                     | ✓ [5]  | ✓ [5]           | ✓ [5] | ✓ [5]     | ✓ [5]    | ✓ [5]             | ✓ [5]     |
 
 **Legend:**
 
@@ -40,6 +42,8 @@ The following table shows which snippets can be converted to another format (the
 ✓ [3]: All except snippets with python / shell code or regular expression triggers / transformations.
 
 ✓ [4]: All except snippets with python / shell code or regular expression triggers.
+
+✓ [5]: All except snippets with Emacs-Lisp code or transformations.
 
 > :bulb: Note that source and target format can be the same.
 > This is useful if you only want to filter certain snippets or apply transformations to them without converting them to a different format.
@@ -107,8 +111,11 @@ A table with a list of paths per source format.
 For a list of available source formats, see [Supported snippet formats](#supported-snippet-formats).
 The paths can either be absolute paths or relative paths to folders or files in your Neovim runtimepath. For the latter, prefix the path with `./`.
 
-All snippet files that match any of the given paths will be parsed and converted to the specified output formats. However, a path that also matches any output
-path of the same template will be ignored! This is to avoid reconverting snippets that have already been converted in a previous run.
+All snippet files that match any of the given paths will be parsed and converted to the specified output formats.
+However, a path that also matches any output path of the same template will be ignored!
+This is to avoid reconverting snippets that have already been converted in a previous run.
+
+If the source format is "yasnippet", directories will be searched recursively due to the special directory structure expected by YASnippet.
 
 ---
 

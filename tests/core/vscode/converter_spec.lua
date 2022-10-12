@@ -182,6 +182,26 @@ describe("VSCode converter should fail to convert", function()
     assert.is_false(ok)
     assert.are_same("conversion of Python regex in transform node is not supported", msg)
   end)
+
+  it("snippet with YASnippet transform node", function()
+    local snippet = {
+      trigger = "fn",
+      body = {
+        {
+          type = NodeType.TABSTOP,
+          int = "2",
+          -- YASnippet transform nodes don't have a regex kind
+          transform = {
+            type = NodeType.TRANSFORM,
+            replacement = "capitalize yas-text",
+          },
+        },
+      },
+    }
+    local ok, msg = pcall(converter.convert, snippet)
+    assert.is_false(ok)
+    assert.are_same("conversion of YASnippet transform node is not supported", msg)
+  end)
 end)
 
 describe("VSCode converter (luasnip flavor) should", function()
