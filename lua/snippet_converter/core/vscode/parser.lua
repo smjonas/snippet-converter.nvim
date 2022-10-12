@@ -127,7 +127,7 @@ end
 ---@param parsed_snippets_ptr table contains all previously parsed snippets, any new snippets will be added to the end of it
 ---@param parser_errors_ptr table contains all previously encountered errors, any new errors that occur during parsing will be added to the end of it
 ---@param opts? table opts.flavor can be "luasnip" or nil
----@return number the new number of snippets that have been parsed
+---@return number the updated number of snippets that have been parsed
 M.parse = function(path, parsed_snippets_ptr, parser_errors_ptr, opts)
   opts = opts or {}
   -- This is a bit ugly but changing all parsers to a class is a lot of effort
@@ -139,7 +139,7 @@ M.parse = function(path, parsed_snippets_ptr, parser_errors_ptr, opts)
   end
 
   local prev_count = #parsed_snippets_ptr
-  local pos = prev_count + 1
+  local num_snippets = prev_count + 1
   for snippet_name, snippet_info in pairs(snippet_data) do
     if opts.self.verify_snippet_format(snippet_name, snippet_info, parser_errors_ptr, opts) then
       -- The snippet can have multiple prefixes
@@ -149,13 +149,13 @@ M.parse = function(path, parsed_snippets_ptr, parser_errors_ptr, opts)
           opts.self.create_snippet(snippet_name, trigger, snippet_info, opts.parser, parser_errors_ptr, opts)
         if snippet then
           snippet.path = path
-          parsed_snippets_ptr[pos] = snippet
-          pos = pos + 1
+          parsed_snippets_ptr[num_snippets] = snippet
+          num_snippets = num_snippets + 1
         end
       end
     end
   end
-  return (pos - 1) - prev_count
+  return (num_snippets - 1) - prev_count
 end
 
 return M

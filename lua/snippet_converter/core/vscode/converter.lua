@@ -16,6 +16,10 @@ M.node_visitor = {
     return ("${%s/%s}"):format(node.int, M.node_visitor[NodeType.TRANSFORM](node.transform))
   end,
   [NodeType.TRANSFORM] = function(node)
+    -- YASnippet snippets only specify a replacement attribute
+    if not node.regex then
+      err.raise_converter_error("YASnippet transform node")
+    end
     -- Can currently only convert VSCode to VSCode regex
     if node.regex_kind ~= NodeType.RegexKind.JAVASCRIPT then
       err.raise_converter_error(NodeType.RegexKind.to_string(node.regex_kind) .. " regex in transform node")
@@ -82,22 +86,9 @@ M.visit_node = setmetatable(M.node_visitor, {
 ---Creates package.json file contents as expected by VSCode and Luasnip.
 ---@name string the name that will be added at the top of the output
 ---@filetypes array an array of filetypes that determine the language and path attribute
----@extend_filetypes table<string, table<string>> maps a filetype to a list of filetypes that this filetype extends (= also includes)
+---@langs_per_filetype table<string, table<string>> maps a filetype to a list of language that this filetype should be active for
 ---@return string the generated string to be written
-local get_package_json_string = function(name, filetypes, extend_filetypes)
-  -- e.g. if typescript extends javascript, javascript must be available for both
-  -- javascript and typescript languages, i.e. langs_per_filetype[javascript] = {
-  --   "javascript", "typescript"
-  -- }
-  local langs_per_filetype = vim.defaulttable()
-  for ft, ext_fts in pairs(extend_filetypes) do
-    for _, ext_ft in ipairs(ext_fts) do
-      if not vim.tbl_contains(langs_per_filetype[ext_ft] or {}, ft) then
-        table.insert(langs_per_filetype[ext_ft], ft)
-      end
-    end
-  end
-
+local get_package_json_string = function(name, filetypes, langs_per_filetype)
   local snippets = {}
   for i, ft in ipairs(filetypes) do
     snippets[i] = {
@@ -152,11 +143,11 @@ M.convert = function(snippet, visit_node, opts)
 end
 
 -- Takes a list of converted snippets for a particular filetype and exports them to a JSON file.
--- @param converted_snippets table[] @A list of strings where each item is a snippet string to be exported
--- @param filetype string @The filetype of the snippets
--- @param output_dir string @The absolute path to the directory to write the snippets to
+-- @param converted_snippets table[] #A list of strings where each item is a snippet string to be exported
+-- @param filetypes string #The filetypes of the snippets
+-- @param output_dir string #The absolute path to the directory to write the snippets to
 ---@return string output path
-M.export = function(converted_snippets, filetype, output_dir, _)
+M.export = function(converted_snippets, filetypes, output_dir, _)
   local table_to_export = {}
   local order = { [1] = {}, [2] = { "prefix", "description", "scope", "body", "luasnip" } }
   for i, snippet in ipairs(converted_snippets) do
@@ -172,7 +163,7 @@ M.export = function(converted_snippets, filetype, output_dir, _)
     }
   end
   local output_string = json_utils:pretty_print(table_to_export, order, true)
-  local output_path = ("%s/%s.%s"):format(output_dir, filetype, "json")
+  local output_path = ("%s/%s.%s"):format(output_dir, filetypes, "json")
   io.write_file(vim.split(output_string, "\n"), output_path)
   return output_path
 end
@@ -187,7 +178,7 @@ M.post_export = function(template_name, filetypes, output_path, context, templat
     return ft ~= "package"
   end, filetypes)
 
-  local json_string = get_package_json_string(template_name, filetypes, context.extend_filetypes or {})
+  local json_string = get_package_json_string(template_name, filetypes, context.langs_per_filetype or {})
   local lines = export_utils.snippet_strings_to_lines { json_string }
   io.write_file(lines, io.get_containing_folder(output_path) .. "/package.json")
 end

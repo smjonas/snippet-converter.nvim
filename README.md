@@ -4,7 +4,7 @@
 
 Parse, transform and convert snippets. Supports a variety of formats and snippet engines.
 
-Current version: `1.3.1`
+Current version: `1.4.0`
 
 [![Neovim](https://img.shields.io/badge/Neovim%200.7+-green.svg?style=for-the-badge&logo=neovim)](https://neovim.io)
 [![Lua](https://img.shields.io/badge/Lua-blue.svg?style=for-the-badge&logo=lua)](http://www.lua.org)
@@ -44,11 +44,7 @@ SnippetConverter can convert snippets between the following formats:
 - [VSCode](https://code.visualstudio.com/docs/editor/userdefinedsnippets) (as well as separate flavors used by [vim-vsnip](https://github.com/hrsh7th/vim-vsnip) and [LuaSnip](https://github.com/L3MON4D3/LuaSnip))
 - [UltiSnips](https://github.com/SirVer/ultisnips)
 - [SnipMate](https://github.com/garbas/vim-snipmate)
-
-Support for the following formats is planned for future versions:
-- Native [LuaSnip](https://github.com/L3MON4D3/LuaSnip) (that means you will be able to
-  define your snippets in a simpler DSL while still benefitting from the advanced features of LuaSnip - SnippetConverter will generate the Lua code for you)
-- [neosnippet.vim](https://github.com/Shougo/neosnippet.vim)
+- [YASnippet](https://joaotavora.github.io/yasnippet/) (an Emacs snippet engine)
 
 Is there any other snippet engine or custom format that you think should be supported? Let me know by creating an issue!
 

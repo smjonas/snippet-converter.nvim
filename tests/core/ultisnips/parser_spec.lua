@@ -165,7 +165,7 @@ endsnippet]],
       return lines
     end
 
-    context.extend_filetypes = {}
+    context.langs_per_filetype = {}
     local num_new_snippets = parser.parse(
       "/some/snippet/snippet_ft.snippets",
       parsed_snippets,
@@ -176,9 +176,10 @@ endsnippet]],
     assert.are_same("for", parsed_snippets[1].trigger)
     assert.are_same({}, parser_errors)
     local expected_context = {
-      extend_filetypes = {
-        -- The original filetype should be included as well
-        snippet_ft = { "snippet_ft", "ft4", [[ft_"5]], "ft6" },
+      langs_per_filetype = {
+        ft4 = { "ft4", "snippet_ft" },
+        ['ft_"5'] = { [[ft_"5]], "snippet_ft" },
+        [' ft6'] = { " ft6", "snippet_ft" },
       },
     }
     assert.are_same(expected_context, context)

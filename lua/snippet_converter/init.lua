@@ -36,18 +36,19 @@ end
 -- Partitions the snippet paths into a table of <filetype, [snippet_paths]>
 -- (e.g. filetype of an input file "lua.snippets" gis "lua").
 
--- @param snippet_paths table<string> a list of snippet paths
+-- @param snippet_locations table<SnippetLocation> a list of snippet locations
+-- @param path_to_filetype function(snippet_path: string): string
 -- @return <string, string> a table where each key is a filetype
 -- and each value is a list of snippet paths that correspond to that filetype
-local partition_snippet_paths = function(snippet_paths)
+local partition_snippet_paths = function(snippet_locations)
   local partitioned_snippet_paths = {}
-  for _, snippet_path in ipairs(snippet_paths) do
-    local filetype = vim.fn.fnamemodify(snippet_path, ":t:r")
+  for _, snippet_location in ipairs(snippet_locations) do
+    local filetype = snippet_location.filetype
     local snippet_paths_for_ft = partitioned_snippet_paths[filetype]
     if snippet_paths_for_ft == nil then
       snippet_paths_for_ft = {}
     end
-    snippet_paths_for_ft[#snippet_paths_for_ft + 1] = snippet_path
+    table.insert(snippet_paths_for_ft, snippet_location.path)
     partitioned_snippet_paths[filetype] = snippet_paths_for_ft
   end
   return partitioned_snippet_paths
@@ -73,7 +74,7 @@ local parse_snippets = function(model, snippet_paths, template)
   local snippets = {}
   local context = {
     global_code = {},
-    extend_filetypes = {},
+    langs_per_filetype = {},
   }
   for source_format, _ in pairs(template.sources) do
     local format_opts = snippet_engines[source_format].format_opts
@@ -192,7 +193,7 @@ local convert_snippets = function(model, snippets, context, template)
   for target_format, output_dirs in pairs(template.output) do
     local filetypes = {}
     local converter = require(snippet_engines[target_format].converter)
-    local format_opts = snippet_engines[target_format].format_opts
+    local opts = snippet_engines[target_format].format_opts
 
     for source_format, snippets_for_format in pairs(snippets) do
       if not model:did_skip_task(template, source_format) then
@@ -231,7 +232,7 @@ local convert_snippets = function(model, snippets, context, template)
 
           for _, snippet in ipairs(_snippets) do
             if not skip_snippet[snippet] then
-              local ok, converted_snippet = pcall(converter.convert, snippet, nil, format_opts)
+              local ok, converted_snippet = pcall(converter.convert, snippet, nil, opts)
               if not ok then
                 converter_errors[#converter_errors + 1] = {
                   msg = converted_snippet,
@@ -249,9 +250,9 @@ local convert_snippets = function(model, snippets, context, template)
               filetype = snippet_engines[target_format].global_filename
             end
             local path = converter.export(converted_snippets, filetype, output_path, context)
-            output_files[#output_files + 1] = { format = target_format, path = path }
+            table.insert(output_files, { format = target_format, path = path })
           end
-          -- Store filetype in case they are needed (e.g. for creating package.json files)
+          -- Store filetype in case they are needed (e.g. for creating a package.json file)
           filetypes[#filetypes + 1] = filetype
         end
         model:complete_task(template, source_format, target_format, output_dirs, converter_errors)
@@ -305,6 +306,10 @@ M.convert_snippets = function(args)
   return model
 end
 
+-- ## 1.4.0 (TODO)
+-- New features:
+-- - added support for YASnippet (an Emacs snippet engine)
+--
 -- ## 1.3.1 (October 24, 2022)
 -- New features:
 -- - snipmate_luasnip: support Vimscript code
@@ -340,6 +345,6 @@ end
 -- ## 1.0.0 (May 2022)
 -- Initial release of SnippetConverter! Currently supports UltiSnips, LuaSnip, SnipMate,
 -- VSCode and vsnip snippets.
-M.version = "1.3.1"
+M.version = "1.4.0"
 
 return M

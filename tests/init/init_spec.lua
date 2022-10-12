@@ -391,7 +391,7 @@ describe("Snippet converter", function()
           package = {},
         },
       })
-      assert.are_same({ global_code = {}, extend_filetypes = {} }, context)
+      assert.are_same({ global_code = {}, langs_per_filetype = {} }, context)
     end)
   end)
 end)

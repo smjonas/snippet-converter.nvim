@@ -9,6 +9,7 @@ M.snippet_strings_to_lines = function(snippets_ptr, sep_chars, headers, footer, 
   for i = 1, len do
     if i ~= len then
       -- Append append_chars to every snippet except the last one
+      -- TODO: change to simple concatenation??
       snippets_ptr[i] = string.format("%s" .. sep_chars, snippets_ptr[i])
     end
     -- Replace "\n" with new line
