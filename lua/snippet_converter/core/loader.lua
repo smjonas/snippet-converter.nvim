@@ -12,6 +12,22 @@ local match_any = function(s, paths)
   return false
 end
 
+-- @param matching_snippet_files table<SnippetLocation>
+local add_location = function(matching_snippet_files, source_format, snippet_path)
+  local filetype
+  if source_format == "yasnippet" then
+    -- Get filetype from <filetype>-mode root folder
+    filetype = io.get_containing_folder(snippet_path):match("/([^/]-)%-mode")
+  else
+    -- Get filetype from <filetype>.<extension> filename
+    filetype = vim.fn.fnamemodify(snippet_path, ":t:r")
+  end
+  if filetype then
+    table.insert(matching_snippet_files, { path = snippet_path, filetype = filetype })
+  end
+end
+
+-- @param matching_snippet_files table<SnippetLocation>
 local find_matching_snippet_files =
   function(matching_snippet_files, source_format, source_path, exclude_paths)
     local extension = snippet_engines[source_format].extension
@@ -26,12 +42,16 @@ local find_matching_snippet_files =
         -- the same snippets in consecutive runs if the paths are also set as output paths
         -- Name can either be a directory or a file name so make sure it is a file
         if name:match(rt_path_pattern) and not match_any(name, exclude_paths) and io.file_exists(name) then
-          matching_snippet_files[#matching_snippet_files + 1] = name
+          add_location(matching_snippet_files, source_format, name)
         end
       end
     else
-      for _, file in ipairs(io.scan_dir(vim.fn.expand(source_path), extension)) do
-        matching_snippet_files[#matching_snippet_files + 1] = file
+      local files = io.scan_dir(vim.fn.expand(source_path), extension, {
+        -- Should probably be made configurable
+        recursive = source_format == "yasnippet",
+      })
+      for _, file in ipairs(files) do
+        add_location(matching_snippet_files, source_format, file)
       end
     end
   end
@@ -48,10 +68,15 @@ local find_matching_snippet_files =
 -- @param exclude_paths list<string> a list of snippet paths to exclude
 -- @return list<string> a list containing the absolute paths to the matching snippet files
 M.get_matching_snippet_paths = function(source_format, source_paths, exclude_paths)
+  -- @class SnippetLocation
+  -- @field path string
+  -- @field filetype string
+
+  -- @type table<SnippetLocation>
   local matching_snippet_files = {}
   for _, source_path in pairs(source_paths) do
     if io.file_exists(source_path) then
-      matching_snippet_files[#matching_snippet_files + 1] = source_path
+      add_location(matching_snippet_files, source_format, source_path)
     else
       find_matching_snippet_files(matching_snippet_files, source_format, source_path, exclude_paths)
     end

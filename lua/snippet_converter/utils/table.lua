@@ -1,9 +1,9 @@
 local M = {}
 
 --- Appends all elements from the second array to the first one.
----@param a1 array the first array
----@param a2 array the second array
----@return array the updated first array
+---@param a1 table the first array
+---@param a2 table the second array
+---@return table #the updated first array
 M.concat_arrays = function(a1, a2)
   if #a2 == 0 then
     return a1

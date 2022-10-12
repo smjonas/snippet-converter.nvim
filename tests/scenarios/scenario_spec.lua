@@ -1,5 +1,5 @@
 describe("Scenario", function()
-  local expected_output_ultisnips, expected_output_ultisnips_from_vscode_luasnip, expected_output_snipmate, expected_output_vscode, expected_output_vscode_sorted, expected_output_vscode_luasnip
+  local expected_output_ultisnips, expected_output_ultisnips_from_vscode_luasnip, expected_output_snipmate, expected_output_yasnippet_main, expected_output_yasnippet_pairs, expected_output_vscode, expected_output_vscode_sorted, expected_output_vscode_luasnip
   setup(function()
     -- Mock vim.schedule
     vim.schedule = function(fn)
@@ -18,6 +18,8 @@ describe("Scenario", function()
     expected_output_ultisnips_from_vscode_luasnip =
       vim.fn.readfile("tests/scenarios/expected_output_ultisnips_from_vscode_luasnip.snippets")
     expected_output_snipmate = vim.fn.readfile("tests/scenarios/expected_output_snipmate.snippets")
+    expected_output_yasnippet_main = vim.fn.readfile("tests/scenarios/expected_output_yasnippet_main")
+    expected_output_yasnippet_pairs = vim.fn.readfile("tests/scenarios/expected_output_yasnippet_pairs")
     expected_output_vscode = vim.fn.readfile("tests/scenarios/expected_output_vscode.json")
     expected_output_vscode_luasnip = vim.fn.readfile("tests/scenarios/expected_output_vscode_luasnip.json")
     expected_output_vscode_sorted = vim.fn.readfile("tests/scenarios/expected_output_vscode_sorted.json")
@@ -134,6 +136,26 @@ describe("Scenario", function()
     snippet_converter.convert_snippets()
     local actual_output = vim.fn.readfile("tests/scenarios/output/expected_output_snipmate.snippets")
     assert.are_same(expected_output_snipmate, actual_output)
+  end)
+
+  it("YASnippet to YASnippet", function()
+    local snippet_converter = require("snippet_converter")
+    local template = {
+      sources = {
+        yasnippet = {
+          "tests/scenarios/yasnippet-mode",
+        },
+      },
+      output = {
+        yasnippet = { "tests/scenarios/output" },
+      },
+    }
+    snippet_converter.setup { templates = { template } }
+    snippet_converter.convert_snippets()
+    local actual_output_main = vim.fn.readfile("tests/scenarios/output/yasnippet-mode/main")
+    local actual_output_pairs = vim.fn.readfile("tests/scenarios/output/yasnippet-mode/pairs")
+    assert.are_same(expected_output_yasnippet_main, actual_output_main)
+    assert.are_same(expected_output_yasnippet_pairs, actual_output_pairs)
   end)
 
   it("VSCode to VSCode", function()

@@ -16,6 +16,10 @@ M.node_visitor = {
     return ("${%s/%s}"):format(node.int, M.node_visitor[NodeType.TRANSFORM](node.transform))
   end,
   [NodeType.TRANSFORM] = function(node)
+    -- YASnippet snippets only specify a replacement attribute
+    if not node.regex then
+      err.raise_converter_error("YASnippet transform node")
+    end
     -- Can currently only convert VSCode to VSCode regex
     if node.regex_kind ~= NodeType.RegexKind.JAVASCRIPT then
       err.raise_converter_error(NodeType.RegexKind.to_string(node.regex_kind) .. " regex in transform node")
@@ -159,6 +163,9 @@ M.export = function(converted_snippets, filetype, output_dir, _)
   end
   local output_string = json_utils:pretty_print(table_to_export, order, true)
   local output_path = ("%s/%s.%s"):format(output_dir, filetype, "json")
+  if filetype:match("apple") then
+    print(filetype, output_path, #converted_snippets, converted_snippets[1].trigger)
+  end
   io.write_file(vim.split(output_string, "\n"), output_path)
   return output_path
 end

@@ -7,6 +7,7 @@ local err = require("snippet_converter.utils.error")
 M.convert_ast = function(ast, node_visitor, opts)
   local result = {}
   for _, node in ipairs(ast) do
+    assert(node_visitor[node.type])
     result[#result + 1] = node_visitor[node.type](node, opts)
   end
   return table.concat(result)
