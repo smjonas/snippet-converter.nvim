@@ -240,7 +240,7 @@ Optionally, a table of options can be returned as a second value which may conta
 | replace         | boolean | `true`                     | If `true`, the current existing snippet will be replaced with the new one(s), otherwise it will be kept.                 |
 | format          | string  | source\_format             | The format of the snippet which determines the parser to be used. Useful if you prefer a particular syntax over another. |
 
-## Examples
+<h2>Examples</h2>
 
 Modify a specific UltiSnips snippet (this effectively reverts [this](https://github.com/honza/vim-snippets/commit/2502f24) vim-snippets commit - see the related issue [#1396](https://github.com/honza/vim-snippets/issues/1396)):
 ```lua
@@ -300,7 +300,7 @@ You can control the sorting behaviour by passing a `sort_snippets` function to t
 This function takes as parameters the two snippets to compare and must return a boolean.
 When `true` is returned, the first snippet will be placed before the second one, otherwise the second one comes before the first one.
 
-## Examples
+<h2>Examples</h2>
 
 The following example will sort the snippets by their trigger in ascending order:
 ```lua
