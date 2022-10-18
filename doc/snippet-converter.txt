@@ -9,9 +9,7 @@ Table of Contents                        *snippet-converter-table-of-contents*
   - Recommended output paths      |snippet-converter-recommended-output-paths|
   - Output format options            |snippet-converter-output-format-options|
 3. Transforming snippets             |snippet-converter-transforming-snippets|
-  - Examples                                      |snippet-converter-examples|
 4. Sorting snippets                       |snippet-converter-sorting-snippets|
-  - Examples                                      |snippet-converter-examples|
 5. Configuration                             |snippet-converter-configuration|
 
 SnippetConverter is a Neovim plugin that allows you to convert snippets (such
@@ -316,7 +314,11 @@ contain any of the following items:
 │format │string │source_format│The format of the snippet which determines the parser to be used. Useful if you prefer a particular syntax over another.│
 
 
-EXAMPLES                                          *snippet-converter-examples*
+<h2>
+
+Examples
+
+</h2>
 
 Modify a specific UltiSnips snippet (this effectively reverts this
 <https://github.com/honza/vim-snippets/commit/2502f24> vim-snippets commit -
@@ -392,7 +394,11 @@ snippets to compare and must return a boolean. When `true` is returned, the
 first snippet will be placed before the second one, otherwise the second one
 comes before the first one.
 
-EXAMPLES                                          *snippet-converter-examples*
+<h2>
+
+Examples
+
+</h2>
 
 The following example will sort the snippets by their trigger in ascending
 order:
