@@ -345,49 +345,53 @@ describe("Snippet converter", function()
     )
   end)
 
-  it("should skip package.json input file when using vscode format", function()
-    local package_snippet = create_test_snippet("B", "", {})
-    package_snippet.path = "some/path/package.json"
+  describe("(VSCode)", function()
+    it("should skip package.json input file", function()
+      local package_snippet = create_test_snippet("B", "", {})
+      package_snippet.path = "some/path/package.json"
 
-    local snippets = {
-      vscode = {
-        lua = {
-          create_test_snippet("A", "", {}),
-        },
-        package = {
-          package_snippet,
-        },
-      },
-    }
-
-    local template = {
-      sources = {
+      local snippets = {
         vscode = {
-          "/some/path",
+          lua = {
+            create_test_snippet("A", "", {}),
+          },
+          package = {
+            package_snippet,
+          },
         },
-      },
-      output = {
-        ultisnips = { "/some/output_path" },
-      },
-    }
-    snippet_converter.setup {
-      templates = { template },
-    }
-    -- Submit task to ensure that the model is correctly initialized
-    model:submit_task(template, "vscode", 1, 1, {})
-    local stubbed_converter = stub.new(require("tests.init.converter_stub"), "export")
+      }
 
-    local snippet_paths = {
-      vscode = { package = { "some/path/package.json" }, lua = { "some/path/lua.json" } },
-    }
-    local stubbed_parser = stub.new(require("tests.init.parser_stub"), "export")
+      local template = {
+        sources = {
+          vscode = {
+            "/some/path",
+          },
+        },
+        output = {
+          ultisnips = { "/some/output_path" },
+        },
+      }
+      snippet_converter.setup {
+        templates = { template },
+      }
+      -- Submit task to ensure that the model is correctly initialized
+      model:submit_task(template, "vscode", 1, 1, {})
+      local stubbed_converter = stub.new(require("tests.init.converter_stub"), "export")
 
-    -- What is returned by the mocked parser here is the list of file paths passed to it
-    local snippets, context = snippet_converter._parse_snippets(model, snippet_paths, template)
-    assert.are_same(snippets, { vscode = {
-      lua = { "some/path/lua.json" },
-      package = {},
-    } })
-    assert.are_same(context, { global_code = {} })
+      local snippet_paths = {
+        vscode = { package = { "some/path/package.json" }, lua = { "some/path/lua.json" } },
+      }
+      local stubbed_parser = stub.new(require("tests.init.parser_stub"), "export")
+
+      -- What is returned by the mocked parser here is the list of file paths passed to it
+      local snippets, context = snippet_converter._parse_snippets(model, snippet_paths, template)
+      assert.are_same(snippets, {
+        vscode = {
+          lua = { "some/path/lua.json" },
+          package = {},
+        },
+      })
+      assert.are_same({ global_code = {}, extend_filetypes = {} }, context)
+    end)
   end)
 end)

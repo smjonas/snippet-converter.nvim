@@ -1,6 +1,7 @@
 local VSCodeParser = require("snippet_converter.core.vscode.body_parser")
 local p = require("snippet_converter.core.parser_utils")
 local NodeType = require("snippet_converter.core.node_type")
+local tbl = require("snippet_converter.utils.table")
 
 -- Grammar in EBNF (a superset of VSCodes grammar: https://code.visualstudio.com/docs/editor/userdefinedsnippets#_grammar)
 -- any                ::= tabstop | placeholder | choice | code | variable | text
@@ -31,8 +32,7 @@ local VSnipParser = VSCodeParser:new {
   Variable = setmetatable(VSCodeParser.Variable, { __index = { VIM = "VIM" } }),
 }
 
-local unpack = table.unpack or unpack
-VSnipParser.variable_tokens = { unpack(VSCodeParser.variable_tokens) }
+VSnipParser.variable_tokens = { tbl.unpack(VSCodeParser.variable_tokens) }
 table.insert(VSnipParser.variable_tokens, "VIM")
 
 local var_pattern = "[_a-zA-Z][_a-zA-Z0-9]*"

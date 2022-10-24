@@ -73,7 +73,7 @@ local parse_snippets = function(model, snippet_paths, template)
   local snippets = {}
   local context = {
     global_code = {},
-    include_filetypes = nil,
+    extend_filetypes = {},
   }
   for source_format, _ in pairs(template.sources) do
     local format_opts = snippet_engines[source_format].format_opts
@@ -97,7 +97,7 @@ local parse_snippets = function(model, snippet_paths, template)
             path,
             snippets[source_format][filetype],
             parser_errors,
-            { context = context, flavor = flavor }
+            { context = context, filetype = filetype, flavor = flavor }
           )
       end
       tbl.concat_arrays(all_input_files, paths)
@@ -305,6 +305,13 @@ M.convert_snippets = function(args)
   return model
 end
 
+-- ## 1.3.1 (October 24, 2022)
+-- New features:
+-- - snipmate_luasnip: support Vimscript code
+--
+-- Bug fixes:
+-- - correctly handle extends directives when generating package.json file
+--
 -- ## 1.3.0 (August 6, 2022)
 -- New features:
 -- - an unnecessary regex option inside UltiSnips snippet definitions is now detected and removed
@@ -333,6 +340,6 @@ end
 -- ## 1.0.0 (May 2022)
 -- Initial release of SnippetConverter! Currently supports UltiSnips, LuaSnip, SnipMate,
 -- VSCode and vsnip snippets.
-M.version = "1.3.0"
+M.version = "1.3.1"
 
 return M

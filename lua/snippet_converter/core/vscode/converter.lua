@@ -81,14 +81,28 @@ M.visit_node = setmetatable(M.node_visitor, {
 
 ---Creates package.json file contents as expected by VSCode and Luasnip.
 ---@name string the name that will be added at the top of the output
----@filetypes array an array of filetypes that determine the path attribute
+---@filetypes array an array of filetypes that determine the language and path attribute
+---@extend_filetypes table<string, table<string>> maps a filetype to a list of filetypes that this filetype extends (= also includes)
 ---@return string the generated string to be written
-local get_package_json_string = function(name, filetypes)
+local get_package_json_string = function(name, filetypes, extend_filetypes)
+  -- e.g. if typescript extends javascript, javascript must be available for both
+  -- javascript and typescript languages, i.e. langs_per_filetype[javascript] = {
+  --   "javascript", "typescript"
+  -- }
+  local langs_per_filetype = vim.defaulttable()
+  for ft, ext_fts in pairs(extend_filetypes) do
+    for _, ext_ft in ipairs(ext_fts) do
+      if not vim.tbl_contains(langs_per_filetype[ext_ft] or {}, ft) then
+        table.insert(langs_per_filetype[ext_ft], ft)
+      end
+    end
+  end
+
   local snippets = {}
-  for i, filetype in ipairs(filetypes) do
+  for i, ft in ipairs(filetypes) do
     snippets[i] = {
-      language = filetype,
-      path = ("./%s.json"):format(filetype),
+      language = langs_per_filetype[ft] and { ft, tbl.unpack(langs_per_filetype[ft]) } or { ft },
+      path = ("./%s.json"):format(ft),
     }
   end
   local package_json = {
@@ -173,8 +187,7 @@ M.post_export = function(template_name, filetypes, output_path, context, templat
     return ft ~= "package"
   end, filetypes)
 
-  local json_string =
-    get_package_json_string(template_name, tbl.concat_arrays(filetypes, context.include_filetypes or {}))
+  local json_string = get_package_json_string(template_name, filetypes, context.extend_filetypes or {})
   local lines = export_utils.snippet_strings_to_lines { json_string }
   io.write_file(lines, io.get_containing_folder(output_path) .. "/package.json")
 end

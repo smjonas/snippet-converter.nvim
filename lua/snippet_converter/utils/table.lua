@@ -1,5 +1,7 @@
 local M = {}
 
+M.unpack = table.unpack or unpack
+
 --- Appends all elements from the second array to the first one.
 ---@param a1 array the first array
 ---@param a2 array the second array
