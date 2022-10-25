@@ -177,7 +177,8 @@ endsnippet]],
     assert.are_same({}, parser_errors)
     local expected_context = {
       extend_filetypes = {
-        snippet_ft = { "ft4", [[ft_"5]], "ft6" },
+        -- The original filetype should be included as well
+        snippet_ft = { "snippet_ft", "ft4", [[ft_"5]], "ft6" },
       },
     }
     assert.are_same(expected_context, context)

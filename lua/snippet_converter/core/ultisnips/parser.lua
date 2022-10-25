@@ -2,6 +2,7 @@ local header_parser = require("snippet_converter.core.ultisnips.header_parser")
 local body_parser = require("snippet_converter.core.ultisnips.body_parser")
 local io = require("snippet_converter.utils.io")
 local err = require("snippet_converter.utils.error")
+local tbl = require("snippet_converter.utils.table")
 
 local M = {}
 
@@ -57,7 +58,7 @@ M.parse = function(path, parsed_snippets_ptr, parser_errors_ptr, opts)
         local fts = line:match("^extends (.+)")
         if fts then
           opts.context.extend_filetypes[opts.filetype] =
-            vim.tbl_map(vim.trim, vim.split(fts, ",%s", { trim_empty = true }))
+            { opts.filetype, tbl.unpack(vim.tbl_map(vim.trim, vim.split(fts, ",%s", { trim_empty = true }))) }
         end
       else
         local priority = line:match("^priority (%-?%d+)")

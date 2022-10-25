@@ -101,7 +101,7 @@ local get_package_json_string = function(name, filetypes, extend_filetypes)
   local snippets = {}
   for i, ft in ipairs(filetypes) do
     snippets[i] = {
-      language = langs_per_filetype[ft] and { ft, tbl.unpack(langs_per_filetype[ft]) } or { ft },
+      language = langs_per_filetype[ft] or { ft },
       path = ("./%s.json"):format(ft),
     }
   end
