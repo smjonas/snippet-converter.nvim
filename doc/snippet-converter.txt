@@ -41,18 +41,21 @@ converting an UltiSnips snippet, and the option `A` is present, the
     code)
 - **UltiSnips <https://github.com/SirVer/ultisnips>**
 - **SnipMate <https://github.com/garbas/vim-snipmate>**
+- **YASnippet <https://joaotavora.github.io/yasnippet/>** (an Emacs snippet
+    engine)
 
 
 The following table shows which snippets can be converted to another format
 (the first column denotes the source format):
 
-│Source format / Target format│vscode │vscode_luasnip│ vsnip │ultisnips│snipmate│snipmate_luasnip│
-│vscode                       │✓    │✓           │✓    │✓      │✓     │✓             │
-│vscode_luasnip               │✓    │✓           │✓    │✓      │✓     │✓             │
-│vsnip                        │✓ [1]│✓ [1]       │✓    │✓      │✓ [1] │✓             │
-│ultisnips                    │✓ [2]│✓ [2]       │✓ [3]│✓      │✓ [4] │✓ [4]         │
-│snipmate                     │✓    │✓           │✓    │✓      │✓     │✓             │
-│snipmate_luasnip             │✓    │✓           │✓    │✓      │✓     │✓             │
+│Source format / Target format│vscode │vscode_luasnip│ vsnip │ultisnips│snipmate│snipmate_luasnip│yasnippet│
+│vscode                       │✓    │✓           │✓    │✓      │✓     │✓             │✓      │
+│vscode_luasnip               │✓    │✓           │✓    │✓      │✓     │✓             │✓      │
+│vsnip                        │✓ [1]│✓ [1]       │✓    │✓      │✓ [1] │✓             │✓ [1]  │
+│ultisnips                    │✓ [2]│✓ [2]       │✓ [3]│✓      │✓ [4] │✓ [4]         │✓ [2]  │
+│snipmate                     │✓    │✓           │✓    │✓      │✓     │✓             │✓      │
+│snipmate_luasnip             │✓    │✓           │✓    │✓      │✓     │✓             │✓      │
+│yasnippet                    │✓ [5]│✓ [5]       │✓ [5]│✓ [5]  │✓ [5] │✓ [5]         │✓ [5]  │
 
 
 **Legend:**
@@ -69,6 +72,8 @@ triggers / transformations.
 
 ✓ [4]: All except snippets with python / shell code or regular expression
 triggers.
+
+✓ [5]: All except snippets with Emacs-Lisp code or transformations.
 
 
   :bulb: Note that source and target format can be the same. This is useful if
@@ -151,6 +156,9 @@ All snippet files that match any of the given paths will be parsed and
 converted to the specified output formats. However, a path that also matches
 any output path of the same template will be ignored! This is to avoid
 reconverting snippets that have already been converted in a previous run.
+
+If the source format is "yasnippet", directories will be searched recursively
+due to the special directory structure expected by YASnippet.
 
 ------------------------------------------------------------------------------
 
