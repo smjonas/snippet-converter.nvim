@@ -45,8 +45,8 @@ converting an UltiSnips snippet, and the option `A` is present, the
     engine)
 
 
-The following table shows which snippets can be converted to another format
-(the first column denotes the source format):
+he following table shows which snippets can be converted to another format (the
+first column denotes the source format):
 
 │Source format / Target format│vscode │vscode_luasnip│ vsnip │ultisnips│snipmate│snipmate_luasnip│yasnippet│
 │vscode                       │✓    │✓           │✓    │✓      │✓     │✓             │✓      │
