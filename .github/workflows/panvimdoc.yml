@@ -2,12 +2,12 @@ name: Generate docs
 
 on:
   push:
-    branches: [main]
+    branches: [docs]
 
 jobs:
   gen_docs:
     runs-on: ubuntu-latest
-    name: Generate docs with pandvimdoc
+    name: Generate docs with panvimdoc
     steps:
       - uses: actions/checkout@v2
       - name: panvimdoc
@@ -17,6 +17,7 @@ jobs:
           description: "Convert snippets to the format of your choice"
           pandoc: doc/documentation.md
           version: "NVIM v0.7"
+          dedupsubheadings: true
       - uses: stefanzweifel/git-auto-commit-action@v4
         with:
           commit_message: "Auto generate docs"

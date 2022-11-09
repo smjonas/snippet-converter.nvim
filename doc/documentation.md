@@ -19,7 +19,7 @@ and the option `A` is present, the `luasnip.autotrigger` key will be set to `tru
 - **[SnipMate](https://github.com/garbas/vim-snipmate)**
 - **[YASnippet](https://joaotavora.github.io/yasnippet/)** (an Emacs snippet engine)
 
-The following table shows which snippets can be converted to another format (the first column denotes the source format):
+he following table shows which snippets can be converted to another format (the first column denotes the source format):
 
 | Source format / Target format | vscode | vscode\_luasnip | vsnip | ultisnips | snipmate | snipmate\_luasnip | yasnippet |
 |-------------------------------|--------|-----------------|-------|-----------|----------|-------------------|-----------|
