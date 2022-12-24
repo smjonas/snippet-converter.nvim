@@ -168,6 +168,10 @@ M.export = function(converted_snippets, filetypes, output_dir, _)
   return output_path
 end
 
+local ft_to_langs = {
+  sh = { "shell_script" }
+}
+
 -- @param context []? @A table of additional snippet contexts optionally provided the source parser (e.g. extends directives from UltiSnips)
 M.post_export = function(template_name, filetypes, output_path, context, template_opts)
   if template_opts and not template_opts.generate_package_json then
@@ -178,7 +182,15 @@ M.post_export = function(template_name, filetypes, output_path, context, templat
     return ft ~= "package"
   end, filetypes)
 
-  local json_string = get_package_json_string(template_name, filetypes, context.langs_per_filetype or {})
+  -- This would map { ts = { "ts", "js" } } to { ts = { "typescript", "javascript" } }
+  local langs_map = context.langs_per_filetype or {}
+  for ft, langs in pairs(langs_map) do
+    for i, sub_ft in ipairs(langs) do
+      langs_map[ft][i] = ft_to_langs[sub_ft]
+    end
+  end
+
+  local json_string = get_package_json_string(template_name, filetypes, langs_map)
   local lines = export_utils.snippet_strings_to_lines { json_string }
   io.write_file(lines, io.get_containing_folder(output_path) .. "/package.json")
 end
