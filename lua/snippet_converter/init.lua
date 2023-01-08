@@ -306,7 +306,11 @@ M.convert_snippets = function(args)
   return model
 end
 
--- ## 1.4.0 (TODO)
+-- ## 1.4.1 (January 8, 2023)
+-- Bug fixes:
+-- - vsnip converter: escape $ in text nodes
+--
+-- ## 1.4.0 (November 9, 2022)
 -- New features:
 -- - added support for YASnippet (an Emacs snippet engine)
 --
@@ -345,6 +349,6 @@ end
 -- ## 1.0.0 (May 2022)
 -- Initial release of SnippetConverter! Currently supports UltiSnips, LuaSnip, SnipMate,
 -- VSCode and vsnip snippets.
-M.version = "1.4.0"
+M.version = "1.4.1"
 
 return M
