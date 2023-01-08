@@ -1,4 +1,3 @@
-local base_converter = require("snippet_converter.core.converter")
 local vscode_converter = require("snippet_converter.core.vscode.converter")
 local NodeType = require("snippet_converter.core.node_type")
 
@@ -15,12 +14,8 @@ local node_visitor = setmetatable({
   end,
 }, { __index = vscode_converter.node_visitor })
 
-M.visit_node = setmetatable(node_visitor, {
-  __index = base_converter.visit_node(node_visitor),
-})
-
 M.convert = function(snippet)
-  return vscode_converter.convert(snippet, M.visit_node)
+  return vscode_converter.convert(snippet, node_visitor)
 end
 
 return M
