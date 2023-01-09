@@ -70,8 +70,15 @@ M.node_visitor = {
     end
     return base_converter.visit_node(M.node_visitor)
   end,
-  [NodeType.VISUAL_PLACEHOLDER] = function(_)
-    err.raise_converter_error(NodeType.to_string(NodeType.VISUAL_PLACEHOLDER))
+  [NodeType.VISUAL_PLACEHOLDER] = function(node, opts)
+    -- TODO: avoid different structure for UltiSnips vs. VSCode snippets
+    if node.text then
+      return ("${TM_SELECTED_TEXT:%s}"):format(node.text)
+    elseif node.any then
+      local any = base_converter.convert_ast(node.any, M.node_visitor, opts)
+      return ("${TM_SELECTED_TEXT:%s}"):format(any)
+    end
+    return "$TM_SELECTED_TEXT"
   end,
   [NodeType.TEXT] = function(node)
     -- Escape '$' and '}' characters (see https://code.visualstudio.com/docs/editor/userdefinedsnippets#_grammar)
