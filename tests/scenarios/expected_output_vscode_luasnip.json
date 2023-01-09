@@ -113,6 +113,30 @@
       "autotrigger": true
     }
   },
+  "dm": {
+    "prefix": "dm",
+    "description": "Math",
+    "body": [
+      "\\[",
+      "${1:$TM_SELECTED_TEXT}",
+      ".\\] $0"
+    ],
+    "luasnip": {
+      "autotrigger": true
+    }
+  },
+  "ali": {
+    "prefix": "ali",
+    "description": "Align",
+    "body": [
+      "\\begin{align*\\}",
+      "\t${1:$TM_SELECTED_TEXT}",
+      ".\\end{align*\\}"
+    ],
+    "luasnip": {
+      "autotrigger": true
+    }
+  },
   "//": {
     "prefix": "//",
     "description": "Fraction",
@@ -120,6 +144,11 @@
     "luasnip": {
       "autotrigger": true
     }
+  },
+  "/": {
+    "prefix": "/",
+    "description": "Fraction",
+    "body": "\\frac{$TM_SELECTED_TEXT\\}{$1\\}$0"
   },
   "sympy": {
     "prefix": "sympy",
@@ -182,6 +211,52 @@
       "autotrigger": true
     }
   },
+  "()": {
+    "prefix": "()",
+    "description": "left( right)",
+    "body": "\\left( ${1:$TM_SELECTED_TEXT} \\right) $0",
+    "luasnip": {
+      "autotrigger": true
+    }
+  },
+  "lr": {
+    "prefix": "lr",
+    "description": "left( right)",
+    "body": "\\left( ${1:$TM_SELECTED_TEXT} \\right) $0"
+  },
+  "lr(": {
+    "prefix": "lr(",
+    "description": "left( right)",
+    "body": "\\left( ${1:$TM_SELECTED_TEXT} \\right) $0"
+  },
+  "lr|": {
+    "prefix": "lr|",
+    "description": "left| right|",
+    "body": "\\left| ${1:$TM_SELECTED_TEXT} \\right| $0"
+  },
+  "lr{": {
+    "prefix": "lr{",
+    "description": "left\\{ right\\}",
+    "body": "\\left\\{ ${1:$TM_SELECTED_TEXT} \\right\\\\} $0"
+  },
+  "lrb": {
+    "prefix": "lrb",
+    "description": "left\\{ right\\}",
+    "body": "\\left\\{ ${1:$TM_SELECTED_TEXT} \\right\\\\} $0"
+  },
+  "lr[": {
+    "prefix": "lr[",
+    "description": "left[ right]",
+    "body": "\\left[ ${1:$TM_SELECTED_TEXT} \\right] $0"
+  },
+  "lra": {
+    "prefix": "lra",
+    "description": "leftangle rightangle",
+    "body": "\\left<${1:$TM_SELECTED_TEXT} \\right>$0",
+    "luasnip": {
+      "autotrigger": true
+    }
+  },
   "conj": {
     "prefix": "conj",
     "description": "conjugate",
@@ -210,10 +285,23 @@
     "description": "limsup",
     "body": "\\limsup_{${1:n} \\to ${2:\\infty}\\}"
   },
+  "prod": {
+    "prefix": "prod",
+    "description": "product",
+    "body": "\\prod_{${1:n=${2:1}}\\}^{${3:\\infty}\\} ${4:$TM_SELECTED_TEXT} $0"
+  },
   "part": {
     "prefix": "part",
     "description": "d/dx",
     "body": "\\frac{\\partial ${1:V}\\}{\\partial ${2:x}\\} $0"
+  },
+  "sq": {
+    "prefix": "sq",
+    "description": "\\sqrt{}",
+    "body": "\\sqrt{${1:$TM_SELECTED_TEXT}\\} $0",
+    "luasnip": {
+      "autotrigger": true
+    }
   },
   "sr": {
     "prefix": "sr",
@@ -439,6 +527,15 @@
     "body": "\\|$1\\|$0",
     "luasnip": {
       "autotrigger": true
+    }
+  },
+  "dint": {
+    "prefix": "dint",
+    "description": "integral",
+    "body": "\\int_{${1:-\\infty}\\}^{${2:\\infty}\\} ${3:$TM_SELECTED_TEXT} $0",
+    "luasnip": {
+      "autotrigger": true,
+      "priority": 300
     }
   },
   "->": {

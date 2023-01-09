@@ -12,13 +12,16 @@ function VSCodeParser:new(o)
 end
 
 -- Grammar in EBNF (see https://code.visualstudio.com/docs/editor/userdefinedsnippets#_grammar)
--- any                ::= tabstop | placeholder | choice | variable | text
+-- any                ::= tabstop | placeholder | choice | variable | visual_placeholder | text
 -- tabstop            ::= '$' int
 --                        | '${' int '}'
 --                        | '${' int transform '}'
 -- placeholder        ::= '${' int ':' any '}'
 -- choice             ::= '${' int '|' text (',' text)* '|}'
 -- variable           ::= '$' var | '${' var '}'
+--                        | '${' var ':' any '}'
+--                        | '${' var transform '}'
+-- visual_placeholder ::= '$' var | '${' var '}'
 --                        | '${' var ':' any '}'
 --                        | '${' var transform '}'
 -- transform          ::= '/' regex '/' replacement '/' options
