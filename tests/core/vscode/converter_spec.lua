@@ -157,6 +157,19 @@ describe("VSCode converter should", function()
     local actual = converter.convert(snippet)
     assert.are_same(expected, actual)
   end)
+
+  it("convert visual placeholder to $TM_SELECTED_TEXT #18", function()
+    local snippet = {
+      body = {
+        { text = "if", type = NodeType.VISUAL_PLACEHOLDER },
+      },
+      description = "if",
+      line_nr = 1,
+      path = "/some/snippet/path.snippets",
+      trigger = "if",
+    }
+    local actual = converter.convert(snippet)
+  end)
 end)
 
 describe("VSCode converter should fail to convert", function()

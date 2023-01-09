@@ -42,6 +42,23 @@ describe("VSCode body parser should", function()
     assert.are_same(expected, actual)
   end)
 
+  it("parse visual placeholder", function()
+    local input = "${TM_SELECTED_TEXT:${1:default}}"
+    local ok, actual = parser:parse(input)
+    assert.is_true(ok)
+    local expected = {
+      {
+        type = NodeType.VISUAL_PLACEHOLDER,
+        any = {
+          type = NodeType.PLACEHOLDER,
+          int = "1",
+          any = { { type = NodeType.TEXT, text = "default" } },
+        },
+      },
+    }
+    assert.are_same(expected, actual)
+  end)
+
   it("parse format with if text", function()
     local input = [[${1//${2:+if_text}/}]]
     local expected = {

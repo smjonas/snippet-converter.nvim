@@ -35,6 +35,7 @@ end
 -- text               ::= .*
 
 VSCodeParser.Variable = {
+  TM_SELECTED_TEXT = "TM_SELECTED_TEXT",
   TM_CURRENT_LINE = "TM_CURRENT_LINE",
   TM_CURRENT_WORD = "TM_CURRENT_WORD",
   TM_LINE_INDEX = "TM_LINE_INDEX",
@@ -189,19 +190,30 @@ function VSCodeParser:parse_variable(got_bracket)
   if not vim.tbl_contains(VSCodeParser.variable_tokens, var) then
     error("parse_variable: invalid token " .. var)
   end
+
+  local node_attrs
   if not got_bracket or self:peek("}") then
     -- variable 1 / 2
-    return p.new_inner_node(NodeType.VARIABLE, { var = var })
-  end
-  if self:peek(":") then
-    local any = self:parse_any()
+    node_attrs = {}
+  elseif self:peek(":") then
     -- variable 3
-    return p.new_inner_node(NodeType.VARIABLE, { var = var, any = any })
+    local any = self:parse_any()
+    self:expect("}")
+    node_attrs = { any = any }
+  else
+    -- variable 4
+    local transform = self:parse_transform()
+    self:expect("}")
+    node_attrs = { transform = transform }
   end
-  local transform = self:parse_transform()
-  self:expect("}")
-  -- variable 4
-  return p.new_inner_node(NodeType.VARIABLE, { var = var, transform = transform })
+
+  -- For the TM_SELECTED_TEXT variable, return a VISUAL_PLACEHOLDER node instead
+  if var == VSCodeParser.Variable.TM_SELECTED_TEXT then
+    return p.new_inner_node(NodeType.VISUAL_PLACEHOLDER, node_attrs)
+  else
+    node_attrs.var = var
+    return p.new_inner_node(NodeType.VARIABLE, node_attrs)
+  end
 end
 
 -- Starts after int
