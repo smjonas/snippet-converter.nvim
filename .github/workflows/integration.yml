@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [main, ci]
+    branches: [main]
   pull_request:
-    branches: [main, ci]
+    branches: [main]
 
 jobs:
   luacheck:
