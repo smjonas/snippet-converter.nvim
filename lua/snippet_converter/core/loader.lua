@@ -28,33 +28,37 @@ local add_location = function(matching_snippet_files, source_format, snippet_pat
 end
 
 -- @param matching_snippet_files table<SnippetLocation>
-local find_matching_snippet_files =
-  function(matching_snippet_files, source_format, source_path, exclude_paths)
-    local extension = snippet_engines[source_format].extension
-    -- ./ indicates to look for files in the runtimepath
-    local rt_path = source_path:match("%./(.*)")
-    if rt_path then
-      -- Turn path into Lua pattern
-      local rt_path_pattern = vim.pesc(rt_path)
-      local rtp_files = vim.api.nvim_get_runtime_file("*/*" .. extension, true)
-      for _, name in ipairs(rtp_files) do
-        -- Do not include paths that match exclude_paths: this would lead to reconverting
-        -- the same snippets in consecutive runs if the paths are also set as output paths
-        -- Name can either be a directory or a file name so make sure it is a file
-        if name:match(rt_path_pattern) and not match_any(name, exclude_paths) and io.file_exists(name) then
-          add_location(matching_snippet_files, source_format, name)
-        end
-      end
-    else
-      local files = io.scan_dir(vim.fn.expand(source_path), extension, {
-        -- Should probably be made configurable
-        recursive = source_format == "yasnippet",
-      })
-      for _, file in ipairs(files) do
-        add_location(matching_snippet_files, source_format, file)
+local find_matching_snippet_files = function(
+  matching_snippet_files,
+  source_format,
+  source_path,
+  exclude_paths
+)
+  local extension = snippet_engines[source_format].extension
+  -- ./ indicates to look for files in the runtimepath
+  local rt_path = source_path:match("%./(.*)")
+  if rt_path then
+    -- Turn path into Lua pattern
+    local rt_path_pattern = vim.pesc(rt_path)
+    local rtp_files = vim.api.nvim_get_runtime_file("*/*" .. extension, true)
+    for _, name in ipairs(rtp_files) do
+      -- Do not include paths that match exclude_paths: this would lead to reconverting
+      -- the same snippets in consecutive runs if the paths are also set as output paths
+      -- Name can either be a directory or a file name so make sure it is a file
+      if name:match(rt_path_pattern) and not match_any(name, exclude_paths) and io.file_exists(name) then
+        add_location(matching_snippet_files, source_format, name)
       end
     end
+  else
+    local files = io.scan_dir(vim.fn.expand(source_path), extension, {
+      -- Should probably be made configurable
+      recursive = source_format == "yasnippet",
+    })
+    for _, file in ipairs(files) do
+      add_location(matching_snippet_files, source_format, file)
+    end
   end
+end
 
 -- Searches for a set of snippet files on the user's system with a given extension
 -- that matches the source format.
