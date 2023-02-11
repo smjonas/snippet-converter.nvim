@@ -160,15 +160,23 @@ describe("VSCode converter should", function()
 
   it("convert visual placeholder to $TM_SELECTED_TEXT #18", function()
     local snippet = {
+      trigger = "if",
       body = {
         { text = "if", type = NodeType.VISUAL_PLACEHOLDER },
+        {
+          any = {
+            { type = NodeType.PLACEHOLDER, int = "1", any = { { type = NodeType.TEXT, text = "default" } } },
+          },
+          type = NodeType.VISUAL_PLACEHOLDER,
+        },
       },
-      description = "if",
-      line_nr = 1,
-      path = "/some/snippet/path.snippets",
+    }
+    local expected = {
       trigger = "if",
+      body = "${TM_SELECTED_TEXT:if}${TM_SELECTED_TEXT:${1:default}}",
     }
     local actual = converter.convert(snippet)
+    assert.are_same(expected, actual)
   end)
 end)
 

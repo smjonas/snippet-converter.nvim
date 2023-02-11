@@ -306,53 +306,6 @@ M.convert_snippets = function(args)
   return model
 end
 
-<<<<<<< Updated upstream
--- ## 1.4.1 (January 8, 2023)
--- Bug fixes:
--- - vsnip converter: escape $ in text nodes
---
--- ## 1.4.0 (November 9, 2022)
--- New features:
--- - added support for YASnippet (an Emacs snippet engine)
---
--- ## 1.3.1 (October 24, 2022)
--- New features:
--- - snipmate_luasnip: support Vimscript code
---
--- Bug fixes:
--- - correctly handle extends directives when generating package.json file
---
--- ## 1.3.0 (August 6, 2022)
--- New features:
--- - an unnecessary regex option inside UltiSnips snippet definitions is now detected and removed
--- - snippet variables are no longer converted to Vimscript when exporting vscode_luasnip snippets (#7)
--- - added an option to disable generating a package.json file when exporting as vscode / vscode_luasnip (#7)
---
--- Bug fixes:
--- - do not try to convert snippets in package.json
--- - ensure description is present if snippet options are set when converting UltiSnips snippets
--- - added nil check when checking type of luasnip key in LuaSnip snippets (#6)
-
--- ## 1.2.0 (July 3, 2022)
--- New features:
--- - added snipmate_luasnip flavor which does not support converting Vimscript code
--- - if / else texts in VSCode format nodes are now supported
---
--- Bug fixes:
--- - fixed handling of newline characters in SnipMate snippet definitions (#3)
--- - fixed incorrect export when multiple filetypes were used (#4)
--- - fixed parsing of literal "endsnippet" keyword in UltiSnips parser
--- - fixed compatibility with Lua JIT and Lua 5.1 (#5)
-
--- ## 1.1.0 (May 2022)
--- Added vscode_luasnip flavor which supports luasnip-specific keys such as autotrigger and priorities.
---
--- ## 1.0.0 (May 2022)
--- Initial release of SnippetConverter! Currently supports UltiSnips, LuaSnip, SnipMate,
--- VSCode and vsnip snippets.
-M.version = "1.4.1"
-=======
 M.version = "1.4.2"
->>>>>>> Stashed changes
 
 return M

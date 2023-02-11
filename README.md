@@ -4,11 +4,6 @@
 
 Parse, transform and convert snippets. Supports a variety of formats and snippet engines.
 
-<<<<<<< Updated upstream
-Current version: `1.4.1`
-
-=======
->>>>>>> Stashed changes
 [![Neovim](https://img.shields.io/badge/Neovim%200.7+-green.svg?style=for-the-badge&logo=neovim)](https://neovim.io)
 [![Lua](https://img.shields.io/badge/Lua-blue.svg?style=for-the-badge&logo=lua)](http://www.lua.org)
 
