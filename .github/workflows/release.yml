@@ -1,4 +1,4 @@
-name: Generate semver tags
+name: Release
 
 on:
   push:

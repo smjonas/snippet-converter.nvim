@@ -306,6 +306,7 @@ M.convert_snippets = function(args)
   return model
 end
 
+<<<<<<< Updated upstream
 -- ## 1.4.1 (January 8, 2023)
 -- Bug fixes:
 -- - vsnip converter: escape $ in text nodes
@@ -350,5 +351,8 @@ end
 -- Initial release of SnippetConverter! Currently supports UltiSnips, LuaSnip, SnipMate,
 -- VSCode and vsnip snippets.
 M.version = "1.4.1"
+=======
+M.version = "1.4.2"
+>>>>>>> Stashed changes
 
 return M
