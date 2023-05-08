@@ -1,15 +1,15 @@
 local snippet_engines = require("snippet_converter.snippet_engines")
 local make_default_table = require("snippet_converter.utils.table").make_default_table
 
----@class Model
----@field templates table
----@field tasks table
----@field skipped_tasks table
----@field total_num_snippets integer
----@field total_num_failures integer
----@field input_files table<string>
----@field output_files table<string>
----@field is_converting boolean
+--- @class Model
+--- @field templates table
+--- @field tasks table
+--- @field skipped_tasks table
+--- @field total_num_snippets integer
+--- @field total_num_failures integer
+--- @field input_files table<string>
+--- @field output_files table<string>
+--- @field is_converting boolean
 local Model = {}
 
 Model.Status = {

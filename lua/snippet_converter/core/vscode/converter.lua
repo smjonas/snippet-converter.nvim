@@ -1,3 +1,4 @@
+--- @class Converter
 local M = {}
 
 local NodeType = require("snippet_converter.core.node_type")
@@ -149,12 +150,12 @@ M.convert = function(snippet, visit_node, opts)
   return snippet
 end
 
--- Takes a list of converted snippets for a particular filetype and exports them to a JSON file.
--- @param converted_snippets table[] #A list of strings where each item is a snippet string to be exported
--- @param filetypes string #The filetypes of the snippets
--- @param output_dir string #The absolute path to the directory to write the snippets to
----@return string output path
-M.export = function(converted_snippets, filetypes, output_dir, _)
+--- Takes a list of converted snippets for a particular filetype and exports them to a JSON file.
+--- @param converted_snippets table<string> A list of strings where each item is a snippet string to be exported
+--- @param filetype string The filetype of the snippets
+--- @param output_dir string The absolute path to the directory to write the snippets to
+--- @return string #output path
+M.export = function(converted_snippets, filetype, output_dir, _)
   local table_to_export = {}
   local order = { [1] = {}, [2] = { "prefix", "description", "scope", "body", "luasnip" } }
   for i, snippet in ipairs(converted_snippets) do
@@ -170,12 +171,16 @@ M.export = function(converted_snippets, filetypes, output_dir, _)
     }
   end
   local output_string = json_utils:pretty_print(table_to_export, order, true)
-  local output_path = ("%s/%s.%s"):format(output_dir, filetypes, "json")
+  local output_path = ("%s/%s.%s"):format(output_dir, filetype, "json")
   io.write_file(vim.split(output_string, "\n"), output_path)
   return output_path
 end
 
--- @param context []? @A table of additional snippet contexts optionally provided the source parser (e.g. extends directives from UltiSnips)
+--- @param template_name string
+--- @param filetypes string[]
+--- @param output_path string
+--- @param context table? A table of additional snippet contexts optionally provided the source parser (e.g. extends directives from UltiSnips)
+--- @param template_opts table? A table of additional template-specific options
 M.post_export = function(template_name, filetypes, output_path, context, template_opts)
   if template_opts and not template_opts.generate_package_json then
     return

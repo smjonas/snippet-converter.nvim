@@ -4,7 +4,11 @@ local M = {
 
 local tbl = require("snippet_converter.utils.table")
 
-local command, snippet_engines, loader, Model, string_utils
+local command, snippet_engines
+--- @type Loader
+local loader
+local Model
+local string_utils
 local controller
 
 -- Setup function must be called before using the plugin!
@@ -36,10 +40,9 @@ end
 -- Partitions the snippet paths into a table of <filetype, [snippet_paths]>
 -- (e.g. filetype of an input file "lua.snippets" gis "lua").
 
--- @param snippet_locations table<SnippetLocation> a list of snippet locations
--- @param path_to_filetype function(snippet_path: string): string
--- @return <string, string> a table where each key is a filetype
--- and each value is a list of snippet paths that correspond to that filetype
+--- @param snippet_locations table<SnippetLocation> a list of snippet locations
+--- @return table<string, string> #a table where each key is a filetype
+--- and each value is a list of snippet paths that correspond to that filetype
 local partition_snippet_paths = function(snippet_locations)
   local partitioned_snippet_paths = {}
   for _, snippet_location in ipairs(snippet_locations) do
@@ -70,6 +73,7 @@ local load_snippets = function(template)
   return snippet_paths
 end
 
+--- @param model Model
 local parse_snippets = function(model, snippet_paths, template)
   local snippets = {}
   local context = {
@@ -192,6 +196,7 @@ local convert_snippets = function(model, snippets, context, template)
   local output_files = {}
   for target_format, output_dirs in pairs(template.output) do
     local filetypes = {}
+    --- @type Converter
     local converter = require(snippet_engines[target_format].converter)
     local opts = snippet_engines[target_format].format_opts
 
@@ -274,6 +279,7 @@ local convert_snippets = function(model, snippets, context, template)
 end
 
 -- Expose functions to tests
+M._load_snippets = load_snippets
 M._parse_snippets = parse_snippets
 M._convert_snippets = convert_snippets
 

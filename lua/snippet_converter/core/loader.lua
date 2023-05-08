@@ -1,6 +1,7 @@
 local snippet_engines = require("snippet_converter.snippet_engines")
 local io = require("snippet_converter.utils.io")
 
+--- @class Loader
 local M = {}
 
 local match_any = function(s, paths)
@@ -60,23 +61,23 @@ local find_matching_snippet_files = function(
   end
 end
 
--- Searches for a set of snippet files on the user's system with a given extension
--- that matches the source format.
---
--- @param source_format string a valid source format that will be used to determine the
--- extension of the snippet files (e.g. "ultisnips")
--- @param source_paths list<string> a list of paths to search for; if a path is a
--- absolute path to a file it will be added directly, if a path starts with
--- "./" the search starts in the runtimepath, otherwise the search will start at the given
--- root directory and match any files with the correct extension
--- @param exclude_paths list<string> a list of snippet paths to exclude
--- @return list<string> a list containing the absolute paths to the matching snippet files
+--- Searches for a set of snippet files on the user's system with a given extension
+--- that matches the source format.
+---
+--- @param source_format string a valid source format that will be used to determine the
+--- extension of the snippet files (e.g. "ultisnips")
+--- @param source_paths table<string> a list of paths to search for; if a path is a
+--- absolute path to a file it will be added directly, if a path starts with
+--- "./" the search starts in the runtimepath, otherwise the search will start at the given
+--- root directory and match any files with the correct extension
+--- @param exclude_paths table<string> a list of snippet paths to exclude
+--- @return table<SnippetLocation> #a list containing the absolute paths and filetypes to the matching snippet files
 M.get_matching_snippet_paths = function(source_format, source_paths, exclude_paths)
-  -- @class SnippetLocation
-  -- @field path string
-  -- @field filetype string
+  --- @class SnippetLocation
+  --- @field path string
+  --- @field filetype string
 
-  -- @type table<SnippetLocation>
+  --- @type table<SnippetLocation>
   local matching_snippet_files = {}
   for _, source_path in pairs(source_paths) do
     if io.file_exists(source_path) then

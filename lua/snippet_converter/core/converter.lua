@@ -1,3 +1,5 @@
+--- @class Converter
+--- @field post_export fun(template_name: string, filetypes: string[], output_path: string, context: table?, template_opts: table?)
 local M = {}
 
 local NodeType = require("snippet_converter.core.node_type")

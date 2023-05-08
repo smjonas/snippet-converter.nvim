@@ -46,11 +46,50 @@ end
 describe("Snippet converter", function()
   local match = require("luassert.match")
 
+  --- @type Model
   local model
   setup(function()
     model = Model.new()
     -- snippet_engines["vscode"].parser = "tests.init.parser_stub"
     snippet_engines["vscode"].converter = "tests.init.converter_stub"
+  end)
+
+  it("#kekw should merge files from multiple sources", function()
+    local cwd = vim.fn.getcwd()
+    local output_path = cwd .. "/tests/output/"
+    local template = {
+      name = "test",
+      sources = {
+        -- Both folders contain a lua.snippets file
+        ultisnips = { cwd .. "/tests/init/input-snippets/ultisnips-source" },
+        snipmate = { cwd .. "/tests/init/input-snippets/snipmate-source" },
+      },
+      output = {
+        snipmate = { output_path },
+      },
+    }
+    snippet_converter.setup { templates = { template } }
+
+    -- Submit tasks to ensure that the model is correctly initialized
+    model:submit_task(template, "ultisnips", 1, 1, {})
+    model:submit_task(template, "snipmate", 1, 1, {})
+    local stubbed_converter = stub.new(require("tests.init.converter_stub"), "export")
+
+    local context = {}
+    local snippet_paths = snippet_converter._load_snippets(template)
+    local snippets, _ = snippet_converter._parse_snippets(model, snippet_paths, template)
+    snippet_converter._convert_snippets(model, snippets, context, template)
+    -- vim.print(snippets)
+
+    assert.stub(stubbed_converter).was.called_with(
+      match.is_same {
+        -- Original snippet should be unchanged
+        'snippet A "if/else statement"\nif $1 then\n\t$2\nelse\n\t$0\nend\nendsnippet',
+      },
+      match.is_same("lua"),
+      match.is_same("/some/path/lua.json"),
+      match.is_same {}
+    )
   end)
 
   it("should correctly apply local + global snippet transforms", function()
@@ -350,6 +389,7 @@ describe("Snippet converter", function()
       local package_snippet = create_test_snippet("B", "", {})
       package_snippet.path = "some/path/package.json"
 
+      -- TODO: delete
       local snippets = {
         vscode = {
           lua = {
