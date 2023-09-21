@@ -9,8 +9,8 @@ M.get_lines = function(file)
 end
 
 local mode_name_to_fts = {
-  web = { "html" },
   ess = { "r", "S-Plus", "SAS", "julia", "stata" },
+  web = { "html" },
 }
 
 ---@return number the updated number of snippets that have been parsed

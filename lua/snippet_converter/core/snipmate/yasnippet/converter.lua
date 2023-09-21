@@ -61,17 +61,37 @@ local HEADER_STRING = [[
 
 ]]
 
+-- The first table entry is the child mode, the others are parent modes
+local ft_to_modenames = {
+  sh = { "shell", parent_modes = { "shell-script", "sh", "sh-script" } },
+}
+
 -- Takes a list of converted snippets for a particular filetype,
 -- separates them by newlines and exports them to a file.
 -- @param converted_snippets table(trigger: string, body: string) A list of snippet tables where each item is a snippet table to be exported
 -- @param mode_name string The filetype of the input snippets
 -- @param output_dir string The absolute path to the directory to write the snippets to
-M.export = function(converted_snippets, filetype, output_path)
+-- @param context []? #A table of additional snippet contexts optionally provided the source parser (e.g. extends directives from UltiSnips)
+M.export = function(converted_snippets, filetype, output_path, context)
+  local modes = ft_to_modenames[filetype]
+  local child_mode = modes and modes[1]
+
   for _, snippet in ipairs(converted_snippets) do
     local snippet_lines = HEADER_STRING .. snippet.body
-    local output_file_path = ("%s/%s-mode/%s"):format(output_path, filetype, snippet.trigger)
+    local output_file_path = ("%s/%s-mode/%s"):format(output_path, child_mode, snippet.trigger)
     io.write_file(vim.split(snippet_lines, "\n"), output_file_path)
   end
+
+  -- Create a .yas-parents file to share snippets
+  if child_mode then
+    local parent_modes = vim.tbl_map(function(mode_name)
+      return mode_name + "-mode"
+    end, modes.parent_modes)
+
+    local yas_parents_path = ("%s/%s-mode/.yas-parents"):format(output_path, child_mode)
+    io.write_file({ table.concat(parent_modes, " ") + "\n" }, yas_parents_path)
+  end
+
   return output_path
 end
 
