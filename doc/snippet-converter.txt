@@ -5,15 +5,12 @@ Table of Contents                        *snippet-converter-table-of-contents*
 
 1. Supported snippet formats     |snippet-converter-supported-snippet-formats|
 2. Converting snippets                 |snippet-converter-converting-snippets|
-  - Creating templates                  |snippet-converter-creating-templates|
-  - Recommended output paths      |snippet-converter-recommended-output-paths|
-  - Output format options            |snippet-converter-output-format-options|
+  - Creating templates|snippet-converter-converting-snippets-creating-templates|
+  - Recommended output paths|snippet-converter-converting-snippets-recommended-output-paths|
+  - Output format options|snippet-converter-converting-snippets-output-format-options|
 3. Transforming snippets             |snippet-converter-transforming-snippets|
-  - Examples                                      |snippet-converter-examples|
 4. Sorting snippets                       |snippet-converter-sorting-snippets|
-  - Examples                                      |snippet-converter-examples|
 5. Configuration                             |snippet-converter-configuration|
-
 SnippetConverter is a Neovim plugin that allows you to convert snippets (such
 as VSCode snippets, UltiSnips snippets etc.) between different formats. This
 allows users to reuse their snippets when switching to a different snippet
@@ -22,12 +19,12 @@ is to make it easier for users to create and share snippets as they become
 "snippet-engine-agnostic". Additionally, it provides the ability to modify
 individual snippets using a few lines of Lua code.
 
+
 ==============================================================================
 1. Supported snippet formats     *snippet-converter-supported-snippet-formats*
 
-SnippetConverter supports conversion between the folowing formats: - **VSCode
-<https://code.visualstudio.com/docs/editor/userdefinedsnippets>** (supported by
-vim-vsnip <https://github.com/hrsh7th/vim-vsnip>, LuaSnip
+SnippetConverter supports conversion between the folowing formats: - **VSCode**
+(supported by vim-vsnip <https://github.com/hrsh7th/vim-vsnip>, LuaSnip
 <https://github.com/L3MON4D3/LuaSnip>) - **VSCode LuaSnip**: a superset of
 VSCode snippets
 
@@ -36,28 +33,33 @@ LuaSnip snippets can contain a custom `luasnip` key. That is why
 converting an UltiSnips snippet, and the option `A` is present, the
 `luasnip.autotrigger` key will be set to `true`.
 
-
 - **vsnip**: a superset of VSCode snippets (vsnip snippets can contain Vimscript
     code)
-- **UltiSnips <https://github.com/SirVer/ultisnips>**
-- **SnipMate <https://github.com/garbas/vim-snipmate>**
-- **YASnippet <https://joaotavora.github.io/yasnippet/>** (an Emacs snippet
-    engine)
-
+- **UltiSnips**
+- **SnipMate**
+- **YASnippet** (an Emacs snippet engine)
 
 The following table shows which snippets can be converted to another format
 (the first column denotes the source format):
 
-│Source format / Target format│vscode │vscode_luasnip│ vsnip │ultisnips│snipmate│snipmate_luasnip│yasnippet│
-│vscode                       │✓    │✓           │✓    │✓      │✓     │✓             │✓      │
-│vscode_luasnip               │✓    │✓           │✓    │✓      │✓     │✓             │✓      │
-│vsnip                        │✓ [1]│✓ [1]       │✓    │✓      │✓ [1] │✓             │✓ [1]  │
-│ultisnips                    │✓ [2]│✓ [2]       │✓ [3]│✓      │✓ [4] │✓ [4]         │✓ [2]  │
-│snipmate                     │✓    │✓           │✓    │✓      │✓     │✓             │✓      │
-│snipmate_luasnip             │✓    │✓           │✓    │✓      │✓     │✓             │✓      │
-│yasnippet                    │✓ [5]│✓ [5]       │✓ [5]│✓ [5]  │✓ [5] │✓ [5]         │✓ [5]  │
+  -----------------------------------------------------------------------------------------------------------
+  Source format /     vscode   vscode_luasnip   vsnip   ultisnips   snipmate   snipmate_luasnip   yasnippet
+  Target format                                                                                   
+  ------------------- -------- ---------------- ------- ----------- ---------- ------------------ -----------
+  vscode              ✓        ✓                ✓       ✓           ✓          ✓                  ✓
 
+  vscode_luasnip      ✓        ✓                ✓       ✓           ✓          ✓                  ✓
 
+  vsnip               ✓ [1]    ✓ [1]            ✓       ✓           ✓ [1]      ✓                  ✓ [1]
+
+  ultisnips           ✓ [2]    ✓ [2]            ✓ [3]   ✓           ✓ [4]      ✓ [4]              ✓ [2]
+
+  snipmate            ✓        ✓                ✓       ✓           ✓          ✓                  ✓
+
+  snipmate_luasnip    ✓        ✓                ✓       ✓           ✓          ✓                  ✓
+
+  yasnippet           ✓ [5]    ✓ [5]            ✓ [5]   ✓ [5]       ✓ [5]      ✓ [5]              ✓ [5]
+  -----------------------------------------------------------------------------------------------------------
 **Legend:**
 
 ✓: All snippets can be converted - no exceptions.
@@ -79,7 +81,6 @@ triggers.
   :bulb: Note that source and target format can be the same. This is useful if
   you only want to filter certain snippets or apply transformations to them
   without converting them to a different format.
-
 
 ==============================================================================
 2. Converting snippets                 *snippet-converter-converting-snippets*
@@ -103,13 +104,14 @@ If you don’t want the UI to be shown, use headless mode:
 Alternatively, you can change the default option `headless` globally using the
 `default_opts` table (see |snippet-converter-configuration|).
 
-CREATING TEMPLATES                      *snippet-converter-creating-templates*
+
+CREATING TEMPLATES  *snippet-converter-converting-snippets-creating-templates*
 
 A template is simply a table that describes the input / output formats and
 paths of a conversion. Templates must be passed to the `setup` function as a
 list:
 
->
+>lua
     local template = {
       sources = {
         ultisnips = {
@@ -132,11 +134,9 @@ list:
     }
 <
 
-
 It can contain any of the following keys:
 
 ------------------------------------------------------------------------------
-
 `name: string?`
 
 An optional name that can be passed as an argument to the `:ConvertSnippets`
@@ -144,7 +144,6 @@ command. If not specified, a default value (the index of the template in the
 `templates` table passed to `setup`) will be used.
 
 ------------------------------------------------------------------------------
-
 `sources: table <string, string[]>`
 
 A table with a list of paths per source format. For a list of available source
@@ -161,7 +160,6 @@ If the source format is "yasnippet", directories will be searched recursively
 due to the special directory structure expected by YASnippet.
 
 ------------------------------------------------------------------------------
-
 `output: table<string, string[] | table>`
 
 A table with a list of paths per output format where the converted snippets
@@ -172,26 +170,25 @@ See |snippet-converter-recommended-output-paths| for advice on how to choose a
 suitable output path.
 
 ------------------------------------------------------------------------------
-
 `transform_snippets: snippet -> snippet | nil`
 
 An optional transformation function, see
 |snippet-converter-transforming-snippets|.
 
 ------------------------------------------------------------------------------
-
 `sort_snippets: (snippet -> snippet) -> boolean`
 
 An optional sorting function, see |snippet-converter-sorting-snippets|.
 
-RECOMMENDED OUTPUT PATHS          *snippet-converter-recommended-output-paths*
+
+RECOMMENDED OUTPUT PATHS*snippet-converter-converting-snippets-recommended-output-paths*
 
 Choosing the correct output paths is important to make the converted snippets
 available to your snippet engine. For details, always refer to the
 documentation of your snippet engine.
 
-LUASNIP ~
 
+LUASNIP ~
 
 - LuaSnip will load VSCode or SnipMate snippets if they are stored in your Neovim
     runtimepath. Note: you need to call
@@ -201,7 +198,7 @@ LUASNIP ~
     paths to the `opts.paths` table. Example: use `{ paths = "./vscode_snippets" }`
     to load snippets at `vim.fn.stdpath("config") .. "/vscode_snippets"`.
     Therefore, the following is a suitable output path for your generated snippets:
-    >
+    >lua
         vim.fn.stdpath("config") .. "/vscode_snippets"
     <
     For VSCode snippets, SnippetConverter will automatically generate the required
@@ -210,11 +207,10 @@ LUASNIP ~
 
 ULTISNIPS ~
 
-
 - By default, UltiSnips will look for snippets inside `UltiSnips` and `snippets`
     folders in your runtimepath (the latter is used for SnipMate snippets). Thus, a
     valid output path is:
-    >
+    >lua
         vim.fn.stdpath("config") .. "/UltiSnips"
     <
     This can be changed by modifying the global table variable
@@ -223,13 +219,12 @@ ULTISNIPS ~
 
 VSNIP ~
 
-
 - Similarly to LuaSnip, vsnip can load VSCode snippets that are present in a
     `snippets` folder in your runtimepath. (SnippetConverter supports snippets that
     use the Vimscript interpolation feature of vsnip.) Custom snippets can be added
     at the location of `vim.g.vsnip_snippet_dir` (which is `~/.vsnip` by default)
     by running the `:VsnipOpen` command. So the following are valid output paths:
-    >
+    >lua
         vim.g.vsnip_snippet_dir
         -- or
         vim.fn.stdpath("config") .. "/snippets"
@@ -238,21 +233,20 @@ VSNIP ~
 
 SNIPMATE ~
 
-
 - SnipMate can find snippets inside `snippets` folders in your runtimepath, so a
     valid output path would be:
-    >
+    >lua
         vim.fn.stdpath("config") .. "/snippets"
     <
 
 
-OUTPUT FORMAT OPTIONS                *snippet-converter-output-format-options*
+OUTPUT FORMAT OPTIONS*snippet-converter-converting-snippets-output-format-options*
 
 You can set additional options by passing an `opts` table to the output format.
 Currently there is only one option which is useful for `vscode` or
 `vscode_luasnip` output formats:
 
->
+>lua
     output = {
       vscode_luasnip = {
         vim.fn.stdpath("config") .. "/vscode_snippets",
@@ -287,51 +281,73 @@ possible to return multiple snippets.
   :bulb: It is possible to return multiple snippets. This allows you to turn an
   existing snippet into multiple new ones. [An example would be great here, let
   me know if you have one to share!]
-
-
 In contrast to loaded snippets, any errors that occur during parsing will be
 shown to the user immediately.
 
 The available keys in the snippet table are listed below. Optional keys can be
 nil.
 
-│     Key      │ Type  │                     Source formats                      │Optional?│
-│trigger       │string │All                                                      │No       │
-│description   │string │All                                                      │Yes      │
-│body          │table  │All                                                      │No       │
-│scope         │table  │vscode / vscode_luasnip / vsnip                          │Yes      │
-│path          │string │All                                                      │No       │
-│line_nr       │int    │All except vscode / vscode_luasnip / vsnip               │No       │
-│options       │string │ultisnips                                                │Yes      │
-│custom_context│string │ultisnips                                                │Yes      │
-│priority      │number │vscode_luasnip / ultisnips / snipmate_luasnip            │Yes      │
-│autotrigger   │boolean│vscode_luasnip                                           │Yes      │
+  --------------------------------------------------------------------------------
+  Key              Type      Source formats                            Optional?
+  ---------------- --------- ----------------------------------------- -----------
+  trigger          string    All                                       No
 
+  description      string    All                                       Yes
 
+  body             table     All                                       No
+
+  scope            table     vscode / vscode_luasnip / vsnip           Yes
+
+  path             string    All                                       No
+
+  line_nr          int       All except vscode / vscode_luasnip /      No
+                             vsnip                                     
+
+  options          string    ultisnips                                 Yes
+
+  custom_context   string    ultisnips                                 Yes
+
+  priority         number    vscode_luasnip / ultisnips /              Yes
+                             snipmate_luasnip                          
+
+  autotrigger      boolean   vscode_luasnip                            Yes
+  --------------------------------------------------------------------------------
 The `helper` table contains the following entries:
 
-│     Key     │  Type  │                                                                                     Explanation                                                                                      │
-│source_format│string  │The input format of the snippet.                                                                                                                                                      │
-│target_format│string  │The output format of the snippet.                                                                                                                                                     │
-│dedent       │function│A function that takes a single string as an argument and removes leading whitespace from all lines. The indentation is inferred from the first line. This allows for nicer formatting.│
+  -----------------------------------------------------------------------------------------
+  Key             Type       Explanation
+  --------------- ---------- --------------------------------------------------------------
+  source_format   string     The input format of the snippet.
 
+  target_format   string     The output format of the snippet.
 
+  dedent          function   A function that takes a single string as an argument and
+                             removes leading whitespace from all lines. The indentation is
+                             inferred from the first line. This allows for nicer
+                             formatting.
+  -----------------------------------------------------------------------------------------
 Optionally, a table of options can be returned as a second value which may
 contain any of the following items:
 
-│  Key  │ Type  │   Default   │                                                      Description                                                       │
-│replace│boolean│true         │If true, the current existing snippet will be replaced with the new one(s), otherwise it will be kept.                  │
-│format │string │source_format│The format of the snippet which determines the parser to be used. Useful if you prefer a particular syntax over another.│
+  -------------------------------------------------------------------------------------
+  Key       Type      Default         Description
+  --------- --------- --------------- -------------------------------------------------
+  replace   boolean   true            If true, the current existing snippet will be
+                                      replaced with the new one(s), otherwise it will
+                                      be kept.
 
-
-EXAMPLES                                          *snippet-converter-examples*
+  format    string    source_format   The format of the snippet which determines the
+                                      parser to be used. Useful if you prefer a
+                                      particular syntax over another.
+  -------------------------------------------------------------------------------------
+**Examples**
 
 Modify a specific UltiSnips snippet (this effectively reverts this
 <https://github.com/honza/vim-snippets/commit/2502f24> vim-snippets commit -
 see the related issue #1396
 <https://github.com/honza/vim-snippets/issues/1396>):
 
->
+>lua
     transform_snippets = function(snippet, helper)
       if snippet.path:find("vim-snippets/.*/tex%.snippets") and snippet.trigger == "$$" then
         return helper.dedent([[
@@ -345,11 +361,10 @@ see the related issue #1396
     end
 <
 
-
 Here is an example for VSCode snippets (this needs to match the default syntax
 of VSCode snippets, e.g. use `prefix` instead of `trigger`):
 
->
+>lua
     transform_snippets = function(snippet, helper)
       if snippet.trigger == "if" then
         return {
@@ -362,10 +377,9 @@ of VSCode snippets, e.g. use `prefix` instead of `trigger`):
     end
 <
 
-
 Delete all snippets with a specific trigger:
 
->
+>lua
     transform_snippets = function(snippet, helper)
       if snippet.trigger == "..." then
         return false
@@ -373,10 +387,9 @@ Delete all snippets with a specific trigger:
     end
 <
 
-
 Remove all auto-triggers from UltiSnips snippets:
 
->
+>lua
     transform_snippets = function(snippet, helper)
       if snippet.options and snippet.options:match("A") then
         snippet.options = snippet.options:gsub("A", "")
@@ -400,23 +413,22 @@ snippets to compare and must return a boolean. When `true` is returned, the
 first snippet will be placed before the second one, otherwise the second one
 comes before the first one.
 
-EXAMPLES                                          *snippet-converter-examples*
+**Examples**
 
 The following example will sort the snippets by their trigger in ascending
 order:
 
->
+>lua
     sort_snippets = function(first, second)
       return first.trigger < second.trigger
     end
 <
 
-
 A more advanced example puts snippets with a priority value at the top of the
 output file, sorting them by their priority in descending order, then by their
 trigger in ascending order:
 
->
+>lua
     sort_snippets = function(first, second)
       if (first.priority or -math.huge) > (second.priority or -math.huge) then
         return true
@@ -432,7 +444,7 @@ trigger in ascending order:
 You can pass a settings table to the `setup` function in order to overwrite the
 default settings or options:
 
->
+>lua
     require("snippet_converter").setup {
       settings = {
         -- ...
@@ -443,10 +455,9 @@ default settings or options:
     }
 <
 
-
 Default config:
 
->
+>lua
     DEFAULT_CONFIG = {
       settings = {
         ui = {
@@ -459,11 +470,9 @@ Default config:
     }
 <
 
-
 Here are the available settings:
 
 ------------------------------------------------------------------------------
-
 `settings.ui.use_nerdfont_icons: boolean`
 
 Specifies whether Nerd Fonts <https://github.com/ryanoasis/nerd-fonts> icons
@@ -474,7 +483,6 @@ correctly.
 **Default:** `true`
 
 ------------------------------------------------------------------------------
-
 `default_opts.headless: boolean`
 
 Specifies whether the `:ConvertSnippets` command should run in headless mode.
