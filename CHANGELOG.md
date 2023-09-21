@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.1](https://github.com/smjonas/snippet-converter.nvim/compare/v1.5.0...v1.5.1) (2023-09-21)
+
+
+### Bug Fixes
+
+* **docs:** remove duplicate tags in docs ([ba540b7](https://github.com/smjonas/snippet-converter.nvim/commit/ba540b7914182af5f7436f78b64c4118258f443f))
+
 ## [1.5.0](https://github.com/smjonas/snippet-converter.nvim/compare/v1.4.2...v1.5.0) (2023-02-11)
 
 
